@@ -4,8 +4,9 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.bondfire.swiftyglider.handler.Content;
 import com.bondfire.swiftyglider.states.GSM;
-import com.bondfire.swiftyglider.states.TestState;
+import com.bondfire.swiftyglider.states.PlayState;
 
 /** This covers LibGdx basics, expect lots of notes  */
 public class SwiftyGlider extends ApplicationAdapter {
@@ -16,6 +17,8 @@ public class SwiftyGlider extends ApplicationAdapter {
 	public static final int HEIGHT = 800;
 
 	/** our assets */
+    public static Content res;
+
 	private SpriteBatch sb;
 	private GSM gsm; //our gsm here
 
@@ -25,9 +28,12 @@ public class SwiftyGlider extends ApplicationAdapter {
 		/** set the clear color (color that shows when everything on the screen is cleared  */
 		Gdx.gl.glClearColor(0.2f,0.2f,0.2f,1);
 
+		res = new Content();
+		res.LoadAtlas("swiftyglider.pack", "sprites"); //our path to the file and the key
+
 		sb = new SpriteBatch();
 		gsm = new GSM();
-		gsm.push(new TestState(gsm));
+		gsm.push(new PlayState(gsm));
 	}
 
 	/** Game loop libgdx uses 60hz */

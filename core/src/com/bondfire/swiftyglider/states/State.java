@@ -1,6 +1,8 @@
 package com.bondfire.swiftyglider.states;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.bondfire.swiftyglider.SwiftyGlider;
 
 /** A little note On states. A game is basically a loop. It will update and then a render. Over
  * and over and over again. Games are composed of a lot of things. ORganize the different screens
@@ -15,8 +17,17 @@ public abstract  class State {
      * push, pop, set etc..  */
     protected GSM gsm;
 
+    /** every play state needs to have a camera */
+    protected OrthographicCamera cam;
+
     protected State(GSM gsm){
         this.gsm = gsm;
+
+        /**configure the camera, to be same size as game screen */
+        cam = new OrthographicCamera();
+        cam.setToOrtho(false, SwiftyGlider.WIDTH, SwiftyGlider.HEIGHT);
+
+
     }
 
     /** every game state has to have their own render/update methods */
