@@ -2,6 +2,7 @@ package com.bondfire.swiftyglider.states;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.bondfire.swiftyglider.SwiftyGlider;
 
 /** A little note On states. A game is basically a loop. It will update and then a render. Over
@@ -20,12 +21,16 @@ public abstract  class State {
     /** every play state needs to have a camera */
     protected OrthographicCamera cam;
 
+    /** every state should have its own mouse coordinate */
+    protected Vector3 mouse;
+
     protected State(GSM gsm){
         this.gsm = gsm;
 
         /**configure the camera, to be same size as game screen */
         cam = new OrthographicCamera();
         cam.setToOrtho(false, SwiftyGlider.WIDTH, SwiftyGlider.HEIGHT);
+        mouse = new Vector3();
 
 
     }
@@ -33,7 +38,6 @@ public abstract  class State {
     /** every game state has to have their own render/update methods */
     public abstract void update(float dt);
     public abstract void render(SpriteBatch sb);
-
     /** a method for handling input */
     public abstract void handeInput();
 

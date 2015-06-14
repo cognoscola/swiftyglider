@@ -5,77 +5,98 @@ filter: Nearest,Nearest
 repeat: none
 wall_left
   rotate: false
-  xy: 1, 181
+  xy: 1, 182
   size: 605, 58
   orig: 605, 58
   offset: 0, 0
   index: -1
 indicator_line
   rotate: false
-  xy: 1, 129
+  xy: 1, 130
   size: 500, 50
   orig: 500, 50
   offset: 0, 0
   index: -1
 wall_right
   rotate: false
-  xy: 1, 73
+  xy: 1, 74
   size: 472, 54
   orig: 472, 54
   offset: 0, 0
   index: -1
 instructions
   rotate: false
-  xy: 608, 41
+  xy: 608, 42
   size: 250, 198
   orig: 250, 198
   offset: 0, 0
   index: -1
+button
+  rotate: false
+  xy: 860, 169
+  size: 150, 71
+  orig: 150, 71
+  offset: 0, 0
+  index: -1
+start
+  rotate: false
+  xy: 1, 1
+  size: 150, 71
+  orig: 150, 71
+  offset: 0, 0
+  index: -1
 leaf
   rotate: false
-  xy: 860, 160
+  xy: 860, 88
   size: 79, 79
   orig: 79, 79
   offset: 0, 0
   index: 1
 leaf
   rotate: false
-  xy: 1, 1
+  xy: 153, 2
   size: 70, 70
   orig: 70, 70
   offset: 0, 0
   index: 3
 leaf
   rotate: false
-  xy: 860, 93
+  xy: 941, 102
   size: 65, 65
   orig: 65, 65
   offset: 0, 0
   index: 2
 explosion
   rotate: false
-  xy: 941, 175
+  xy: 225, 8
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
+g4454
+  rotate: false
+  xy: 503, 130
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
 tail_right
   rotate: false
-  xy: 503, 131
+  xy: 475, 80
   size: 48, 48
   orig: 48, 48
   offset: 0, 0
   index: -1
 tail_left
   rotate: false
-  xy: 73, 23
+  xy: 291, 24
   size: 48, 48
   orig: 48, 48
   offset: 0, 0
   index: -1
 glider
   rotate: false
-  xy: 860, 43
+  xy: 555, 132
   size: 48, 48
   orig: 48, 48
   offset: 0, 0

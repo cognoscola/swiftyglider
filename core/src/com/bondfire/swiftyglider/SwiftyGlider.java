@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.swiftyglider.handler.Content;
 import com.bondfire.swiftyglider.states.GSM;
-import com.bondfire.swiftyglider.states.PlayState;
+import com.bondfire.swiftyglider.states.MenuState;
 
 /** This covers LibGdx basics, expect lots of notes  */
 public class SwiftyGlider extends ApplicationAdapter {
@@ -30,10 +30,13 @@ public class SwiftyGlider extends ApplicationAdapter {
 
 		res = new Content();
 		res.LoadAtlas("swiftyglider.pack", "sprites"); //our path to the file and the key
-
+		res.LoadFont("open_sans.ttf");
 		sb = new SpriteBatch();
 		gsm = new GSM();
-		gsm.push(new PlayState(gsm));
+
+		/** push the menu state*/
+		gsm.push(new MenuState(gsm));
+//		gsm.push(new PlayState(gsm));
 	}
 
 	/** Game loop libgdx uses 60hz */
@@ -46,4 +49,6 @@ public class SwiftyGlider extends ApplicationAdapter {
 		gsm.render(sb);
 
 	}
+
+
 }
