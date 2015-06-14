@@ -52,6 +52,7 @@ public class Wall extends Box {
         this.END_Y = - rightWallHeight;
 
     }
+
     public void update(float dt){
         if(this.y > END_Y){
             timer += dt;
@@ -80,6 +81,20 @@ public class Wall extends Box {
         this.gapPosition = MathUtils.random(gameWidth);
         this.leftWallPosition_X = gapPosition - leftWall.getRegionWidth();
         this.rightWallPosition_X = gapPosition + gapLength;
+    }
+
+
+    public void FirstWall(int CanvasWidth, float gapLength){
+
+        this.gapLength = gapLength;
+        this.gapPosition =CanvasWidth/2 - gapLength/2;
+        this.leftWallPosition_X = gapPosition - leftWallWidth;
+        this.rightWallPosition_X = gapPosition + gapLength;
+
+    }
+
+    private boolean isDone(){
+        return this.y == END_Y;
     }
 
 }

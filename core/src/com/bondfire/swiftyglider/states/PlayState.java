@@ -15,12 +15,37 @@ public class PlayState extends State {
     private final int MAX_FINGERS = 1;
     private int i;
     private float boardOffset; //used to position the glider in the middle of the screen
-    private final static int numofWalls = 1;
 
     /** our sprites **/
     private Glider glider;
     private Indicator line;
-    private Array<Wall> walls;
+    private Array<Wall> wallQueueWaiting;
+    private Array<Wall> wallQueueActive;
+
+
+
+    /** Game Logic */
+    private static int level              = 0 ;
+    private static int getLength          = 0 ;
+
+    /** timing logic */
+    static boolean isRateChanging = false;
+    static boolean isSpedChanging = false;
+    static boolean isGoingUp      = true;
+    static int levelSpeed         = 1;
+
+    private static boolean colliding = false;
+    private static boolean firstWall = true;
+
+    /** indexes*/
+    int wallIndexer;
+
+    /** game state */
+    enum GameState{
+        Running,
+        Died
+    }
+
 
     public PlayState(GSM gsm){
         super(gsm);
@@ -31,12 +56,8 @@ public class PlayState extends State {
         /** load our sprites */
         glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/2,tileSize,tileSize);
         line   = new Indicator(SwiftyGlider.WIDTH/2, 0, SwiftyGlider.WIDTH, 50);
-        walls = new Array<Wall>();
-
-        /** Create our walls */
-        for(int i = 0; i < numofWalls; i++){
-            walls.add(new Wall(SwiftyGlider.WIDTH,50));
-        }
+        wallQueueWaiting = new Array<Wall>();
+        wallQueueActive =  new Array<Wall>();
 
     }
 
@@ -49,7 +70,7 @@ public class PlayState extends State {
         for(i = 0; i < MAX_FINGERS;i++){
 
             /** check if the pointer are pressed */
-            if(Gdx.input.isTouched(i)){
+            if(Gdx.input.justTouched()){
 
                 mouse.x = Gdx.input.getX(i);
                 mouse.y = Gdx.input.getY(i);
@@ -63,10 +84,10 @@ public class PlayState extends State {
                     if(glider.contains(mouse.x, mouse.y)){
                         glider.setSelected(true);
                         line.reset();
-                        for(int i = 0; i < walls.size; i++){
+                        for(int i = 0; i < wallQueueWaiting.size; i++){
 
                             //TODO when calling this, make sure you subtract the sprites's width
-                            walls.get(i).RecycleWall(SwiftyGlider.WIDTH, 50f);
+                            wallQueueWaiting.get(i).RecycleWall(SwiftyGlider.WIDTH, 50f);
                         }
                     }
                 }
@@ -76,13 +97,18 @@ public class PlayState extends State {
 
     @Override
     public void update(float dt) {
+
+        /** Update this state*/
+        updateWall(dt);
+
+        /** update everything inside this state */
         handeInput();
         glider.update(dt);
         line.update(dt);
 
         /** for each wall, update them */
-        for(int i = 0; i < walls.size; i++){
-            walls.get(i).update(dt);
+        for(int i = 0; i < wallQueueWaiting.size; i++){
+            wallQueueActive.get(i).update(dt);
         }
     }
 
@@ -93,11 +119,23 @@ public class PlayState extends State {
         sb.begin();
         glider.render(sb);
         line.render(sb);
-        for(int i = 0; i < walls.size; i++){
-            walls.get(i).render(sb);
+        for(int i = 0; i < wallQueueWaiting.size; i++){
+            wallQueueWaiting.get(i).render(sb);
         }
         sb.end();
     }
 
+    private void updateWall(float dt){
+
+        /** for each each in the active queue, check if they are done.*/
+
+        /** if yes, put them in the waitQueue*/
+
+        /** Check if it is time to put a new wall on the screen */
+
+        /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
+         * is empty just make a new wall.*/
+
+    }
 
 }
