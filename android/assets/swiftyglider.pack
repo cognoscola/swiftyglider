@@ -45,27 +45,27 @@ start
   orig: 150, 71
   offset: 0, 0
   index: -1
-leaf
+leaf1
   rotate: false
   xy: 860, 88
   size: 79, 79
   orig: 79, 79
   offset: 0, 0
-  index: 1
-leaf
+  index: -1
+leaf3
   rotate: false
   xy: 153, 2
   size: 70, 70
   orig: 70, 70
   offset: 0, 0
-  index: 3
-leaf
+  index: -1
+leaf2
   rotate: false
   xy: 941, 102
   size: 65, 65
   orig: 65, 65
   offset: 0, 0
-  index: 2
+  index: -1
 explosion
   rotate: false
   xy: 225, 8

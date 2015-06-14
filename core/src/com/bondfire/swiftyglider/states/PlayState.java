@@ -12,9 +12,9 @@ import com.bondfire.swiftyglider.sprites.Wall;
 public class PlayState extends State {
 
     /** set the max number of fingers */
-    private final int MAX_FINGERS = 1;
+    private final int MAX_FINGERS = 0;
+
     private int i;
-    private float boardOffset; //used to position the glider in the middle of the screen
 
     /** our sprites **/
     private Glider glider;
@@ -25,26 +25,13 @@ public class PlayState extends State {
 
 
     /** Game Logic */
-    private static int level              = 0 ;
-    private static int getLength          = 0 ;
+    private static float gapLength = 100f ;
+    private static boolean colliding = false;
 
     /** timing logic */
-    static boolean isRateChanging = false;
-    static boolean isSpedChanging = false;
-    static boolean isGoingUp      = true;
-    static int levelSpeed         = 1;
+    static float wallTimer = 1f;  //timer and also the initial start time
+    static float walllInterval = 3f;
 
-    private static boolean colliding = false;
-    private static boolean firstWall = true;
-
-    /** indexes*/
-    int wallIndexer;
-
-    /** game state */
-    enum GameState{
-        Running,
-        Died
-    }
 
 
     public PlayState(GSM gsm){
@@ -62,7 +49,7 @@ public class PlayState extends State {
     }
 
     @Override
-    public void handeInput() {
+    public void handleInput() {
 
         /** we're going to try multitouch */
         /** use the vector3 to grab the mouse position */
@@ -70,7 +57,7 @@ public class PlayState extends State {
         for(i = 0; i < MAX_FINGERS;i++){
 
             /** check if the pointer are pressed */
-            if(Gdx.input.justTouched()){
+            if(Gdx.input.isTouched()){
 
                 mouse.x = Gdx.input.getX(i);
                 mouse.y = Gdx.input.getY(i);
@@ -79,18 +66,21 @@ public class PlayState extends State {
                 cam.unproject(mouse);
 
                 /** find out if our object was clicked */
-                if(mouse.x >= 0 && mouse.x < SwiftyGlider.WIDTH &&
+                glider.setX(mouse.x);
+                glider.setY(mouse.y);
+
+
+               /* if(mouse.x >= 0 && mouse.x < SwiftyGlider.WIDTH &&
                         mouse.y >= 0 && mouse.y < SwiftyGlider.HEIGHT){
                     if(glider.contains(mouse.x, mouse.y)){
-                        glider.setSelected(true);
+                        glider.setColliding(true);
                         line.reset();
                         for(int i = 0; i < wallQueueWaiting.size; i++){
-
                             //TODO when calling this, make sure you subtract the sprites's width
                             wallQueueWaiting.get(i).RecycleWall(SwiftyGlider.WIDTH, 50f);
                         }
                     }
-                }
+                }*/
             }
         }
     }
@@ -98,16 +88,21 @@ public class PlayState extends State {
     @Override
     public void update(float dt) {
 
+        wallTimer +=dt;
+
         /** Update this state*/
-        updateWall(dt);
+        checkWallRate();
+
+        /** checkCollision */
+        checkCollision();
 
         /** update everything inside this state */
-        handeInput();
+        handleInput();
         glider.update(dt);
         line.update(dt);
 
         /** for each wall, update them */
-        for(int i = 0; i < wallQueueWaiting.size; i++){
+        for(int i = 0; i < wallQueueActive.size; i++){
             wallQueueActive.get(i).update(dt);
         }
     }
@@ -119,23 +114,58 @@ public class PlayState extends State {
         sb.begin();
         glider.render(sb);
         line.render(sb);
-        for(int i = 0; i < wallQueueWaiting.size; i++){
-            wallQueueWaiting.get(i).render(sb);
+        for(int i = 0; i < wallQueueActive.size; i++){
+            wallQueueActive.get(i).render(sb);
         }
         sb.end();
     }
 
-    private void updateWall(float dt){
+    private void checkWallRate(){
 
-        /** for each each in the active queue, check if they are done.*/
+        /** for each in the active queue, check if they are done.*/
+       for( i = 0; i < wallQueueActive.size; i++ ){
+            Wall wall = wallQueueActive.get(i);
 
-        /** if yes, put them in the waitQueue*/
+           /** if yes, put them in the waitQueue*/
+           if(wall.isDone()){
+              wallQueueWaiting.add(wall);
+               wallQueueActive.removeIndex(i);
+           }
+       }
 
         /** Check if it is time to put a new wall on the screen */
+        if(wallTimer >= walllInterval) {
 
-        /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
-         * is empty just make a new wall.*/
+            /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
+             * is empty just make a new wall.*/
+            Wall wall;
+            if(wallQueueWaiting.size != 0)
+                wall = wallQueueWaiting.pop();
+            else{
+                wall = new Wall(SwiftyGlider.WIDTH, gapLength);
+//                System.out.println("New wall");
+            }
 
+            wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
+            wallQueueActive.add(wall);
+            wallTimer = 0;
+        }
     }
 
+    public void checkCollision(){
+
+        /** check if we are colliding with any walls */
+        for (i = 0; i < wallQueueActive.size; i++) {
+            Wall wall = wallQueueActive.get(i);
+
+            if (wall != null) {
+                /** Are we colliding with the left side? */
+                colliding = wall.colliding(glider.getX(), glider.getY(), glider.getWidth(), glider.getHeight());
+                glider.setColliding(colliding);
+                /** We don't want the colliding value to change back to false by
+                 * checking another wall it is not colliding with, so terminate the loop*/
+                if(colliding) i = wallQueueActive.size;
+            }
+        }
+    }
 }

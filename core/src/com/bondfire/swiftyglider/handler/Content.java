@@ -23,7 +23,6 @@ public class Content {
     /** here we will fetch the assets and put them int memory*/
     public void LoadAtlas(String path, String key){
         atlases.put(key, new TextureAtlas(Gdx.files.internal(path)));
-
     }
 
     public TextureAtlas getAtlas(String key ){

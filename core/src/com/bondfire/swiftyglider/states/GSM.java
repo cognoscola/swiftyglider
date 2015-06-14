@@ -16,6 +16,7 @@ public class GSM {
      * Clicking start, will push the game play state into the stack. Going back will pop
      * the stack */
     private Stack<State> states; //Our states stacks
+    private final static int STATE_BACKGROUND = 0;
 
     public GSM(){
         states = new Stack<State>();
@@ -38,11 +39,30 @@ public class GSM {
     /** our GSM is only going to be updating the TOP of the stack */
     public void update(float dt){
         /** get the top of the stack */
+
+       /* State state = states.pop();
         states.peek().update(dt);
+        state.update(dt);
+        states.push(state);*/
+
+        states.get(STATE_BACKGROUND).update(dt);
+        states.peek().update(dt);
+
     }
     /** our GSM is only going to be rendering the TOP of the stack */
     public void render(SpriteBatch sp){
+     /*   State state = states.pop();
         states.peek().render(sp);
+        state.render(sp);
+        states.push(state);*/
+
+        states.get(STATE_BACKGROUND).render(sp);
+        states.peek().render(sp);
+
+    }
+
+    public State getBackground(){
+       return states.get(STATE_BACKGROUND);
     }
 
 }

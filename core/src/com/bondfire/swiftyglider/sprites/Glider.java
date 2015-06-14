@@ -17,11 +17,12 @@ public class Glider extends Box {
     private TextureRegion body;
     private TextureRegion explosion;
 
-    private boolean isDead;
-    private float timer; //Time it takes for our glider to fly into the screen
-    private float MAX_TIME = 0.7f;
-//    private float END_X;
+    private boolean isDead = false;
+    private float MAX_TIME = 0.7f; //max time it takes for the glider to slide into screen
+    private float timer;
     private float END_Y;
+    private boolean isEntering = true;
+
 
     public Glider(float x, float y, float width, float height) {
 
@@ -36,19 +37,29 @@ public class Glider extends Box {
     }
 
     /** input method to change drawing of our sprite */
-    public void setSelected(boolean b){
-        isDead = true;
+    public void setColliding(boolean b){
+        isDead = b;
     }
 
     public void update(float dt){
-        if(this.y < END_Y){
-            timer += dt;
-            this.y = timer/ MAX_TIME * END_Y ;
 
-            if(this.y > END_Y) this.y = END_Y;
+        if(isEntering){
+            /** have the computer animate our character */
+
+            if(this.y < END_Y){
+                timer += dt;
+                this.y = timer/ MAX_TIME * END_Y ;
+
+                if(this.y > END_Y) this.y = END_Y;
+            }else{
+                isEntering = false;
+            }
+        }else{
+            /** Calculate our glider movement based on accelerometer */
+            //TODO accelerometer
+
         }
     }
-
 
     public void render(SpriteBatch sb){
         if(isDead){
@@ -58,7 +69,29 @@ public class Glider extends Box {
         }
     }
 
+
+    public void setY(float y){
+        this.y = y;
+    }
+
+    public void setX(float x){
+        this.x = x;
+    }
+
+    public float getY(){
+        return this.y;
+    }
+    public float getX(){
+        return this.x;
+    }
+
+    public float getWidth(){
+        return this.width;
+    }
     public float getHeight(){
         return this.height;
     }
+
+
+
 }

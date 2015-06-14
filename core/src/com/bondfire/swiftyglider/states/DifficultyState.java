@@ -36,7 +36,7 @@ public class DifficultyState extends State{
 
     @Override
     public void update(float dt) {
-        handeInput();
+        handleInput();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DifficultyState extends State{
     }
 
     @Override
-    public void handeInput() {
+    public void handleInput() {
 
         /** get our mouse */
         if(Gdx.input.justTouched()){

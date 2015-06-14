@@ -32,13 +32,12 @@ public abstract  class State {
         cam.setToOrtho(false, SwiftyGlider.WIDTH, SwiftyGlider.HEIGHT);
         mouse = new Vector3();
 
-
     }
 
     /** every game state has to have their own render/update methods */
     public abstract void update(float dt);
     public abstract void render(SpriteBatch sb);
     /** a method for handling input */
-    public abstract void handeInput();
+    public abstract void handleInput();
 
 }

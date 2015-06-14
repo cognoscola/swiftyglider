@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.swiftyglider.handler.Content;
+import com.bondfire.swiftyglider.states.BackgroundState;
 import com.bondfire.swiftyglider.states.GSM;
 import com.bondfire.swiftyglider.states.MenuState;
 
@@ -34,8 +35,13 @@ public class SwiftyGlider extends ApplicationAdapter {
 		sb = new SpriteBatch();
 		gsm = new GSM();
 
+
+		/** push our background */
+		gsm.push(new BackgroundState(gsm));
+
 		/** push the menu state*/
 		gsm.push(new MenuState(gsm));
+
 //		gsm.push(new PlayState(gsm));
 	}
 
