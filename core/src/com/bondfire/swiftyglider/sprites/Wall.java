@@ -40,8 +40,6 @@ public class Wall extends Box {
         this.canvasWidth = canvasWidth;
 
         this.y = SwiftyGlider.HEIGHT;
-        this.END_Y = y - height;
-
         leftWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_left");
         rightWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_right");
 
@@ -51,8 +49,9 @@ public class Wall extends Box {
         leftWallHeight = leftWall.getRegionHeight();
         leftWallWidth = leftWall.getRegionWidth();
 
-    }
+        this.END_Y = - rightWallHeight;
 
+    }
     public void update(float dt){
         if(this.y > END_Y){
             timer += dt;
@@ -63,8 +62,8 @@ public class Wall extends Box {
     }
 
     public void render(SpriteBatch sb){
-        sb.draw(leftWall,  0, y - height / 2, leftWallWidth, leftWallHeight);
-        sb.draw(rightWall, 0, y - height / 2, rightWallWidth, rightWallHeight);
+        sb.draw(leftWall,  leftWallPosition_X, y - leftWallHeight / 2, leftWallWidth, leftWallHeight);
+        sb.draw(rightWall, rightWallPosition_X, y - rightWallHeight / 2, rightWallWidth, rightWallHeight);
     }
 
     public void RecycleWall(float gameWidth, float gapLength){
@@ -74,6 +73,7 @@ public class Wall extends Box {
         timer = 0;
 
         /** decide how rotation should happen randomly */
+
 
         /** determine X position of the gap and the walls */
         this.gapLength = gapLength;

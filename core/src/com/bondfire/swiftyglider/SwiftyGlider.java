@@ -44,7 +44,6 @@ public class SwiftyGlider extends ApplicationAdapter {
 	public void render () {
 		/** CLear the screen */
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
 		gsm.update(Gdx.graphics.getDeltaTime());
 		gsm.render(sb);
 

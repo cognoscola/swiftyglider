@@ -33,7 +33,6 @@ public class Indicator extends Box {
             timer += dt;
             this.y = SwiftyGlider.HEIGHT - timer/ MAX_TIME * SwiftyGlider.HEIGHT;
             if(this.y < END_Y) this.y = END_Y;
-            System.out.print("\ndt:" + timer + " Distance travelled: " +timer/ MAX_TIME * SwiftyGlider.HEIGHT );
         }
     }
 
