@@ -1,5 +1,7 @@
 package com.bondfire.swiftyglider.sprites;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Logger;
@@ -22,6 +24,12 @@ public class Glider extends Box {
     private float timer;
     private float END_Y;
     private boolean isEntering = true;
+
+    private float velocity_X;
+
+    private final static float Kconstant = 0.2f;
+    private final static float Vconstant = 0.5556f;
+
 
 
     public Glider(float x, float y, float width, float height) {
@@ -55,9 +63,17 @@ public class Glider extends Box {
                 isEntering = false;
             }
         }else{
-            /** Calculate our glider movement based on accelerometer */
-            //TODO accelerometer
 
+            /** Calculate our glider movement based on accelerometer */
+            if(SwiftyGlider.appType == Application.ApplicationType.Android
+                    ||SwiftyGlider.appType == Application.ApplicationType.iOS){
+//                this.x = Gdx.input.getAccelerometerX();
+                this.x = this.x ;
+
+
+
+
+            }
         }
     }
 

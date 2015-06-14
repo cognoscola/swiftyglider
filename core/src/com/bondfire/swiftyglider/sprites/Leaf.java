@@ -6,8 +6,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
 
-
-
 public class Leaf extends Box {
 
     private TextureRegion[] leafs = new TextureRegion[3];
@@ -47,6 +45,7 @@ public class Leaf extends Box {
             timer = 0;
             this.y = SwiftyGlider.HEIGHT + height;
             this.x = MathUtils.random(SwiftyGlider.WIDTH);
+            currentLeaf =  leafs[MathUtils.random(2)];
         }
     }
 

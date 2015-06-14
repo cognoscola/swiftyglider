@@ -1,5 +1,6 @@
 package com.bondfire.swiftyglider;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -20,20 +21,30 @@ public class SwiftyGlider extends ApplicationAdapter {
 	/** our assets */
     public static Content res;
 
+	public static Application.ApplicationType appType;
+
 	private SpriteBatch sb;
 	private GSM gsm; //our gsm here
 
 	@Override
 	public void create () {
 
+		/** first check the application type */
+		appType = Gdx.app.getType();
+
+
+
 		/** set the clear color (color that shows when everything on the screen is cleared  */
 		Gdx.gl.glClearColor(0.2f,0.2f,0.2f,1);
+
+
 
 		res = new Content();
 		res.LoadAtlas("swiftyglider.pack", "sprites"); //our path to the file and the key
 		res.LoadFont("open_sans.ttf");
 		sb = new SpriteBatch();
 		gsm = new GSM();
+
 
 
 		/** push our background */
@@ -54,6 +65,8 @@ public class SwiftyGlider extends ApplicationAdapter {
 		gsm.render(sb);
 
 	}
+
+
 
 
 }
