@@ -2,6 +2,8 @@ package com.bondfire.swiftyglider.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.decals.CameraGroupStrategy;
+import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.utils.Array;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.sprites.Glider;
@@ -22,17 +24,15 @@ public class PlayState extends State {
     private Array<Wall> wallQueueWaiting;
     private Array<Wall> wallQueueActive;
 
-
-
     /** Game Logic */
     private static float gapLength = 100f ;
     private static boolean colliding = false;
 
     /** timing logic */
-    static float wallTimer = 1f;  //timer and also the initial start time
+    static float wallTimer = 3f;  //timer and also the initial start time
     static float walllInterval = 3f;
 
-
+    static boolean collidingLatch = false;
 
     public PlayState(GSM gsm){
         super(gsm);
@@ -40,13 +40,23 @@ public class PlayState extends State {
         // W: 480 H: 800
         int tileSize = 50;
 
+        reset();
         /** load our sprites */
-        glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/2,tileSize,tileSize);
+        glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4,tileSize,tileSize);
         line   = new Indicator(SwiftyGlider.WIDTH/2, 0, SwiftyGlider.WIDTH, 50);
         wallQueueWaiting = new Array<Wall>();
         wallQueueActive =  new Array<Wall>();
 
     }
+
+    public void reset(){
+        gapLength = 100f;
+        colliding = false;
+        wallTimer = 3f;
+        walllInterval = 3f;
+        collidingLatch = false;
+    }
+
 
     @Override
     public void handleInput() {
@@ -68,7 +78,6 @@ public class PlayState extends State {
                 /** find out if our object was clicked */
                 glider.setX(mouse.x);
                 glider.setY(mouse.y);
-
 
                /* if(mouse.x >= 0 && mouse.x < SwiftyGlider.WIDTH &&
                         mouse.y >= 0 && mouse.y < SwiftyGlider.HEIGHT){
@@ -112,11 +121,11 @@ public class PlayState extends State {
         /** Before we draw anything, we always, always need to set the camera */
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-        glider.render(sb);
         line.render(sb);
         for(int i = 0; i < wallQueueActive.size; i++){
             wallQueueActive.get(i).render(sb);
         }
+        glider.render(sb);
         sb.end();
     }
 
@@ -164,7 +173,14 @@ public class PlayState extends State {
                 glider.setColliding(colliding);
                 /** We don't want the colliding value to change back to false by
                  * checking another wall it is not colliding with, so terminate the loop*/
-                if(colliding) i = wallQueueActive.size;
+                if(colliding) {
+                    i = wallQueueActive.size;
+
+                    if(colliding && !collidingLatch){
+                        gsm.set(new ScoreState(gsm));
+                        collidingLatch = true;
+                    }
+                }
             }
         }
     }

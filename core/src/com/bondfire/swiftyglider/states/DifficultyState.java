@@ -50,6 +50,7 @@ public class DifficultyState extends State{
         sb.end();
     }
 
+
     @Override
     public void handleInput() {
 

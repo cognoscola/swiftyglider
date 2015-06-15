@@ -32,20 +32,14 @@ public class SwiftyGlider extends ApplicationAdapter {
 		/** first check the application type */
 		appType = Gdx.app.getType();
 
-
-
 		/** set the clear color (color that shows when everything on the screen is cleared  */
 		Gdx.gl.glClearColor(0.2f,0.2f,0.2f,1);
-
-
 
 		res = new Content();
 		res.LoadAtlas("swiftyglider.pack", "sprites"); //our path to the file and the key
 		res.LoadFont("open_sans.ttf");
 		sb = new SpriteBatch();
 		gsm = new GSM();
-
-
 
 		/** push our background */
 		gsm.push(new BackgroundState(gsm));
@@ -63,10 +57,10 @@ public class SwiftyGlider extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		gsm.update(Gdx.graphics.getDeltaTime());
 		gsm.render(sb);
-
 	}
 
-
-
-
+	@Override
+	public void dispose() {
+		super.dispose();
+	}
 }

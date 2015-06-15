@@ -20,7 +20,7 @@ public class Wall extends Box {
     private TextureRegion leftWall;
     private TextureRegion rightWall;
 
-    private float MAX_TIME = 20f;
+    private float MAX_TIME = 5f;
     private float timer;
     private float END_Y;
 
@@ -32,9 +32,7 @@ public class Wall extends Box {
     private float leftWallWidth;
     private float rightWallHeight;
     private float leftWallHeight;
-
     private boolean isDoneLatch;
-
     private float canvasWidth;
 
     public Wall( float canvasWidth, float gapLength) {

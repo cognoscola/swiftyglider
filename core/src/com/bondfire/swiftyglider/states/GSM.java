@@ -39,30 +39,28 @@ public class GSM {
     /** our GSM is only going to be updating the TOP of the stack */
     public void update(float dt){
         /** get the top of the stack */
+       /* states.get(STATE_BACKGROUND).update(dt);
+        states.peek().update(dt);*/
 
-       /* State state = states.pop();
-        states.peek().update(dt);
-        state.update(dt);
-        states.push(state);*/
-
-        states.get(STATE_BACKGROUND).update(dt);
-        states.peek().update(dt);
-
+        for(int i = 0; i < states.size();i++){
+            states.get(i).update(dt);
+        }
     }
     /** our GSM is only going to be rendering the TOP of the stack */
     public void render(SpriteBatch sp){
-     /*   State state = states.pop();
-        states.peek().render(sp);
-        state.render(sp);
-        states.push(state);*/
+   /*     states.get(STATE_BACKGROUND).render(sp);
+        states.peek().render(sp);*/
 
-        states.get(STATE_BACKGROUND).render(sp);
-        states.peek().render(sp);
-
+        for(int i = 0; i < states.size();i++){
+            states.get(i).render(sp);
+        }
     }
 
     public State getBackground(){
        return states.get(STATE_BACKGROUND);
     }
+
+
+
 
 }
