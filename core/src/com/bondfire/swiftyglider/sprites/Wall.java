@@ -15,7 +15,11 @@ import com.bondfire.swiftyglider.ui.Box;
  */
 public class Wall extends Box {
 
-    Logger log = new Logger("Indicator");
+
+    private final static float SCALE_LEFTWALLHEIGHT  = 0.117886f;//used to scale Left wall height
+    private final static float SCALE_RIGHTWALLHEIGHT = 0.109756f;//used to scale right wall height
+    private final static float SCALE_LEFTWALLWIDTH   = 1.8445f;  //used to scale left wall width
+    private final static float SCALE_RIGHTWALLWIDTH  = 1.439024f;//used to scale right wall width
 
     private TextureRegion leftWall;
     private TextureRegion rightWall;
@@ -44,9 +48,11 @@ public class Wall extends Box {
         rightWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_right");
 
         rightWallWidth = SwiftyGlider.WIDTH;
-        rightWallHeight = rightWall.getRegionHeight();
+//        rightWallHeight = rightWall.getRegionHeight();
+        rightWallHeight = SwiftyGlider.HEIGHT*SCALE_LEFTWALLHEIGHT;
 
-        leftWallHeight = leftWall.getRegionHeight();
+        leftWallHeight = SwiftyGlider.HEIGHT*SCALE_RIGHTWALLHEIGHT;
+//        leftWallHeight = leftWall.getRegionHeight();
         leftWallWidth = SwiftyGlider.WIDTH;
 
         this.height = rightWallHeight;

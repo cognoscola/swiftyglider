@@ -2,8 +2,6 @@ package com.bondfire.swiftyglider.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g3d.decals.CameraGroupStrategy;
-import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.utils.Array;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.sprites.Glider;
@@ -16,6 +14,23 @@ public class PlayState extends State {
     /** set the max number of fingers */
     private final int MAX_FINGERS = 0;
 
+    /** save points */
+    public final static int LV_BEGINNING   = 0;
+    public final static int LV_FIRSTWIND   = 73;
+    public final static int LV_GOINGFAST   = 149;
+    public final static int LV_WINDFAST    = 253;
+    public final static int LV_SUPERSLOW   = 275;
+    public final static int LV_WINDSLOW    = 347;
+    public final static int LV_LONGSTRETCH = 399;
+    public final static int LV_EYEOFNEEDLE = 479;
+
+    public final static float SCALE_GAPLENGTH_150   = 0.228659f; //scales gap length 130
+    public final static float SCALE_GAPLENGTH_220   = 0.335366f; //scales gap length 220
+    public final static float SCALE_GAPLENGTH_230   = 0.350619f; //scales gap length 230
+    public final static float SCALE_GAPLENGTH_C_25  = 0.038110f; //scales gap length 25 + glider
+    public final static float SCALE_GAPLENGTH_C_30  = 0.045731f;//scales gap length 30 + glider
+    public final static float SCALE_GAPLENGTH_C_50  = 0.076220f;//scales gap length 50 + glider
+
     private int i;
 
     /** our sprites **/
@@ -25,36 +40,99 @@ public class PlayState extends State {
     private Array<Wall> wallQueueActive;
 
     /** Game Logic */
+    private int level;
     private static float gapLength = 100f ;
     private static boolean colliding = false;
 
     /** timing logic */
-    static float wallTimer = 3f;  //timer and also the initial start time
-    static float walllInterval = 3f;
+    static float wallTimer = 3f;      //timer and also the initial start time
+    static float wallFrequency = 3f;  //frequency of wall appearance
+    static float indicatorTimer = 3f; //timer for indicator
+    static float indicatorFrequency = 4f;
 
     static boolean collidingLatch = false;
 
-    public PlayState(GSM gsm){
+    private int lastSavePoint;
+
+    public PlayState(GSM gsm, int level){
         super(gsm);
 
-        // W: 480 H: 800
-        int tileSize = 50;
-
         reset();
+        setLevel(level);
+
         /** load our sprites */
-        glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4,tileSize,tileSize);
+        glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4);
         line   = new Indicator(SwiftyGlider.WIDTH/2, 0, SwiftyGlider.WIDTH, 50);
         wallQueueWaiting = new Array<Wall>();
         wallQueueActive =  new Array<Wall>();
-
     }
 
     public void reset(){
         gapLength = 100f;
         colliding = false;
         wallTimer = 3f;
-        walllInterval = 3f;
+        wallFrequency = 3f;
         collidingLatch = false;
+    }
+
+    public void setLevel(int level){
+        lastSavePoint = level;
+
+        switch(level){
+            case LV_BEGINNING:
+//                scoreText = String.valueOf(level);
+//                oldwind = 0;
+//                wind = 0;
+                gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
+                break;
+
+            case LV_FIRSTWIND:
+//                scoreText = String.valueOf(level);
+//                oldwind = 0;
+//                wind = 0;
+                gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+                break;
+            case LV_GOINGFAST:
+
+//                oldwind = 0;
+//                wind = 0;
+                gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+                break;
+
+            case LV_WINDFAST:
+
+//                oldwind = 0;
+//                wind = 0;
+                gapLength =   SwiftyGlider.WIDTH*SCALE_GAPLENGTH_230;
+                break;
+            case LV_SUPERSLOW:
+
+//                oldwind = 0;
+//                wind = 0;
+                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER + SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_25;
+                break;
+            case LV_WINDSLOW:
+//                oldwind = 0;
+//                wind = 0;
+                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_30;
+                break;
+            case LV_LONGSTRETCH:
+//                levelSpeed = 1;
+//                oldwind = 0;
+//                wind = 0;
+                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_30;
+//                wallInterval = WALL_RATE_DEFAULT - 1100;
+                break;
+
+            case LV_EYEOFNEEDLE:
+//                levelSpeed = 11;
+//                oldwind = 0;
+//                wind = 0;
+                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
+//                wallInterval = WALL_RATE_DEFAULT - 1300;
+                break;
+        }
+
     }
 
 
@@ -143,7 +221,7 @@ public class PlayState extends State {
        }
 
         /** Check if it is time to put a new wall on the screen */
-        if(wallTimer >= walllInterval) {
+        if(wallTimer >= wallFrequency) {
 
             /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
              * is empty just make a new wall.*/
@@ -177,7 +255,7 @@ public class PlayState extends State {
                     i = wallQueueActive.size;
 
                     if(colliding && !collidingLatch){
-                        gsm.set(new ScoreState(gsm));
+                        gsm.set(new ScoreState(gsm,lastSavePoint));
                         collidingLatch = true;
                     }
                 }

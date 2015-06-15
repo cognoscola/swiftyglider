@@ -19,11 +19,12 @@ public class Glider extends Box {
 
     private final static String Tag = "Glider";
 
+    public final static float SCALE_GLIDER = 0.14634f;
+
     private TextureRegion body;
-    private TextureRegion body2;
-    private TextureRegion body3;
     private TextureRegion explosion;
-    private Decal spriteBody;
+    private TextureRegion tail_left;
+    private TextureRegion tail_right;
 
     private boolean isDead = false;
     private float MAX_TIME = 0.7f; //max time it takes for the glider to slide into screen
@@ -50,7 +51,7 @@ public class Glider extends Box {
 
     static boolean death_latch = false;
 
-    public Glider(float x, float y, float width, float height) {
+    public Glider(float x, float y) {
 
         System.out.println("New Glider");
 
@@ -58,16 +59,13 @@ public class Glider extends Box {
 
         this.x = x;
         this.END_Y = y;
-        this.width = width;
-        this.height = height;
+        this.width = SCALE_GLIDER * SwiftyGlider.WIDTH;
+        this.height = SCALE_GLIDER * SwiftyGlider.WIDTH;
 
         body = SwiftyGlider.res.getAtlas("sprites").findRegion("glider");
-        body2 = SwiftyGlider.res.getAtlas("sprites").findRegion("glider2");
-        body3 = SwiftyGlider.res.getAtlas("sprites").findRegion("glider3");
         explosion = SwiftyGlider.res.getAtlas("sprites").findRegion("explosion");
-
-        spriteBody =  new Decal();
-        spriteBody.setTextureRegion(body);
+        tail_left = SwiftyGlider.res.getAtlas("sprites").findRegion("tail_left");
+        tail_right = SwiftyGlider.res.getAtlas("sprites").findRegion("tail_right");
 
         filter = new LinkedList<Float>();
 
@@ -158,6 +156,7 @@ public class Glider extends Box {
                 sb.draw(explosion, x - width / 2, y - height / 2, width, height);
             }else{
                 sb.draw(body, x - width / 2, y - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
+                sb.draw(tail_left, x - width / 2, y - height - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
             }
         }
     }

@@ -15,8 +15,10 @@ public class ScoreState extends State {
     private Graphic start;
     private TextureRegion scoreRegion;
 
+    private int lastSavePoint;
 
-    public ScoreState(GSM gsm) {
+
+    public ScoreState(GSM gsm, int lastSavePoint) {
         super(gsm);
 
         instruction = new Graphic(
@@ -60,7 +62,7 @@ public class ScoreState extends State {
             cam.unproject(mouse);
 
             if (start.contains(mouse.x, mouse.y)) {
-                gsm.set(new PlayState(gsm));
+                gsm.set(new PlayState(gsm,lastSavePoint));
             }
         }
     }

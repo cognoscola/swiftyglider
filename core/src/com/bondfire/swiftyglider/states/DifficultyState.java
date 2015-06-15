@@ -11,15 +11,24 @@ import com.bondfire.swiftyglider.ui.WhiteButtons;
 
 public class DifficultyState extends State{
 
+
     private Array<WhiteButtons> buttons;
     private BitmapFont bitmapFont;
 
     public DifficultyState(GSM gsm){
         super(gsm);
 
-        String[] texts  = {"Very Beginning", "difficulty 2", "Difficulty 3","Difficulty 3","Difficulty 3","Difficulty 3"};
-        buttons = new Array<WhiteButtons>();
+        String[] texts  = {
+                "Very Beginning",
+                "First Wind",
+                "Feeling Courageous",
+                "Soaring Winds",
+                "Thick Brushes",
+                "Tricky Wind",
+                "The Long Stretch",
+                "Threading the Needle"};
 
+        buttons = new Array<WhiteButtons>();
         bitmapFont = SwiftyGlider.res.GeneratorFont();
 
         for(int i = 0; i <texts.length ; i++){
@@ -50,7 +59,6 @@ public class DifficultyState extends State{
         sb.end();
     }
 
-
     @Override
     public void handleInput() {
 
@@ -64,9 +72,24 @@ public class DifficultyState extends State{
                 if(buttons.get(i).contains(mouse.x, mouse.y)){
 
 //                    System.out.println("Clicked: " + i);
-                    gsm.set(new PlayState(gsm));
+                    gsm.set(new PlayState(gsm, getLevel(i)));
                 }
             }
+        }
+    }
+
+    public int getLevel(int i){
+
+        switch(i){
+            case 0: return PlayState.LV_BEGINNING;
+            case 1: return PlayState.LV_FIRSTWIND;
+            case 2: return PlayState.LV_GOINGFAST;
+            case 3: return PlayState.LV_WINDFAST;
+            case 4: return PlayState.LV_SUPERSLOW;
+            case 5: return PlayState.LV_WINDSLOW;
+            case 6: return PlayState.LV_LONGSTRETCH;
+            case 7: return PlayState.LV_EYEOFNEEDLE;
+            default: return PlayState.LV_BEGINNING;
         }
     }
 }
