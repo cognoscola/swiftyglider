@@ -16,6 +16,8 @@ public class Content {
     FreeTypeFontGenerator textGenerator;
     FreeTypeFontGenerator.FreeTypeFontParameter parameter;
 
+    String fontPath;
+
     public Content(){
         atlases = new HashMap<String, TextureAtlas>();
     }
@@ -30,11 +32,13 @@ public class Content {
     }
 
     public void LoadFont(String path){
-        this.textGenerator = new FreeTypeFontGenerator((Gdx.files.internal(path)));
-        this.parameter =     new FreeTypeFontGenerator.FreeTypeFontParameter();
+        this.fontPath = path;
     }
 
     public BitmapFont GeneratorFont(){
+
+        this.textGenerator = new FreeTypeFontGenerator((Gdx.files.internal(fontPath)));
+        this.parameter =     new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 25;
         BitmapFont ret = textGenerator.generateFont(parameter);
         textGenerator.dispose();

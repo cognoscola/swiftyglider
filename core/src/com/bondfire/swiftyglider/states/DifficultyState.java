@@ -28,6 +28,7 @@ public class DifficultyState extends State{
                 "The Long Stretch",
                 "Threading the Needle"};
 
+
         buttons = new Array<WhiteButtons>();
         bitmapFont = SwiftyGlider.res.GeneratorFont();
 

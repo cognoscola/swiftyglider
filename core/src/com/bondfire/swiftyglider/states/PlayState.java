@@ -1,12 +1,14 @@
 package com.bondfire.swiftyglider.states;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.sprites.Glider;
 import com.bondfire.swiftyglider.sprites.Indicator;
 import com.bondfire.swiftyglider.sprites.Wall;
+import com.bondfire.swiftyglider.ui.WhiteButtons;
 
 /** our play state. */
 public class PlayState extends State {
@@ -39,19 +41,32 @@ public class PlayState extends State {
     private Array<Wall> wallQueueWaiting;
     private Array<Wall> wallQueueActive;
 
+    /** text ***/
+    private WhiteButtons scoreText;
+    private BitmapFont bitmapFont;
+
+
     /** Game Logic */
     private int level;
+    static int milliYears         = 0;
+    static boolean isRateChanging = false;
+    static boolean isSpedChanging = false;
+    static boolean isGoingUp      = true;
+    static int levelSpeed         = 1;
+    private final static float WALL_RATE_DEFAULT = 2.5f;
+    private final static float LEVEL_AMPLIFICATION = 0.001f;
+
+
     private static float gapLength = 100f ;
     private static boolean colliding = false;
 
     /** timing logic */
     static float wallTimer = 3f;      //timer and also the initial start time
     static float wallFrequency = 3f;  //frequency of wall appearance
-    static float indicatorTimer = 3f; //timer for indicator
-    static float indicatorFrequency = 4f;
+    static float indicatorTimer = 2f; //timer for indicator
+    static float indicatorFrequency = 2f;
 
     static boolean collidingLatch = false;
-
     private int lastSavePoint;
 
     public PlayState(GSM gsm, int level){
@@ -65,6 +80,10 @@ public class PlayState extends State {
         line   = new Indicator(SwiftyGlider.WIDTH/2, 0, SwiftyGlider.WIDTH, 50);
         wallQueueWaiting = new Array<Wall>();
         wallQueueActive =  new Array<Wall>();
+
+        /**prepare out text*/
+        bitmapFont = SwiftyGlider.res.GeneratorFont();
+
     }
 
     public void reset(){
@@ -77,6 +96,7 @@ public class PlayState extends State {
 
     public void setLevel(int level){
         lastSavePoint = level;
+        this.level = level;
 
         switch(level){
             case LV_BEGINNING:
@@ -132,7 +152,6 @@ public class PlayState extends State {
 //                wallInterval = WALL_RATE_DEFAULT - 1300;
                 break;
         }
-
     }
 
 
@@ -176,10 +195,12 @@ public class PlayState extends State {
     public void update(float dt) {
 
         wallTimer +=dt;
+        indicatorTimer +=dt;
 
         /** Update this state*/
         checkWallRate();
 
+        checkIndicatorRate();
         /** checkCollision */
         checkCollision();
 
@@ -204,7 +225,35 @@ public class PlayState extends State {
             wallQueueActive.get(i).render(sb);
         }
         glider.render(sb);
+
+        /** render our score */
+        if(scoreText != null)
+        scoreText.render(sb);
+
         sb.end();
+    }
+
+    private void checkIndicatorRate(){
+
+        if(indicatorTimer  >= indicatorFrequency -0.95f ){
+            line.reset();
+        }
+
+        if(indicatorTimer >= indicatorFrequency){
+            indicatorTimer = 0f;
+            updateScore(level++);
+        }
+    }
+
+    private void updateScore(int level){
+
+        scoreText = new WhiteButtons(
+                bitmapFont,
+                "" + level,
+                SwiftyGlider.WIDTH * 5/6,
+                SwiftyGlider.HEIGHT /8
+        );
+
     }
 
     private void checkWallRate(){
@@ -230,12 +279,73 @@ public class PlayState extends State {
                 wall = wallQueueWaiting.pop();
             else{
                 wall = new Wall(SwiftyGlider.WIDTH, gapLength);
-//                System.out.println("New wall");
             }
 
             wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
             wallQueueActive.add(wall);
             wallTimer = 0;
+
+            /** Update Wall frequency ()*/
+
+            updateWallFrequency();
+        }
+    }
+
+    private void updateWallFrequency(){
+        if (level > 399) {
+
+            /** At this point, switch back and forth between slow and fast with predictability */
+            /** start going slowly */
+            if(isRateChanging){
+                switch (levelSpeed){
+                    case 1:  wallFrequency = WALL_RATE_DEFAULT + 2000; break;
+                    case 2:  wallFrequency = WALL_RATE_DEFAULT + 1000; break;
+                    case 3:  wallFrequency = WALL_RATE_DEFAULT ; break;
+                    case 4:  wallFrequency = WALL_RATE_DEFAULT - 500; break;
+                    case 5:  wallFrequency = WALL_RATE_DEFAULT - 600; break;
+                    case 6:  wallFrequency = WALL_RATE_DEFAULT - 700; break;
+                    case 7:  wallFrequency = WALL_RATE_DEFAULT - 800; break;
+                    case 8:  wallFrequency = WALL_RATE_DEFAULT - 900; break;
+                    case 9:  wallFrequency = WALL_RATE_DEFAULT - 1000; break;
+                    case 10: wallFrequency = WALL_RATE_DEFAULT - 1100; break;
+                    case 11: wallFrequency = WALL_RATE_DEFAULT - 1200; break;
+                    case 12: wallFrequency = WALL_RATE_DEFAULT - 1300; break;
+                    case 13: wallFrequency = WALL_RATE_DEFAULT - 1400; break;
+                    case 14: wallFrequency = WALL_RATE_DEFAULT - 1500; break;
+                    case 15: wallFrequency = WALL_RATE_DEFAULT - 1600; break;
+                }
+                isRateChanging = false;
+            }
+            /** but eventually make it Too difficult */
+
+        } else {
+
+            if(level > 394){
+                return;
+            } else if (level > 349) {
+                wallFrequency = WALL_RATE_DEFAULT - 2750 + 5600 + -level;
+            } else if (level > 347) {
+                return;
+            } else if (level > 274) {
+                wallFrequency = WALL_RATE_DEFAULT - 2750 + 5000 - level;
+            } else if (level > 273) {
+                return;
+            } else if (level > 254) {
+                wallFrequency = WALL_RATE_DEFAULT - level * 10 + 1500;
+            } else if (level > 253) {
+                return;
+            } else if (level > 149) {
+                wallFrequency = WALL_RATE_DEFAULT - level * 10 + 800;
+            }
+
+            /** we are approaching 150, prevent walls from arriving*/
+            else if (level > 147) {
+                return;
+            } else if (level >= 72/* && level< 150*/) {
+                wallFrequency = WALL_RATE_DEFAULT - level * 10 + 1000;
+            } else if (level < 72) {
+                wallFrequency = WALL_RATE_DEFAULT - level*LEVEL_AMPLIFICATION;
+            }
         }
     }
 
@@ -247,7 +357,7 @@ public class PlayState extends State {
 
             if (wall != null) {
                 /** Are we colliding with the left side? */
-                colliding = wall.colliding(glider.getX(), glider.getY(), glider.getWidth(), glider.getHeight());
+//                colliding = wall.colliding(glider.getX(), glider.getY(), glider.getWidth(), glider.getHeight());
                 glider.setColliding(colliding);
                 /** We don't want the colliding value to change back to false by
                  * checking another wall it is not colliding with, so terminate the loop*/
@@ -255,7 +365,7 @@ public class PlayState extends State {
                     i = wallQueueActive.size;
 
                     if(colliding && !collidingLatch){
-                        gsm.set(new ScoreState(gsm,lastSavePoint));
+                        gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
                         collidingLatch = true;
                     }
                 }

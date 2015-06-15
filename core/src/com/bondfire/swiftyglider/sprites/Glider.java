@@ -51,10 +51,14 @@ public class Glider extends Box {
 
     static boolean death_latch = false;
 
+    /** tail flapping */
+    static boolean tailFlapping        = true;
+    static float   tailFlappingCounter = 0;
+    static float   tailFlappingRate    = 0.1f;
+
     public Glider(float x, float y) {
 
         System.out.println("New Glider");
-
         reset();
 
         this.x = x;
@@ -105,6 +109,7 @@ public class Glider extends Box {
                 this.y = timer/ MAX_TIME * END_Y ;
 
                 if(this.y > END_Y) this.y = END_Y;
+
             }else{
                 isEntering = false;
             }
@@ -145,8 +150,19 @@ public class Glider extends Box {
                     }
 
                     this.y = (SwiftyGlider.HEIGHT / 2 - (filterAverage / FILTER_LENGTH) * 30);
+
+                    tailFlappingRate = 0.1f + 0.01f*Gdx.input.getAccelerometerY();
                 }
             }
+        }
+
+//        System.out.println("Tail:  " + tailFlappingCounter);
+
+        tailFlappingCounter +=dt;
+        if(tailFlappingCounter > tailFlappingRate){
+            tailFlapping = !tailFlapping;
+            tailFlappingCounter = 0;
+            System.out.println("Tail:  " + tailFlappingRate);
         }
     }
 
@@ -156,7 +172,7 @@ public class Glider extends Box {
                 sb.draw(explosion, x - width / 2, y - height / 2, width, height);
             }else{
                 sb.draw(body, x - width / 2, y - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
-                sb.draw(tail_left, x - width / 2, y - height - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
+                sb.draw(tailFlapping ? tail_left:tail_right, x - width / 2, y - height - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
             }
         }
     }

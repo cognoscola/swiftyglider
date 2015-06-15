@@ -17,6 +17,8 @@ public class Indicator extends Box {
     private float MAX_TIME = 1f;
     private float END_Y;
 
+    private boolean cannotReset = false;
+
     public Indicator(float x, float y, float width, float height) {
 
         this.x = x;
@@ -32,7 +34,10 @@ public class Indicator extends Box {
         if(this.y > END_Y){
             timer += dt;
             this.y = SwiftyGlider.HEIGHT - timer/ MAX_TIME * SwiftyGlider.HEIGHT;
-            if(this.y < END_Y) this.y = END_Y;
+            if(this.y < END_Y) {
+                cannotReset = false;
+                this.y = END_Y;
+            }
         }
     }
 
@@ -41,7 +46,12 @@ public class Indicator extends Box {
     }
 
     public void reset(){
-        this.y = SwiftyGlider.HEIGHT;
-        timer = 0;
+
+        if(!cannotReset){
+            cannotReset = true;
+            this.y = SwiftyGlider.HEIGHT;
+            timer = 0;
+        }
+
     }
 }
