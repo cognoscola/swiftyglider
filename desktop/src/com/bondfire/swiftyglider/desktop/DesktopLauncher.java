@@ -9,7 +9,6 @@ public class DesktopLauncher {
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 
-
 		/** set the screen size */
 		config.width = SwiftyGlider.WIDTH;
 		config.height = SwiftyGlider.HEIGHT;
