@@ -33,21 +33,20 @@ public class Glider extends Box {
     private float deathTimer= 0;
     private final static float TIME_DEATH = 1.5f; // amount of time to show the death texture
 
-    private float END_Y;
-    private boolean isEntering = true;
+//    private boolean isEntering = true;
 
     private float velocity_X;
 
     private final static float Kconstant = 0.2f;
     private final static float Vconstant = 0.5556f;
 
-    private final static float amplitude = 50; //measure the strength of our accelerometer signal
+    private final static float amplitude = 55; //measure the strength of our accelerometer signal
 
     /** Y movement smoothing filter */
-    static LinkedList<Float> filter;
+    private LinkedList<Float> filter;
     static float filterAverage = 0;
     static int filterIndex = 0;
-    final static int FILTER_LENGTH = 10;
+    final static int FILTER_LENGTH = 20;
 
     static boolean death_latch = false;
 
@@ -62,7 +61,9 @@ public class Glider extends Box {
         reset();
 
         this.x = x;
-        this.END_Y = y;
+
+
+
         this.width = SCALE_GLIDER * SwiftyGlider.WIDTH;
         this.height = SCALE_GLIDER * SwiftyGlider.WIDTH;
 
@@ -74,8 +75,9 @@ public class Glider extends Box {
         filter = new LinkedList<Float>();
 
         for(int i= 0; i < FILTER_LENGTH; i++){
-            filter.add(i,0f);
+            filter.add(i,(0f));
         }
+        this.y = (SwiftyGlider.HEIGHT / 2 -  getYAverage() * 30);
     }
 
     private void reset(){
@@ -100,21 +102,6 @@ public class Glider extends Box {
         if(death_latch){
             deathTimer +=dt;
         }
-
-        if(isEntering){
-            /** have the computer animate our character */
-
-            if(this.y < END_Y){
-                timer += dt;
-                this.y = timer/ MAX_TIME * END_Y ;
-
-                if(this.y > END_Y) this.y = END_Y;
-
-            }else{
-                isEntering = false;
-            }
-        }else{
-
             /** Calculate our glider movement based on accelerometer */
             if(!death_latch) {
 
@@ -135,35 +122,36 @@ public class Glider extends Box {
                         velocity_X = 0;
                     }
 
-                    /** Calculate Y movement */
 
-                    filterAverage = 0;
-
-                    for (filterIndex = FILTER_LENGTH - 1; filterIndex > -1; filterIndex--) {
-
-                        filterAverage = filterAverage + filter.get(filterIndex);
-                        if (filterIndex == 0) {
-                            filter.set(filterIndex, Gdx.input.getAccelerometerY());
-                        } else {
-                            filter.set(filterIndex, filter.get(filterIndex - 1));
-                        }
-                    }
-
-                    this.y = (SwiftyGlider.HEIGHT / 2 - (filterAverage / FILTER_LENGTH) * 30);
+                    this.y = (SwiftyGlider.HEIGHT / 2 -  getYAverage() * 30);
 
                     tailFlappingRate = 0.1f + 0.01f*Gdx.input.getAccelerometerY();
                 }
             }
-        }
-
-//        System.out.println("Tail:  " + tailFlappingCounter);
+//        }
 
         tailFlappingCounter +=dt;
         if(tailFlappingCounter > tailFlappingRate){
             tailFlapping = !tailFlapping;
             tailFlappingCounter = 0;
-            System.out.println("Tail:  " + tailFlappingRate);
         }
+    }
+
+    public float getYAverage(){
+        /** Calculate Y movement */
+        filterAverage = 0;
+
+        for (filterIndex = FILTER_LENGTH - 1; filterIndex > -1; filterIndex--) {
+
+            filterAverage = filterAverage + filter.get(filterIndex);
+            if (filterIndex == 0) {
+                filter.set(filterIndex, Gdx.input.getAccelerometerY());
+            } else {
+                filter.set(filterIndex, filter.get(filterIndex - 1));
+            }
+        }
+        return filterAverage / FILTER_LENGTH;
+
     }
 
     public void render(SpriteBatch sb){

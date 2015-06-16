@@ -1,5 +1,6 @@
 package com.bondfire.swiftyglider.states;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -53,9 +54,8 @@ public class PlayState extends State {
     static boolean isSpedChanging = false;
     static boolean isGoingUp      = true;
     static int levelSpeed         = 1;
-    private final static float WALL_RATE_DEFAULT = 2.5f;
-    private final static float LEVEL_AMPLIFICATION = 0.001f;
-
+    private final static float WALL_RATE_DEFAULT = 2.0f;
+    private final static float LEVEL_AMPLIFICATION = 0.01f;
 
     private static float gapLength = 100f ;
     private static boolean colliding = false;
@@ -64,10 +64,13 @@ public class PlayState extends State {
     static float wallTimer = 3f;      //timer and also the initial start time
     static float wallFrequency = 3f;  //frequency of wall appearance
     static float indicatorTimer = 2f; //timer for indicator
-    static float indicatorFrequency = 2f;
+    static float indicatorFrequency = 2f; //how frequently we should display the white line
+    static float deathTimer = 0f; //keeps track of time passed since death;
+    private static final float DEATH_TIME = 1f; //amount of time to pass before showing score screen
 
     static boolean collidingLatch = false;
     private int lastSavePoint;
+
 
     public PlayState(GSM gsm, int level){
         super(gsm);
@@ -90,6 +93,7 @@ public class PlayState extends State {
         gapLength = 100f;
         colliding = false;
         wallTimer = 3f;
+        deathTimer = 0f;
         wallFrequency = 3f;
         collidingLatch = false;
     }
@@ -197,6 +201,8 @@ public class PlayState extends State {
         wallTimer +=dt;
         indicatorTimer +=dt;
 
+        checkDeath(dt);
+
         /** Update this state*/
         checkWallRate();
 
@@ -235,7 +241,7 @@ public class PlayState extends State {
 
     private void checkIndicatorRate(){
 
-        if(indicatorTimer  >= indicatorFrequency -0.95f ){
+        if(indicatorTimer  >= indicatorFrequency -0.95f && !collidingLatch){
             line.reset();
         }
 
@@ -254,6 +260,17 @@ public class PlayState extends State {
                 SwiftyGlider.HEIGHT /8
         );
 
+    }
+
+    private void checkDeath(float dt){
+        if(collidingLatch){
+
+            deathTimer += dt;
+            if(deathTimer > DEATH_TIME){
+
+                gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
+            }
+        }
     }
 
     private void checkWallRate(){
@@ -281,8 +298,11 @@ public class PlayState extends State {
                 wall = new Wall(SwiftyGlider.WIDTH, gapLength);
             }
 
-            wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
-            wallQueueActive.add(wall);
+            if(!collidingLatch) {
+                wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
+                wallQueueActive.add(wall);
+            }
+
             wallTimer = 0;
 
             /** Update Wall frequency ()*/
@@ -357,7 +377,7 @@ public class PlayState extends State {
 
             if (wall != null) {
                 /** Are we colliding with the left side? */
-//                colliding = wall.colliding(glider.getX(), glider.getY(), glider.getWidth(), glider.getHeight());
+                colliding = wall.colliding(glider.getX(), glider.getY(), glider.getWidth(), glider.getHeight());
                 glider.setColliding(colliding);
                 /** We don't want the colliding value to change back to false by
                  * checking another wall it is not colliding with, so terminate the loop*/
@@ -365,7 +385,10 @@ public class PlayState extends State {
                     i = wallQueueActive.size;
 
                     if(colliding && !collidingLatch){
-                        gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
+
+                        if (SwiftyGlider.appType == Application.ApplicationType.Android){
+                            Gdx.input.vibrate(200);
+                        }
                         collidingLatch = true;
                     }
                 }
