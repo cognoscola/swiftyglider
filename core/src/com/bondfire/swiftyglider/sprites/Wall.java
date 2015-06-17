@@ -21,6 +21,9 @@ public class Wall extends Box {
     private final static float SCALE_LEFTWALLWIDTH   = 1.8445f;  //used to scale left wall width
     private final static float SCALE_RIGHTWALLWIDTH  = 1.439024f;//used to scale right wall width
 
+
+
+
     private TextureRegion leftWall;
     private TextureRegion rightWall;
 
@@ -38,6 +41,7 @@ public class Wall extends Box {
     private float leftWallHeight;
     private boolean isDoneLatch;
     private float canvasWidth;
+
 
     public Wall( float canvasWidth, float gapLength) {
         this.gapLength = gapLength;

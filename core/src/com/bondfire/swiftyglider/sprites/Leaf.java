@@ -15,6 +15,8 @@ public class Leaf extends Box {
     private float timer;
     private float END_Y;
 
+    private float wind;
+
     public Leaf() {
 
         /** assign a random location */
@@ -37,6 +39,8 @@ public class Leaf extends Box {
 
     public void update(float dt){
 
+
+        /*** update the Y movement*/
         if(this.y > END_Y){
             timer += dt;
             this.y = SwiftyGlider.HEIGHT - timer/ MAX_TIME * SwiftyGlider.HEIGHT;
@@ -47,9 +51,20 @@ public class Leaf extends Box {
             this.x = MathUtils.random(SwiftyGlider.WIDTH);
             currentLeaf =  leafs[MathUtils.random(2)];
         }
+
+        /** update the X movement */
+
+        this.x += wind * dt * 10;
+        if(this.x < (0 - currentLeaf.getRegionWidth())) this.x = SwiftyGlider.WIDTH;
+        else if (this.x > SwiftyGlider.WIDTH + currentLeaf.getRegionWidth()) this.x = 0 - currentLeaf.getRegionWidth();
+
     }
 
     public void render(SpriteBatch sb){
         sb.draw(currentLeaf,  x - width/2 , y - height/ 2, width, height);
+    }
+
+    public void setWind(int wind){
+        this.wind = (float)wind;
     }
 }

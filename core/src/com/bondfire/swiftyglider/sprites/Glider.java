@@ -46,7 +46,7 @@ public class Glider extends Box {
     private LinkedList<Float> filter;
     static float filterAverage = 0;
     static int filterIndex = 0;
-    final static int FILTER_LENGTH = 20;
+    final static int FILTER_LENGTH = 10;
 
     static boolean death_latch = false;
 
@@ -55,14 +55,14 @@ public class Glider extends Box {
     static float   tailFlappingCounter = 0;
     static float   tailFlappingRate    = 0.1f;
 
+    private float wind;
+
     public Glider(float x, float y) {
 
         System.out.println("New Glider");
         reset();
 
         this.x = x;
-
-
 
         this.width = SCALE_GLIDER * SwiftyGlider.WIDTH;
         this.height = SCALE_GLIDER * SwiftyGlider.WIDTH;
@@ -109,7 +109,7 @@ public class Glider extends Box {
                         || SwiftyGlider.appType == Application.ApplicationType.iOS) {
 
                     /** Calculate X movement */
-                    this.velocity_X = this.velocity_X * Vconstant + Gdx.input.getAccelerometerX() * amplitude * Kconstant + amplitude * Gdx.input.getAccelerometerX();
+                    this.velocity_X = this.velocity_X * Vconstant + Gdx.input.getAccelerometerX() * amplitude * Kconstant + amplitude * Gdx.input.getAccelerometerX() + wind*amplitude;
                     this.x = this.x - velocity_X * dt;
 
                     /** if the horizontal position reaches the right edge,  */
@@ -151,7 +151,6 @@ public class Glider extends Box {
             }
         }
         return filterAverage / FILTER_LENGTH;
-
     }
 
     public void render(SpriteBatch sb){
@@ -164,6 +163,13 @@ public class Glider extends Box {
             }
         }
     }
+
+    public void setWind(int wind){
+
+        System.out.println("Wind:" + wind);
+        this.wind =(float)wind;
+    }
+
 
     public void setY(float y){
         this.y = y;

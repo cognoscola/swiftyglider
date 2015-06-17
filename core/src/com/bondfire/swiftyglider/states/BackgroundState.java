@@ -41,4 +41,10 @@ public class BackgroundState extends State  {
 
     }
 
+    public void setWind(int wind){
+        for(int i = 0; i < numofLeafs; i++){
+            leafs[i].setWind(wind);
+        }
+    }
+
 }

@@ -57,7 +57,6 @@ public class ScoreState extends State {
         );
 
 
-
 //        scoreRegion = SwiftyGlider.res.getAtlas("sprites").findRegion("button");
 
     }
@@ -78,13 +77,10 @@ public class ScoreState extends State {
         hiScoreText.render(sb);
 
 
-
      /*   sb.draw(scoreRegion,
                 SwiftyGlider.WIDTH /2 - 300/2,
                 SwiftyGlider.HEIGHT /4 - 300/2,
                 300,300);*/
-
-
 
 
         sb.end();
@@ -100,7 +96,8 @@ public class ScoreState extends State {
             cam.unproject(mouse);
 
             if (start.contains(mouse.x, mouse.y)) {
-                gsm.set(new PlayState(gsm,lastSavePoint));
+//                gsm.set(new PlayState(gsm,lastSavePoint));
+                gsm.set(new PlayState(gsm,73));
             }
         }
     }

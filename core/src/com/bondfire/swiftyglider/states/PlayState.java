@@ -4,6 +4,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.sprites.Glider;
@@ -34,6 +35,10 @@ public class PlayState extends State {
     public final static float SCALE_GAPLENGTH_C_30  = 0.045731f;//scales gap length 30 + glider
     public final static float SCALE_GAPLENGTH_C_50  = 0.076220f;//scales gap length 50 + glider
 
+    private final static float SCALE_WIND_OFFESET_10 = 0.010163f;
+    private final static float SCALE_WIND_OFFESET_50 = 0.050813f;
+    private final static float SCALE_WIND_OFFESET_65 = 0.066057f;
+
     private int i;
 
     /** our sprites **/
@@ -46,16 +51,16 @@ public class PlayState extends State {
     private WhiteButtons scoreText;
     private BitmapFont bitmapFont;
 
-
     /** Game Logic */
     private int level;
-    static int milliYears         = 0;
+    private int lastSavePoint;
     static boolean isRateChanging = false;
     static boolean isSpedChanging = false;
     static boolean isGoingUp      = true;
     static int levelSpeed         = 1;
     private final static float WALL_RATE_DEFAULT = 2.0f;
     private final static float LEVEL_AMPLIFICATION = 0.01f;
+    private boolean isOnSaveLevels = false;
 
     private static float gapLength = 100f ;
     private static boolean colliding = false;
@@ -68,8 +73,20 @@ public class PlayState extends State {
     static float deathTimer = 0f; //keeps track of time passed since death;
     private static final float DEATH_TIME = 1f; //amount of time to pass before showing score screen
 
+
+    /** wind logic */
+    private float windHeightOffset          = 0f;//determines the amount of leeway room for the amount of wind to change
+    private float windSafetyTimer           = 0f;
+    private boolean windDistanceSafetyLatch = false;
+    private float WIND_MAX_TIMER            = 2f;
+    static boolean isWindChangeable         = false;        //keep track of wind changing while mid way through a log
+    static int WIND_CHANCE                  = 2;            //Likely hood out of 100 that the wind will change
+    static int windRoll                     = 0;                 //Variable that keeps track of time to switch
+    static int windCounter                  = 0;             //keeps track of the amount of time
+    static final int MIN_WIND_TIME          = 400;    //minimum amount of time before the wind can change
+    static boolean isWindLongEnough         = false; //used to tell if we haven't changed wind for a while
+
     static boolean collidingLatch = false;
-    private int lastSavePoint;
 
 
     public PlayState(GSM gsm, int level){
@@ -86,7 +103,6 @@ public class PlayState extends State {
 
         /**prepare out text*/
         bitmapFont = SwiftyGlider.res.GeneratorFont();
-
     }
 
     public void reset(){
@@ -102,62 +118,43 @@ public class PlayState extends State {
         lastSavePoint = level;
         this.level = level;
 
+        /** Update the environment when we start the game or reach a save point*/
         switch(level){
             case LV_BEGINNING:
-//                scoreText = String.valueOf(level);
-//                oldwind = 0;
-//                wind = 0;
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
                 gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
                 break;
 
             case LV_FIRSTWIND:
-//                scoreText = String.valueOf(level);
-//                oldwind = 0;
-//                wind = 0;
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
                 gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
                 break;
-            case LV_GOINGFAST:
 
-//                oldwind = 0;
-//                wind = 0;
+            case LV_GOINGFAST:
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
                 gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
                 break;
 
             case LV_WINDFAST:
-
-//                oldwind = 0;
-//                wind = 0;
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_65;
                 gapLength =   SwiftyGlider.WIDTH*SCALE_GAPLENGTH_230;
                 break;
             case LV_SUPERSLOW:
-
-//                oldwind = 0;
-//                wind = 0;
                 gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER + SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_25;
                 break;
             case LV_WINDSLOW:
-//                oldwind = 0;
-//                wind = 0;
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
                 gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_30;
                 break;
             case LV_LONGSTRETCH:
-//                levelSpeed = 1;
-//                oldwind = 0;
-//                wind = 0;
                 gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_30;
-//                wallInterval = WALL_RATE_DEFAULT - 1100;
                 break;
 
             case LV_EYEOFNEEDLE:
-//                levelSpeed = 11;
-//                oldwind = 0;
-//                wind = 0;
                 gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
-//                wallInterval = WALL_RATE_DEFAULT - 1300;
                 break;
         }
     }
-
 
     @Override
     public void handleInput() {
@@ -180,17 +177,6 @@ public class PlayState extends State {
                 glider.setX(mouse.x);
                 glider.setY(mouse.y);
 
-               /* if(mouse.x >= 0 && mouse.x < SwiftyGlider.WIDTH &&
-                        mouse.y >= 0 && mouse.y < SwiftyGlider.HEIGHT){
-                    if(glider.contains(mouse.x, mouse.y)){
-                        glider.setColliding(true);
-                        line.reset();
-                        for(int i = 0; i < wallQueueWaiting.size; i++){
-                            //TODO when calling this, make sure you subtract the sprites's width
-                            wallQueueWaiting.get(i).RecycleWall(SwiftyGlider.WIDTH, 50f);
-                        }
-                    }
-                }*/
             }
         }
     }
@@ -210,6 +196,9 @@ public class PlayState extends State {
         /** checkCollision */
         checkCollision();
 
+        /** weather*/
+        calculateWeather(dt);
+
         /** update everything inside this state */
         handleInput();
         glider.update(dt);
@@ -218,6 +207,64 @@ public class PlayState extends State {
         /** for each wall, update them */
         for(int i = 0; i < wallQueueActive.size; i++){
             wallQueueActive.get(i).update(dt);
+        }
+    }
+
+    private void calculateWeather(float dt){
+
+        if(level > 399){
+            /** at this point user knows and has competency of all level types
+             * Now things get really difficult */
+
+        }else{
+
+            /** this first part is design to take the user through the different
+             * types of walls
+             */
+
+
+            if (level > 349) {
+
+            } else if (level > 274) {
+
+
+            } else if (level > 255) { /** anoying fast wind */
+
+
+
+            } else if (level > 149) {
+                /** make walls go fucking fast */
+
+            } else if (level > 74) {
+                /**slowly increase the likelyhood of wind change of changing */
+                makeWind(1,dt);
+
+                if (level > 140) {
+                    WIND_CHANCE = 10;
+                } else if (level > 120) {
+                    WIND_CHANCE = 5;
+                } else {
+                    WIND_CHANCE = 1;
+                }
+            }
+        }
+    }
+
+    private void makeWind(int strength, float dt){
+
+        /** make sure the wind doesn't change too quickly */
+        windSafetyTimer +=dt;
+        if(windSafetyTimer < WIND_MAX_TIMER ){
+            return;
+        }
+
+        /** safe to switch */
+        windSafetyTimer = WIND_MAX_TIMER;
+        if(MathUtils.random(100) < WIND_CHANCE){
+            int wind = MathUtils.random(strength*2) - strength;
+            glider.setWind(wind);
+            ((BackgroundState)gsm.getBackground()).setWind(-wind);
+            windSafetyTimer = 0;
         }
     }
 
@@ -233,7 +280,7 @@ public class PlayState extends State {
         glider.render(sb);
 
         /** render our score */
-        if(scoreText != null)
+        if(scoreText != null && !windDistanceSafetyLatch)
         scoreText.render(sb);
 
         sb.end();
@@ -252,7 +299,6 @@ public class PlayState extends State {
     }
 
     private void updateScore(int level){
-
         scoreText = new WhiteButtons(
                 bitmapFont,
                 "" + level,
@@ -264,14 +310,14 @@ public class PlayState extends State {
 
     private void checkDeath(float dt){
         if(collidingLatch){
-
             deathTimer += dt;
             if(deathTimer > DEATH_TIME){
-
+                ((BackgroundState)gsm.getBackground()).setWind(0);
                 gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
             }
         }
     }
+
 
     private void checkWallRate(){
 
@@ -287,33 +333,33 @@ public class PlayState extends State {
        }
 
         /** Check if it is time to put a new wall on the screen */
-        if(wallTimer >= wallFrequency) {
+        if(wallTimer >= wallFrequency && !windDistanceSafetyLatch) {
 
             /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
              * is empty just make a new wall.*/
-            Wall wall;
-            if(wallQueueWaiting.size != 0)
-                wall = wallQueueWaiting.pop();
-            else{
-                wall = new Wall(SwiftyGlider.WIDTH, gapLength);
-            }
 
-            if(!collidingLatch) {
-                wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
-                wallQueueActive.add(wall);
-            }
+            if(!isOnSaveLevels){ /** don't make new walls while on safe levels */
+                Wall wall;
+                if(wallQueueWaiting.size != 0)
+                    wall = wallQueueWaiting.pop();
+                else{
+                    wall = new Wall(SwiftyGlider.WIDTH, gapLength);
+                }
 
+                if(!collidingLatch) {
+                    wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
+                    wallQueueActive.add(wall);
+                }
+            }
             wallTimer = 0;
-
-            /** Update Wall frequency ()*/
-
             updateWallFrequency();
+            /** Update Wall frequency ()*/
         }
+
     }
 
     private void updateWallFrequency(){
         if (level > 399) {
-
             /** At this point, switch back and forth between slow and fast with predictability */
             /** start going slowly */
             if(isRateChanging){
@@ -337,7 +383,6 @@ public class PlayState extends State {
                 isRateChanging = false;
             }
             /** but eventually make it Too difficult */
-
         } else {
 
             if(level > 394){
@@ -357,13 +402,17 @@ public class PlayState extends State {
             } else if (level > 149) {
                 wallFrequency = WALL_RATE_DEFAULT - level * 10 + 800;
             }
-
             /** we are approaching 150, prevent walls from arriving*/
             else if (level > 147) {
-                return;
-            } else if (level >= 72/* && level< 150*/) {
-                wallFrequency = WALL_RATE_DEFAULT - level * 10 + 1000;
+
+            } else if (level >= 74/* && level< 150*/) {
+                isOnSaveLevels = false;
+                wallFrequency = WALL_RATE_DEFAULT - (level - 72)*LEVEL_AMPLIFICATION;
+            } else if (level >= 72){
+                isOnSaveLevels = true;
+                setLevel(level);
             } else if (level < 72) {
+               isOnSaveLevels = false;
                 wallFrequency = WALL_RATE_DEFAULT - level*LEVEL_AMPLIFICATION;
             }
         }
@@ -376,7 +425,7 @@ public class PlayState extends State {
             Wall wall = wallQueueActive.get(i);
 
             if (wall != null) {
-                /** Are we colliding with the left side? */
+                /** Are we colliding with any walls?*/
                 colliding = wall.colliding(glider.getX(), glider.getY(), glider.getWidth(), glider.getHeight());
                 glider.setColliding(colliding);
                 /** We don't want the colliding value to change back to false by
@@ -394,5 +443,16 @@ public class PlayState extends State {
                 }
             }
         }
+
+        /** check if it is safe to switch wind */
+        for (i = 0; i < wallQueueActive.size; i++) {
+            Wall wall = wallQueueActive.get(i);
+            if (wall != null) {
+                /** Are we colliding with the left side? */
+                windDistanceSafetyLatch = wall.colliding(glider.getX(), glider.getY(), glider.getWidth() * 10, glider.getHeight() - windHeightOffset);
+                i = wallQueueActive.size;
+            }
+        }
+
     }
 }
