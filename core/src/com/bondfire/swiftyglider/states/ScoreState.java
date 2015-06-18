@@ -3,14 +3,10 @@ package com.bondfire.swiftyglider.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButtons;
 
-/**
- * Created by alvaregd on 14/06/15.
- */
 public class ScoreState extends State {
 
     private Graphic instruction;
@@ -25,7 +21,6 @@ public class ScoreState extends State {
 
     private int level;
     private int bestLevel = 20;
-
 
     public ScoreState(GSM gsm, int lastSavePoint, int level) {
         super(gsm);
@@ -76,12 +71,10 @@ public class ScoreState extends State {
         scoreText.render(sb);
         hiScoreText.render(sb);
 
-
      /*   sb.draw(scoreRegion,
                 SwiftyGlider.WIDTH /2 - 300/2,
                 SwiftyGlider.HEIGHT /4 - 300/2,
                 300,300);*/
-
 
         sb.end();
     }
@@ -97,7 +90,8 @@ public class ScoreState extends State {
 
             if (start.contains(mouse.x, mouse.y)) {
 //                gsm.set(new PlayState(gsm,lastSavePoint));
-                gsm.set(new PlayState(gsm,73));
+                gsm.set(new PlayState(gsm,PlayState.LV_WINDSLOW));
+//                gsm.set(new PlayState(gsm,PlayState.LV_SUPERSLOW));
             }
         }
     }

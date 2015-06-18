@@ -11,7 +11,6 @@ import com.bondfire.swiftyglider.ui.WhiteButtons;
 
 public class DifficultyState extends State{
 
-
     private Array<WhiteButtons> buttons;
     private BitmapFont bitmapFont;
 
@@ -27,7 +26,6 @@ public class DifficultyState extends State{
                 "Tricky Wind",
                 "The Long Stretch",
                 "Threading the Needle"};
-
 
         buttons = new Array<WhiteButtons>();
         bitmapFont = SwiftyGlider.res.GeneratorFont();

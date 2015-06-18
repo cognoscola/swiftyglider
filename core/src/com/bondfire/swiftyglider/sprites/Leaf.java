@@ -54,7 +54,7 @@ public class Leaf extends Box {
 
         /** update the X movement */
 
-        this.x += wind * dt * 10;
+        this.x += wind * dt * 30;
         if(this.x < (0 - currentLeaf.getRegionWidth())) this.x = SwiftyGlider.WIDTH;
         else if (this.x > SwiftyGlider.WIDTH + currentLeaf.getRegionWidth()) this.x = 0 - currentLeaf.getRegionWidth();
 

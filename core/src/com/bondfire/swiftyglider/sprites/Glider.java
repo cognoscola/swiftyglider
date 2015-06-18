@@ -33,10 +33,7 @@ public class Glider extends Box {
     private float deathTimer= 0;
     private final static float TIME_DEATH = 1.5f; // amount of time to show the death texture
 
-//    private boolean isEntering = true;
-
     private float velocity_X;
-
     private final static float Kconstant = 0.2f;
     private final static float Vconstant = 0.5556f;
 
@@ -109,7 +106,7 @@ public class Glider extends Box {
                         || SwiftyGlider.appType == Application.ApplicationType.iOS) {
 
                     /** Calculate X movement */
-                    this.velocity_X = this.velocity_X * Vconstant + Gdx.input.getAccelerometerX() * amplitude * Kconstant + amplitude * Gdx.input.getAccelerometerX() + wind*amplitude;
+                    this.velocity_X = this.velocity_X * Vconstant + Gdx.input.getAccelerometerX() * amplitude * Kconstant + amplitude * Gdx.input.getAccelerometerX() + wind*30;
                     this.x = this.x - velocity_X * dt;
 
                     /** if the horizontal position reaches the right edge,  */
@@ -121,10 +118,7 @@ public class Glider extends Box {
                         this.x = 0 + width / 2;
                         velocity_X = 0;
                     }
-
-
                     this.y = (SwiftyGlider.HEIGHT / 2 -  getYAverage() * 30);
-
                     tailFlappingRate = 0.1f + 0.01f*Gdx.input.getAccelerometerY();
                 }
             }
@@ -158,17 +152,22 @@ public class Glider extends Box {
             if(death_latch){
                 sb.draw(explosion, x - width / 2, y - height / 2, width, height);
             }else{
-                sb.draw(body, x - width / 2, y - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
+                sb.draw(collidingWind ? explosion:body, x - width / 2, y - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
                 sb.draw(tailFlapping ? tail_left:tail_right, x - width / 2, y - height - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
             }
         }
     }
 
     public void setWind(int wind){
-
         System.out.println("Wind:" + wind);
         this.wind =(float)wind;
     }
+
+    public void setWindCollide(boolean collidingWind){
+        this.collidingWind = collidingWind;
+    }
+
+    private boolean collidingWind;
 
 
     public void setY(float y){

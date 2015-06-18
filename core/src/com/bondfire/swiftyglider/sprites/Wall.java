@@ -3,7 +3,6 @@ package com.bondfire.swiftyglider.sprites;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Logger;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
 
@@ -22,12 +21,10 @@ public class Wall extends Box {
     private final static float SCALE_RIGHTWALLWIDTH  = 1.439024f;//used to scale right wall width
 
 
-
-
     private TextureRegion leftWall;
     private TextureRegion rightWall;
 
-    private float MAX_TIME = 5f;
+    private static float MAX_TIME = 5f;  //time it takes for the wall to descent
     private float timer;
     private float END_Y;
 
@@ -41,6 +38,11 @@ public class Wall extends Box {
     private float leftWallHeight;
     private boolean isDoneLatch;
     private float canvasWidth;
+
+
+    private float leftWallRotate;
+    private float rightWallRotate;
+    private boolean swap;
 
 
     public Wall( float canvasWidth, float gapLength) {
@@ -61,23 +63,66 @@ public class Wall extends Box {
 
         this.height = rightWallHeight;
         this.END_Y = - rightWallHeight;
+    }
 
+    public Wall( float canvasWidth, float gapLength, float startingHeight) {
+        this.gapLength = gapLength;
+        this.canvasWidth = canvasWidth;
+
+        this.timer = MAX_TIME * startingHeight;
+        leftWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_left");
+        rightWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_right");
+
+        rightWallWidth = SwiftyGlider.WIDTH;
+//        rightWallHeight = rightWall.getRegionHeight();
+        rightWallHeight = SwiftyGlider.HEIGHT*SCALE_LEFTWALLHEIGHT;
+
+        leftWallHeight = SwiftyGlider.HEIGHT*SCALE_RIGHTWALLHEIGHT;
+//        leftWallHeight = leftWall.getRegionHeight();
+        leftWallWidth = SwiftyGlider.WIDTH;
+
+        this.height = rightWallHeight;
+        this.END_Y = - rightWallHeight;
+
+        FirstWall(canvasWidth, gapLength);
     }
 
     public void update(float dt){
-
         if(this.y > END_Y){
+
             timer += dt;
             this.y = SwiftyGlider.HEIGHT - timer/ MAX_TIME * SwiftyGlider.HEIGHT;
             if(this.y < END_Y) this.y = END_Y;
-//            System.out.print("\ndt:" + timer + " Distance travelled: " +timer/ MAX_TIME * SwiftyGlider.HEIGHT );
+//          System.out.print("\ndt:" + timer + " Distance travelled: " +timer/ MAX_TIME * SwiftyGlider.HEIGHT );
         }
     }
 
     public void render(SpriteBatch sb){
 
-        sb.draw(leftWall,  leftWallPosition_X - leftWallWidth/2, y - leftWallHeight / 2, leftWallWidth, leftWallHeight);
-        sb.draw(rightWall, rightWallPosition_X - rightWallWidth/2, y - rightWallHeight / 2, rightWallWidth, rightWallHeight);
+        sb.draw(swap ? rightWall:leftWall,
+                leftWallPosition_X - leftWallWidth/2,
+                y - leftWallHeight / 2,
+              /*  leftWallWidth/2,
+                leftWallHeight/2,*/
+                leftWallWidth,
+                leftWallHeight
+               /* 1,
+                1,
+                leftWallRotate*/);
+
+        sb.draw(swap ? leftWall:rightWall,
+                rightWallPosition_X - rightWallWidth/2,
+                y - rightWallWidth / 2,
+              /*  rightWallWidth/2,
+                rightWallHeight/2,*/
+                rightWallWidth,
+                rightWallHeight
+              /*  1,
+                1,
+                rightWallHeight*/);
+
+//        sb.draw(leftWall,  leftWallPosition_X - leftWallWidth/2, y - leftWallHeight / 2, leftWallWidth, leftWallHeight);
+//        sb.draw(rightWall, rightWallPosition_X - rightWallWidth/2, y - rightWallWidth / 2, rightWallWidth, rightWallHeight);
     }
 
     public void RecycleWall(float gameWidth, float gapLength){
@@ -87,6 +132,7 @@ public class Wall extends Box {
         timer = 0;
 
         /** decide how rotation should happen randomly */
+        randomnizeWall();
 
         /** determine X position of the gap and the walls */
         this.gapLength = gapLength;
@@ -95,12 +141,27 @@ public class Wall extends Box {
         this.rightWallPosition_X = gapPosition + gapLength/2 + rightWallWidth/2;
     }
 
-    public void FirstWall(int CanvasWidth, float gapLength){
+    public void FirstWall(float CanvasWidth, float gapLength){
 
+        randomnizeWall();
         this.gapLength = gapLength;
-        this.gapPosition =MathUtils.random(gapLength/2,CanvasWidth - gapLength/2);
-        this.leftWallPosition_X = gapPosition - gapPosition/2 - leftWallWidth/2;
-        this.rightWallPosition_X = gapPosition + gapPosition/2 + rightWallWidth/2;
+        this.gapPosition = canvasWidth/2;
+        this.leftWallPosition_X = gapPosition - gapLength/2 - leftWallWidth/2;
+        this.rightWallPosition_X = gapPosition + gapLength/2 + rightWallWidth/2;
+    }
+
+    public void randomnizeWall(){
+
+        switch(MathUtils.random(7)){
+            case 0: leftWallRotate = 180f; rightWallRotate = 0f;   swap = false; break;
+            case 1: leftWallRotate = 0;    rightWallRotate = 180f; swap = false; break;
+            case 2: leftWallRotate = 180;  rightWallRotate = 180f; swap = false; break;
+            case 3: leftWallRotate = 0f;   rightWallRotate = 0f;   swap = false; break;
+            case 4: leftWallRotate = 0f;   rightWallRotate = 0f;   swap = true; break;
+            case 5: leftWallRotate = 180;  rightWallRotate = 0;    swap =   true; break;
+            case 6: leftWallRotate = 0f;   rightWallRotate = 180f; swap  = true; break;
+            case 7: leftWallRotate = 180;  rightWallRotate = 180f; swap = true; break;
+        }
     }
 
     public boolean isDone(){
@@ -126,5 +187,9 @@ public class Wall extends Box {
         if(super.colliding(x, y, width, height))return true;
 
         return false;
+    }
+
+    public static void setDescentSpeed(float t){
+        MAX_TIME = t;
     }
 }

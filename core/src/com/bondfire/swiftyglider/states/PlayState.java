@@ -22,22 +22,23 @@ public class PlayState extends State {
     public final static int LV_BEGINNING   = 0;
     public final static int LV_FIRSTWIND   = 73;
     public final static int LV_GOINGFAST   = 149;
-    public final static int LV_WINDFAST    = 253;
+    public final static int LV_WINDFAST    = 250;
     public final static int LV_SUPERSLOW   = 275;
-    public final static int LV_WINDSLOW    = 347;
+    public final static int LV_WINDSLOW    = 349;
     public final static int LV_LONGSTRETCH = 399;
     public final static int LV_EYEOFNEEDLE = 479;
 
-    public final static float SCALE_GAPLENGTH_150   = 0.228659f; //scales gap length 130
-    public final static float SCALE_GAPLENGTH_220   = 0.335366f; //scales gap length 220
-    public final static float SCALE_GAPLENGTH_230   = 0.350619f; //scales gap length 230
-    public final static float SCALE_GAPLENGTH_C_25  = 0.038110f; //scales gap length 25 + glider
-    public final static float SCALE_GAPLENGTH_C_30  = 0.045731f;//scales gap length 30 + glider
-    public final static float SCALE_GAPLENGTH_C_50  = 0.076220f;//scales gap length 50 + glider
+    private final static float SCALE_GAPLENGTH_150   = 0.228659f; //scales gap length 130
+    private final static float SCALE_GAPLENGTH_220   = 0.335366f; //scales gap length 220
+    private final static float SCALE_GAPLENGTH_230   = 0.350619f; //scales gap length 230
+    private final static float SCALE_GAPLENGTH_C_25  = 0.038110f; //scales gap length 25 + glider
+    private final static float SCALE_GAPLENGTH_C_30  = 0.045731f;//scales gap length 30 + glider
+    private final static float SCALE_GAPLENGTH_C_50  = 0.076220f;//scales gap length 50 + glider
 
     private final static float SCALE_WIND_OFFESET_10 = 0.010163f;
     private final static float SCALE_WIND_OFFESET_50 = 0.050813f;
-    private final static float SCALE_WIND_OFFESET_65 = 0.066057f;
+    private final static float SCALE_WIND_OFFESET_65 = 0.16057f;
+//    private final static float SCALE_WIND_OFFESET_65 = 0.066057f;
 
     private int i;
 
@@ -66,19 +67,18 @@ public class PlayState extends State {
     private static boolean colliding = false;
 
     /** timing logic */
-    static float wallTimer = 3f;      //timer and also the initial start time
+    static float wallTimer = 0f;      //timer and also the initial start time
     static float wallFrequency = 3f;  //frequency of wall appearance
     static float indicatorTimer = 2f; //timer for indicator
     static float indicatorFrequency = 2f; //how frequently we should display the white line
     static float deathTimer = 0f; //keeps track of time passed since death;
     private static final float DEATH_TIME = 1f; //amount of time to pass before showing score screen
 
-
     /** wind logic */
     private float windHeightOffset          = 0f;//determines the amount of leeway room for the amount of wind to change
     private float windSafetyTimer           = 0f;
     private boolean windDistanceSafetyLatch = false;
-    private float WIND_MAX_TIMER            = 2f;
+    private float WIND_MAX_TIMER            = 3f;
     static boolean isWindChangeable         = false;        //keep track of wind changing while mid way through a log
     static int WIND_CHANCE                  = 2;            //Likely hood out of 100 that the wind will change
     static int windRoll                     = 0;                 //Variable that keeps track of time to switch
@@ -88,13 +88,9 @@ public class PlayState extends State {
 
     static boolean collidingLatch = false;
 
-
     public PlayState(GSM gsm, int level){
         super(gsm);
-
         reset();
-        setLevel(level);
-
         /** load our sprites */
         glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4);
         line   = new Indicator(SwiftyGlider.WIDTH/2, 0, SwiftyGlider.WIDTH, 50);
@@ -103,56 +99,66 @@ public class PlayState extends State {
 
         /**prepare out text*/
         bitmapFont = SwiftyGlider.res.GeneratorFont();
+
+        setLevel(level);
     }
 
     public void reset(){
         gapLength = 100f;
         colliding = false;
-        wallTimer = 3f;
+        wallTimer = 0f;
         deathTimer = 0f;
         wallFrequency = 3f;
         collidingLatch = false;
+        windDistanceSafetyLatch = true;
     }
 
     public void setLevel(int level){
+
+        glider.setWind(0);
         lastSavePoint = level;
         this.level = level;
+        wallQueueActive.clear();
+        wallQueueWaiting.clear();
 
         /** Update the environment when we start the game or reach a save point*/
-        switch(level){
-            case LV_BEGINNING:
-                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
-                gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
-                break;
+        if(level >= LV_EYEOFNEEDLE){
+            gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
+        }else   if(level >= LV_LONGSTRETCH) {
+            gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
+        }else if(level >=LV_WINDSLOW ) {
+            Wall.setDescentSpeed(10f);
+            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
+            gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
+        }else  if(level >= LV_SUPERSLOW) {
+            gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_25;
+            Wall.setDescentSpeed(10f);
+            /** because this level is super slow, the walls already part way down */
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
 
-            case LV_FIRSTWIND:
-                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
-                gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
-                break;
-
-            case LV_GOINGFAST:
-                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
-                gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
-                break;
-
-            case LV_WINDFAST:
-                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_65;
-                gapLength =   SwiftyGlider.WIDTH*SCALE_GAPLENGTH_230;
-                break;
-            case LV_SUPERSLOW:
-                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER + SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_25;
-                break;
-            case LV_WINDSLOW:
-                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
-                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_30;
-                break;
-            case LV_LONGSTRETCH:
-                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_30;
-                break;
-
-            case LV_EYEOFNEEDLE:
-                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
-                break;
+        } else if(level >= LV_WINDFAST) {
+            Wall.setDescentSpeed(2f);
+            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_65;
+            gapLength = SwiftyGlider.WIDTH * SCALE_GAPLENGTH_230;
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+        }else if(level >= LV_GOINGFAST) {
+            Wall.setDescentSpeed(2f);
+            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
+            gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+        }else if(level >=LV_FIRSTWIND) {
+            Wall.setDescentSpeed(5f);
+            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
+            gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+        } else {
+            Wall.setDescentSpeed(5f);
+            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
+            gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
+            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
         }
     }
 
@@ -215,22 +221,17 @@ public class PlayState extends State {
         if(level > 399){
             /** at this point user knows and has competency of all level types
              * Now things get really difficult */
-
         }else{
-
-            /** this first part is design to take the user through the different
-             * types of walls
-             */
-
-
+            /** this first part is design to take the user through the different types of walls*/
             if (level > 349) {
-
+                makeWind(2,dt);
+                WIND_CHANCE = 5;
             } else if (level > 274) {
 
 
             } else if (level > 255) { /** anoying fast wind */
-
-
+                makeWind(2,dt);
+                WIND_CHANCE = 10;
 
             } else if (level > 149) {
                 /** make walls go fucking fast */
@@ -260,7 +261,7 @@ public class PlayState extends State {
 
         /** safe to switch */
         windSafetyTimer = WIND_MAX_TIMER;
-        if(MathUtils.random(100) < WIND_CHANCE){
+        if(MathUtils.random(100) < WIND_CHANCE && !windDistanceSafetyLatch){
             int wind = MathUtils.random(strength*2) - strength;
             glider.setWind(wind);
             ((BackgroundState)gsm.getBackground()).setWind(-wind);
@@ -280,7 +281,7 @@ public class PlayState extends State {
         glider.render(sb);
 
         /** render our score */
-        if(scoreText != null && !windDistanceSafetyLatch)
+        if(scoreText != null )
         scoreText.render(sb);
 
         sb.end();
@@ -333,11 +334,11 @@ public class PlayState extends State {
        }
 
         /** Check if it is time to put a new wall on the screen */
-        if(wallTimer >= wallFrequency && !windDistanceSafetyLatch) {
+        if(wallTimer >= wallFrequency ) {
+
 
             /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
              * is empty just make a new wall.*/
-
             if(!isOnSaveLevels){ /** don't make new walls while on safe levels */
                 Wall wall;
                 if(wallQueueWaiting.size != 0)
@@ -384,34 +385,39 @@ public class PlayState extends State {
             }
             /** but eventually make it Too difficult */
         } else {
-
             if(level > 394){
                 return;
-            } else if (level > 349) {
-                wallFrequency = WALL_RATE_DEFAULT - 2750 + 5600 + -level;
-            } else if (level > 347) {
-                return;
-            } else if (level > 274) {
-                wallFrequency = WALL_RATE_DEFAULT - 2750 + 5000 - level;
-            } else if (level > 273) {
-                return;
-            } else if (level > 254) {
-                wallFrequency = WALL_RATE_DEFAULT - level * 10 + 1500;
-            } else if (level > 253) {
-                return;
-            } else if (level > 149) {
-                wallFrequency = WALL_RATE_DEFAULT - level * 10 + 800;
-            }
-            /** we are approaching 150, prevent walls from arriving*/
-            else if (level > 147) {
-
-            } else if (level >= 74/* && level< 150*/) {
+            } else if (level > LV_WINDSLOW) {
+                wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210 )*LEVEL_AMPLIFICATION;
                 isOnSaveLevels = false;
-                wallFrequency = WALL_RATE_DEFAULT - (level - 72)*LEVEL_AMPLIFICATION;
-            } else if (level >= 72){
+            } else if (level > LV_WINDSLOW -1) {
                 isOnSaveLevels = true;
                 setLevel(level);
-            } else if (level < 72) {
+            } else if (level >= LV_SUPERSLOW) {
+                wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 110 )*LEVEL_AMPLIFICATION;
+                isOnSaveLevels = false;
+            } else if (level > LV_SUPERSLOW -1) {
+                isOnSaveLevels = true;
+                setLevel(level);
+            } else if (level > LV_WINDFAST) {
+                wallFrequency = WALL_RATE_DEFAULT - (level - LV_WINDFAST + 40 )*LEVEL_AMPLIFICATION;
+                isOnSaveLevels = false;
+            } else if (level > LV_WINDFAST -1) {
+                isOnSaveLevels = true;
+                setLevel(level);
+            } else if (level > LV_GOINGFAST) {
+                wallFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40)*LEVEL_AMPLIFICATION;
+                isOnSaveLevels = false;
+            }else if (level > LV_GOINGFAST - 3) {
+                isOnSaveLevels = true;
+                setLevel(level);
+            } else if (level >= LV_FIRSTWIND) {
+                isOnSaveLevels = false;
+                wallFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND)*LEVEL_AMPLIFICATION;
+            } else if (level >= LV_FIRSTWIND - 3){
+                isOnSaveLevels = true;
+                setLevel(level);
+            } else if (level < LV_BEGINNING) {
                isOnSaveLevels = false;
                 wallFrequency = WALL_RATE_DEFAULT - level*LEVEL_AMPLIFICATION;
             }
@@ -430,6 +436,7 @@ public class PlayState extends State {
                 glider.setColliding(colliding);
                 /** We don't want the colliding value to change back to false by
                  * checking another wall it is not colliding with, so terminate the loop*/
+
                 if(colliding) {
                     i = wallQueueActive.size;
 
@@ -449,8 +456,11 @@ public class PlayState extends State {
             Wall wall = wallQueueActive.get(i);
             if (wall != null) {
                 /** Are we colliding with the left side? */
-                windDistanceSafetyLatch = wall.colliding(glider.getX(), glider.getY(), glider.getWidth() * 10, glider.getHeight() - windHeightOffset);
-                i = wallQueueActive.size;
+                windDistanceSafetyLatch = wall.colliding(glider.getX(), glider.getY(), glider.getWidth()*10, glider.getHeight() + windHeightOffset);
+//                glider.setWindCollide(windDistanceSafetyLatch);
+                if(windDistanceSafetyLatch){
+                    i = wallQueueActive.size;
+                }
             }
         }
 
