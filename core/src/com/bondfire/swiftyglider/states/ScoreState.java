@@ -11,11 +11,13 @@ public class ScoreState extends State {
 
     private Graphic instruction;
     private Graphic start;
+    private Graphic back;
 
     /** text ***/
     private WhiteButtons scoreText;
     private WhiteButtons hiScoreText;
     private BitmapFont bitmapFont;
+
 
     private int lastSavePoint;
 
@@ -27,6 +29,11 @@ public class ScoreState extends State {
 
         this.level = level;
         bitmapFont = SwiftyGlider.res.GeneratorFont();
+
+        back = new Graphic(
+                SwiftyGlider.res.getAtlas("sprites").findRegion("g4454"),
+                0 + 50,
+                SwiftyGlider.HEIGHT - 50);
 
         instruction = new Graphic(
                 SwiftyGlider.res.getAtlas("sprites").findRegion("instructions"),
@@ -65,6 +72,7 @@ public class ScoreState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
+        back.render(sb);
         instruction.render(sb);
         start.render(sb);
 
@@ -93,6 +101,8 @@ public class ScoreState extends State {
                 gsm.set(new PlayState(gsm,PlayState.LV_WINDSLOW));
 //                gsm.set(new PlayState(gsm,PlayState.LV_SUPERSLOW));
             }
+
+
         }
     }
 }

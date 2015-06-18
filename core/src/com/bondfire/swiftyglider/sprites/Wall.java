@@ -102,27 +102,27 @@ public class Wall extends Box {
         sb.draw(swap ? rightWall:leftWall,
                 leftWallPosition_X - leftWallWidth/2,
                 y - leftWallHeight / 2,
-              /*  leftWallWidth/2,
-                leftWallHeight/2,*/
+                leftWallWidth/2,
+                leftWallHeight/2,
                 leftWallWidth,
-                leftWallHeight
-               /* 1,
+                leftWallHeight,
                 1,
-                leftWallRotate*/);
+                1,
+                leftWallRotate);
 
         sb.draw(swap ? leftWall:rightWall,
                 rightWallPosition_X - rightWallWidth/2,
-                y - rightWallWidth / 2,
-              /*  rightWallWidth/2,
-                rightWallHeight/2,*/
+                y - rightWallHeight / 2,
+                rightWallWidth/2,
+                rightWallHeight/2,
                 rightWallWidth,
-                rightWallHeight
-              /*  1,
+                rightWallHeight,
                 1,
-                rightWallHeight*/);
+                1,
+                leftWallRotate);
 
 //        sb.draw(leftWall,  leftWallPosition_X - leftWallWidth/2, y - leftWallHeight / 2, leftWallWidth, leftWallHeight);
-//        sb.draw(rightWall, rightWallPosition_X - rightWallWidth/2, y - rightWallWidth / 2, rightWallWidth, rightWallHeight);
+//        sb.draw(rightWall, rightWallPosition_X - rightWallWidth/2, y - rightWallHeight / 2, rightWallWidth, rightWallHeight);
     }
 
     public void RecycleWall(float gameWidth, float gapLength){
