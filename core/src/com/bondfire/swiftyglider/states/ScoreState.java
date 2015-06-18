@@ -9,6 +9,8 @@ import com.bondfire.swiftyglider.ui.WhiteButtons;
 
 public class ScoreState extends State {
 
+    public final static String KEY_BEST ="BEST";
+
     private Graphic instruction;
     private Graphic start;
     private Graphic back;
@@ -18,7 +20,6 @@ public class ScoreState extends State {
     private WhiteButtons hiScoreText;
     private BitmapFont bitmapFont;
 
-
     private int lastSavePoint;
 
     private int level;
@@ -27,13 +28,22 @@ public class ScoreState extends State {
     public ScoreState(GSM gsm, int lastSavePoint, int level) {
         super(gsm);
 
+        bestLevel = SwiftyGlider.preferences.getInteger(KEY_BEST,0);
+
+        if(level > bestLevel){
+            bestLevel = level;
+            SwiftyGlider.preferences.putInteger(KEY_BEST,level).flush();
+        }
+
         this.level = level;
         bitmapFont = SwiftyGlider.res.GeneratorFont();
 
         back = new Graphic(
                 SwiftyGlider.res.getAtlas("sprites").findRegion("g4454"),
-                0 + 50,
-                SwiftyGlider.HEIGHT - 50);
+                 50,
+                SwiftyGlider.HEIGHT - 50,
+                60,
+                60);
 
         instruction = new Graphic(
                 SwiftyGlider.res.getAtlas("sprites").findRegion("instructions"),
@@ -58,9 +68,8 @@ public class ScoreState extends State {
                 SwiftyGlider.HEIGHT /4 - 50
         );
 
-
+        this.lastSavePoint = lastSavePoint;
 //        scoreRegion = SwiftyGlider.res.getAtlas("sprites").findRegion("button");
-
     }
 
     @Override
@@ -97,12 +106,14 @@ public class ScoreState extends State {
             cam.unproject(mouse);
 
             if (start.contains(mouse.x, mouse.y)) {
-//                gsm.set(new PlayState(gsm,lastSavePoint));
-                gsm.set(new PlayState(gsm,PlayState.LV_WINDSLOW));
+                gsm.set(new PlayState(gsm,lastSavePoint));
+//                gsm.set(new PlayState(gsm,PlayState.LV_WINDSLOW));
 //                gsm.set(new PlayState(gsm,PlayState.LV_SUPERSLOW));
             }
 
-
+            if(back.contains(mouse.x,mouse.y)){
+                gsm.set(new DifficultyState(gsm));
+            }
         }
     }
 }

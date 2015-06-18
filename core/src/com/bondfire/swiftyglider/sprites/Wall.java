@@ -89,7 +89,6 @@ public class Wall extends Box {
 
     public void update(float dt){
         if(this.y > END_Y){
-
             timer += dt;
             this.y = SwiftyGlider.HEIGHT - timer/ MAX_TIME * SwiftyGlider.HEIGHT;
             if(this.y < END_Y) this.y = END_Y;

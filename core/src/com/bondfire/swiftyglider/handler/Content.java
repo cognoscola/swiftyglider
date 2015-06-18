@@ -39,11 +39,9 @@ public class Content {
 
         this.textGenerator = new FreeTypeFontGenerator((Gdx.files.internal(fontPath)));
         this.parameter =     new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 25;
+        parameter.size = 35;
         BitmapFont ret = textGenerator.generateFont(parameter);
         textGenerator.dispose();
         return ret;
-
     }
-
 }

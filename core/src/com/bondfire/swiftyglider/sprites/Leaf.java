@@ -17,6 +17,8 @@ public class Leaf extends Box {
 
     private float wind;
 
+    private float rotation;
+
     public Leaf() {
 
         /** assign a random location */
@@ -33,8 +35,8 @@ public class Leaf extends Box {
 
         this.width = currentLeaf.getRegionWidth();
         this.height = currentLeaf.getRegionHeight();
-
         this.END_Y = 0 - currentLeaf.getRegionHeight();
+        rotation = MathUtils.random(360f);
     }
 
     public void update(float dt){
@@ -50,18 +52,37 @@ public class Leaf extends Box {
             this.y = SwiftyGlider.HEIGHT + height;
             this.x = MathUtils.random(SwiftyGlider.WIDTH);
             currentLeaf =  leafs[MathUtils.random(2)];
+            rotation = MathUtils.random(360f);
         }
 
         /** update the X movement */
-
         this.x += wind * dt * 30;
-        if(this.x < (0 - currentLeaf.getRegionWidth())) this.x = SwiftyGlider.WIDTH;
-        else if (this.x > SwiftyGlider.WIDTH + currentLeaf.getRegionWidth()) this.x = 0 - currentLeaf.getRegionWidth();
+        /** if we reach the left side of the screen */
+        if(this.x < (0 - currentLeaf.getRegionWidth())){
+            this.x = SwiftyGlider.WIDTH;
+            rotation = MathUtils.random(360f);
+        }
+        /** if we reach the right side of the screen */
+        else if (this.x > SwiftyGlider.WIDTH + currentLeaf.getRegionWidth()) {
+            this.x = 0 - currentLeaf.getRegionWidth();
+            rotation = MathUtils.random(360f);
+        }
 
     }
 
     public void render(SpriteBatch sb){
-        sb.draw(currentLeaf,  x - width/2 , y - height/ 2, width, height);
+
+        sb.draw(currentLeaf,
+                x - width/2,
+                y - height/ 2,
+                width/2,
+                height/2,
+                width,
+                height,
+                1,
+                1,
+                rotation);
+//        sb.draw(currentLeaf,  x - width/2 , y - height/ 2, width, height);
     }
 
     public void setWind(int wind){

@@ -38,6 +38,20 @@ public class WhiteButtons extends Box {
 
         sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
+    }
 
+    @Override
+    public boolean contains(float x, float y) {
+
+        boolean ret;
+        this.width = backWidth + 100;
+        this.height = backHeight + 20;
+
+        ret =  super.contains(x, y);
+
+        this.width = layout.width;
+        this.height = layout.height;
+
+        return ret;
     }
 }

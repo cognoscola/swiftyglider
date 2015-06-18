@@ -15,6 +15,8 @@ import com.bondfire.swiftyglider.ui.WhiteButtons;
 /** our play state. */
 public class PlayState extends State {
 
+    private final static String Tag = "PlayState";
+
     /** set the max number of fingers */
     private final int MAX_FINGERS = 0;
 
@@ -25,8 +27,7 @@ public class PlayState extends State {
     public final static int LV_WINDFAST    = 250;
     public final static int LV_SUPERSLOW   = 275;
     public final static int LV_WINDSLOW    = 349;
-    public final static int LV_LONGSTRETCH = 399;
-    public final static int LV_EYEOFNEEDLE = 479;
+    public final static int LV_EYEOFNEEDLE = 399;
 
     private final static float SCALE_GAPLENGTH_150   = 0.228659f; //scales gap length 130
     private final static float SCALE_GAPLENGTH_220   = 0.335366f; //scales gap length 220
@@ -55,10 +56,6 @@ public class PlayState extends State {
     /** Game Logic */
     private int level;
     private int lastSavePoint;
-    static boolean isRateChanging = false;
-    static boolean isSpedChanging = false;
-    static boolean isGoingUp      = true;
-    static int levelSpeed         = 1;
     private final static float WALL_RATE_DEFAULT = 2.0f;
     private final static float LEVEL_AMPLIFICATION = 0.01f;
     private boolean isOnSaveLevels = false;
@@ -79,12 +76,7 @@ public class PlayState extends State {
     private float windSafetyTimer           = 0f;
     private boolean windDistanceSafetyLatch = false;
     private float WIND_MAX_TIMER            = 3f;
-    static boolean isWindChangeable         = false;        //keep track of wind changing while mid way through a log
     static int WIND_CHANCE                  = 2;            //Likely hood out of 100 that the wind will change
-    static int windRoll                     = 0;                 //Variable that keeps track of time to switch
-    static int windCounter                  = 0;             //keeps track of the amount of time
-    static final int MIN_WIND_TIME          = 400;    //minimum amount of time before the wind can change
-    static boolean isWindLongEnough         = false; //used to tell if we haven't changed wind for a while
 
     static boolean collidingLatch = false;
 
@@ -99,7 +91,6 @@ public class PlayState extends State {
 
         /**prepare out text*/
         bitmapFont = SwiftyGlider.res.GeneratorFont();
-
         setLevel(level);
     }
 
@@ -114,7 +105,7 @@ public class PlayState extends State {
     }
 
     public void setLevel(int level){
-
+        System.out.println(Tag + " setLEvel(level):  " +  level);
         glider.setWind(0);
         lastSavePoint = level;
         this.level = level;
@@ -124,8 +115,7 @@ public class PlayState extends State {
         /** Update the environment when we start the game or reach a save point*/
         if(level >= LV_EYEOFNEEDLE){
             gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
-        }else   if(level >= LV_LONGSTRETCH) {
-            gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
+            wallTimer =  (WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION) * 0.5f;
         }else if(level >=LV_WINDSLOW ) {
             Wall.setDescentSpeed(10f);
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
@@ -228,7 +218,6 @@ public class PlayState extends State {
                 WIND_CHANCE = 5;
             } else if (level > 274) {
 
-
             } else if (level > 255) { /** anoying fast wind */
                 makeWind(2,dt);
                 WIND_CHANCE = 10;
@@ -296,6 +285,7 @@ public class PlayState extends State {
         if(indicatorTimer >= indicatorFrequency){
             indicatorTimer = 0f;
             updateScore(level++);
+            updateWallFrequency();
         }
     }
 
@@ -306,7 +296,6 @@ public class PlayState extends State {
                 SwiftyGlider.WIDTH * 5/6,
                 SwiftyGlider.HEIGHT /8
         );
-
     }
 
     private void checkDeath(float dt){
@@ -314,7 +303,10 @@ public class PlayState extends State {
             deathTimer += dt;
             if(deathTimer > DEATH_TIME){
                 ((BackgroundState)gsm.getBackground()).setWind(0);
+
+                System.out.println(Tag + "CheckDeath() Died, lastSavePoint:" + lastSavePoint);
                 gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
+
             }
         }
     }
@@ -327,6 +319,7 @@ public class PlayState extends State {
             Wall wall = wallQueueActive.get(i);
 
            /** if yes, put them in the waitQueue*/
+
            if(wall.isDone()){
               wallQueueWaiting.add(wall);
                wallQueueActive.removeIndex(i);
@@ -335,7 +328,6 @@ public class PlayState extends State {
 
         /** Check if it is time to put a new wall on the screen */
         if(wallTimer >= wallFrequency ) {
-
 
             /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
              * is empty just make a new wall.*/
@@ -353,74 +345,53 @@ public class PlayState extends State {
                 }
             }
             wallTimer = 0;
-            updateWallFrequency();
             /** Update Wall frequency ()*/
         }
-
     }
 
-    private void updateWallFrequency(){
-        if (level > 399) {
-            /** At this point, switch back and forth between slow and fast with predictability */
-            /** start going slowly */
-            if(isRateChanging){
-                switch (levelSpeed){
-                    case 1:  wallFrequency = WALL_RATE_DEFAULT + 2000; break;
-                    case 2:  wallFrequency = WALL_RATE_DEFAULT + 1000; break;
-                    case 3:  wallFrequency = WALL_RATE_DEFAULT ; break;
-                    case 4:  wallFrequency = WALL_RATE_DEFAULT - 500; break;
-                    case 5:  wallFrequency = WALL_RATE_DEFAULT - 600; break;
-                    case 6:  wallFrequency = WALL_RATE_DEFAULT - 700; break;
-                    case 7:  wallFrequency = WALL_RATE_DEFAULT - 800; break;
-                    case 8:  wallFrequency = WALL_RATE_DEFAULT - 900; break;
-                    case 9:  wallFrequency = WALL_RATE_DEFAULT - 1000; break;
-                    case 10: wallFrequency = WALL_RATE_DEFAULT - 1100; break;
-                    case 11: wallFrequency = WALL_RATE_DEFAULT - 1200; break;
-                    case 12: wallFrequency = WALL_RATE_DEFAULT - 1300; break;
-                    case 13: wallFrequency = WALL_RATE_DEFAULT - 1400; break;
-                    case 14: wallFrequency = WALL_RATE_DEFAULT - 1500; break;
-                    case 15: wallFrequency = WALL_RATE_DEFAULT - 1600; break;
-                }
-                isRateChanging = false;
-            }
-            /** but eventually make it Too difficult */
-        } else {
-            if(level > 394){
-                return;
-            } else if (level > LV_WINDSLOW) {
-                wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210 )*LEVEL_AMPLIFICATION;
-                isOnSaveLevels = false;
-            } else if (level > LV_WINDSLOW -1) {
-                isOnSaveLevels = true;
-                setLevel(level);
-            } else if (level >= LV_SUPERSLOW) {
-                wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 110 )*LEVEL_AMPLIFICATION;
-                isOnSaveLevels = false;
-            } else if (level > LV_SUPERSLOW -1) {
-                isOnSaveLevels = true;
-                setLevel(level);
-            } else if (level > LV_WINDFAST) {
-                wallFrequency = WALL_RATE_DEFAULT - (level - LV_WINDFAST + 40 )*LEVEL_AMPLIFICATION;
-                isOnSaveLevels = false;
-            } else if (level > LV_WINDFAST -1) {
-                isOnSaveLevels = true;
-                setLevel(level);
-            } else if (level > LV_GOINGFAST) {
-                wallFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40)*LEVEL_AMPLIFICATION;
-                isOnSaveLevels = false;
-            }else if (level > LV_GOINGFAST - 3) {
-                isOnSaveLevels = true;
-                setLevel(level);
-            } else if (level >= LV_FIRSTWIND) {
-                isOnSaveLevels = false;
-                wallFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND)*LEVEL_AMPLIFICATION;
-            } else if (level >= LV_FIRSTWIND - 3){
-                isOnSaveLevels = true;
-                setLevel(level);
-            } else if (level < LV_BEGINNING) {
-               isOnSaveLevels = false;
-                wallFrequency = WALL_RATE_DEFAULT - level*LEVEL_AMPLIFICATION;
-            }
+    private void updateWallFrequency() {
+        System.out.println(Tag + " updateFrequency() Level:" + level);
+        if (level > LV_EYEOFNEEDLE) {
+            isOnSaveLevels = false;
+            wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION;
+            Wall.setDescentSpeed(1.5f);
+        } else if (level > LV_EYEOFNEEDLE - 1) {
+            isOnSaveLevels = true;
+            setLevel(level);
+            Wall.setDescentSpeed(2);
+        } else if (level > LV_WINDSLOW) {
+            wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210) * LEVEL_AMPLIFICATION;
+            isOnSaveLevels = false;
+        } else if (level > LV_WINDSLOW - 1) {
+            isOnSaveLevels = true;
+            setLevel(level);
+        } else if (level >= LV_SUPERSLOW) {
+            wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 110) * LEVEL_AMPLIFICATION;
+            isOnSaveLevels = false;
+        } else if (level > LV_SUPERSLOW - 1) {
+            isOnSaveLevels = true;
+            setLevel(level);
+        } else if (level > LV_WINDFAST) {
+            wallFrequency = WALL_RATE_DEFAULT - (level - LV_WINDFAST + 40) * LEVEL_AMPLIFICATION;
+            isOnSaveLevels = false;
+        } else if (level > LV_WINDFAST - 1) {
+            isOnSaveLevels = true;
+            setLevel(level);
+        } else if (level > LV_GOINGFAST) {
+            wallFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40) * LEVEL_AMPLIFICATION;
+            isOnSaveLevels = false;
+        } else if (level > LV_GOINGFAST - 3) {
+            isOnSaveLevels = true;
+            setLevel(level);
+        } else if (level >= LV_FIRSTWIND) {
+            isOnSaveLevels = false;
+            wallFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND) * LEVEL_AMPLIFICATION;
+        } else if (level >= LV_FIRSTWIND - 3) {
+            isOnSaveLevels = true;
+            setLevel(level);
+        } else if (level < LV_BEGINNING) {
+            isOnSaveLevels = false;
+            wallFrequency = WALL_RATE_DEFAULT - level * LEVEL_AMPLIFICATION;
         }
     }
 

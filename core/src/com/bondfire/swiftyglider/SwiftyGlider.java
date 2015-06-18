@@ -3,6 +3,7 @@ package com.bondfire.swiftyglider;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.swiftyglider.handler.Content;
@@ -21,10 +22,17 @@ public class SwiftyGlider extends ApplicationAdapter {
 	/** our assets */
     public static Content res;
 
+	/** tells us what kind of platform is running this game, */
 	public static Application.ApplicationType appType;
 
+	/** we use it to draw */
 	private SpriteBatch sb;
+
+	/** game state manager */
 	private GSM gsm; //our gsm here
+
+	/** so we can save the user's score */
+	public static Preferences preferences;
 
 	@Override
 	public void create () {
@@ -34,6 +42,8 @@ public class SwiftyGlider extends ApplicationAdapter {
 
 		/** set the clear color (color that shows when everything on the screen is cleared  */
 		Gdx.gl.glClearColor(0.2f,0.2f,0.2f,1);
+
+		preferences = Gdx.app.getPreferences(TITLE);
 
 		res = new Content();
 		res.LoadAtlas("swiftyglider.pack", "sprites"); //our path to the file and the key
