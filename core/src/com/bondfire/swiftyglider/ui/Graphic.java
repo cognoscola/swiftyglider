@@ -2,11 +2,7 @@ package com.bondfire.swiftyglider.ui;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.bondfire.swiftyglider.SwiftyGlider;
 
-/**
- * Created by alvaregd on 13/06/15.
- */
 public class Graphic extends Box{
 
     private TextureRegion image;

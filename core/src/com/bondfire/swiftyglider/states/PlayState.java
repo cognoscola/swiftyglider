@@ -82,7 +82,7 @@ public class PlayState extends State {
 
     public PlayState(GSM gsm, int level){
         super(gsm);
-        reset();
+
         /** load our sprites */
         glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4);
         line   = new Indicator(SwiftyGlider.WIDTH/2, 0, SwiftyGlider.WIDTH, 50);
@@ -91,6 +91,7 @@ public class PlayState extends State {
 
         /**prepare out text*/
         bitmapFont = SwiftyGlider.res.GeneratorFont();
+        reset();
         setLevel(level);
     }
 
@@ -102,6 +103,9 @@ public class PlayState extends State {
         wallFrequency = 3f;
         collidingLatch = false;
         windDistanceSafetyLatch = true;
+
+        wallQueueActive.clear();
+        wallQueueWaiting.clear();
     }
 
     public void setLevel(int level){
@@ -109,8 +113,6 @@ public class PlayState extends State {
         glider.setWind(0);
         lastSavePoint = level;
         this.level = level;
-        wallQueueActive.clear();
-        wallQueueWaiting.clear();
 
         /** Update the environment when we start the game or reach a save point*/
         if(level >= LV_EYEOFNEEDLE){
@@ -139,7 +141,7 @@ public class PlayState extends State {
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
             gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
-        }else if(level >=LV_FIRSTWIND) {
+        }else if(level >=LV_FIRSTWIND ) {
             Wall.setDescentSpeed(5f);
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
             gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
@@ -154,7 +156,6 @@ public class PlayState extends State {
 
     @Override
     public void handleInput() {
-
         /** we're going to try multitouch */
         /** use the vector3 to grab the mouse position */
         /** we only want max MAX_FINGERS inputs available */
@@ -207,7 +208,6 @@ public class PlayState extends State {
     }
 
     private void calculateWeather(float dt){
-
         if(level > 399){
             /** at this point user knows and has competency of all level types
              * Now things get really difficult */
@@ -306,7 +306,6 @@ public class PlayState extends State {
 
                 System.out.println(Tag + "CheckDeath() Died, lastSavePoint:" + lastSavePoint);
                 gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
-
             }
         }
     }
@@ -380,18 +379,20 @@ public class PlayState extends State {
         } else if (level > LV_GOINGFAST) {
             wallFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40) * LEVEL_AMPLIFICATION;
             isOnSaveLevels = false;
+        } else if (level > LV_GOINGFAST - 1) { //148
+            setLevel(level);
         } else if (level > LV_GOINGFAST - 3) {
             isOnSaveLevels = true;
-            setLevel(level);
         } else if (level >= LV_FIRSTWIND) {
             isOnSaveLevels = false;
             wallFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND) * LEVEL_AMPLIFICATION;
-        } else if (level >= LV_FIRSTWIND - 3) {
+        } else if (level >= LV_FIRSTWIND - 1) {
+            setLevel(level + 1);
+        } else if (level >= LV_FIRSTWIND - 2) {
             isOnSaveLevels = true;
-            setLevel(level);
-        } else if (level < LV_BEGINNING) {
+        } else {
             isOnSaveLevels = false;
-            wallFrequency = WALL_RATE_DEFAULT - level * LEVEL_AMPLIFICATION;
+            wallFrequency = WALL_RATE_DEFAULT - (level )* LEVEL_AMPLIFICATION;
         }
     }
 

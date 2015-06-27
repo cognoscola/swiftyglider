@@ -70,6 +70,15 @@ public class ScoreState extends State {
 
         this.lastSavePoint = lastSavePoint;
 //        scoreRegion = SwiftyGlider.res.getAtlas("sprites").findRegion("button");
+
+        /** check achievemen*/
+        if(SwiftyGlider.playServices != null){
+
+            if(bestLevel > 0){
+                SwiftyGlider.playServices.Unlock(SwiftyGlider.ACHIEVE_PRO_GLIDER);
+                SwiftyGlider.playServices.Score(bestLevel);
+            }
+        }
     }
 
     @Override

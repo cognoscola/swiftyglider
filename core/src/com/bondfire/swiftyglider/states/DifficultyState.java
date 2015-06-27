@@ -7,7 +7,6 @@ import com.badlogic.gdx.utils.Array;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.WhiteButtons;
 
-
 public class DifficultyState extends State{
 
     private final static String LV1_TEXT = "Very Beginning";
@@ -26,10 +25,7 @@ public class DifficultyState extends State{
     public DifficultyState(GSM gsm){
         super(gsm);
 
-        //TODO
-        SwiftyGlider.preferences.putInteger(ScoreState.KEY_BEST, 399).flush();
-
-       texts = getNames(SwiftyGlider.preferences.getInteger(ScoreState.KEY_BEST,0));
+        texts = getNames(SwiftyGlider.preferences.getInteger(ScoreState.KEY_BEST,0));
 
         buttons = new Array<WhiteButtons>();
         bitmapFont = SwiftyGlider.res.GeneratorFont();
@@ -64,7 +60,6 @@ public class DifficultyState extends State{
 
     @Override
     public void handleInput() {
-
         /** get our mouse */
         if(Gdx.input.justTouched()){
             mouse.x = Gdx.input.getX();
@@ -73,7 +68,7 @@ public class DifficultyState extends State{
 
             for(int i = 0; i <buttons.size; i++){
                 if(buttons.get(i).contains(mouse.x, mouse.y)){
-//                    System.out.println("Clicked: " + i);
+//                    gsm.set(new PlayState(gsm, 200));
                     gsm.set(new PlayState(gsm, getLevel(i)));
                 }
             }
