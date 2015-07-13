@@ -1,5 +1,6 @@
 package com.bondfire.swiftyglider.sprites;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -81,13 +82,16 @@ public class Leaf extends Box {
         }
         atlas.bind();
 
+        float bias = SwiftyGlider.MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
+        SwiftyGlider.shader.setUniformf("bias", bias);
+
         sb.draw(atlas.tex,
                 x - width / 2,
                 y - height / 2,
                 width / 2,
                 height / 2,
-                width,
-                height,
+                width + bias*10,
+                height + bias*10,
                 1,
                 1,
                 rotation,// scale

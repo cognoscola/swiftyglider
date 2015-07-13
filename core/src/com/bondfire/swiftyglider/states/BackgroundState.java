@@ -42,8 +42,7 @@ public class BackgroundState extends State  {
 
         sb.begin();
 
-        float bias = SwiftyGlider.MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
-        SwiftyGlider.shader.setUniformf("bias", bias);
+
 
         for(int i = 0; i < numofLeafs; i++){
             leafs[i].render(sb);
