@@ -35,6 +35,8 @@ public class MenuState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
+
+
         instruction.render(sb);
         start.render(sb);
         sb.end();
@@ -42,6 +44,8 @@ public class MenuState extends State {
 
     @Override
     public void handleInput() {
+
+
 
         /** get our mouse */
         if(Gdx.input.justTouched()){

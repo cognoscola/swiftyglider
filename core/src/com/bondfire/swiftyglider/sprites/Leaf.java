@@ -3,6 +3,7 @@ package com.bondfire.swiftyglider.sprites;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
 
@@ -19,16 +20,19 @@ public class Leaf extends Box {
 
     private float rotation;
 
+    BlurrableTextureAtlas atlas;
+
     public Leaf() {
 
         /** assign a random location */
         this.x = MathUtils.random(SwiftyGlider.WIDTH);
         timer = MathUtils.random(MAX_TIME);
+        atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
 
         /** get our leafy assets */
-        leafs[0] = SwiftyGlider.res.getAtlas("sprites").findRegion("leaf1");
-        leafs[1] = SwiftyGlider.res.getAtlas("sprites").findRegion("leaf2");
-        leafs[2] = SwiftyGlider.res.getAtlas("sprites").findRegion("leaf3");
+        leafs[0] = atlas.findRegion("leaf1");
+        leafs[1] = atlas.findRegion("leaf2");
+        leafs[2] = atlas.findRegion("leaf3");
 
         /** assign a random leaf to use */
         currentLeaf =  leafs[MathUtils.random(2)];
@@ -40,7 +44,6 @@ public class Leaf extends Box {
     }
 
     public void update(float dt){
-
 
         /*** update the Y movement*/
         if(this.y > END_Y){
@@ -67,12 +70,35 @@ public class Leaf extends Box {
             this.x = 0 - currentLeaf.getRegionWidth();
             rotation = MathUtils.random(360f);
         }
-
     }
 
     public void render(SpriteBatch sb){
 
-        sb.draw(currentLeaf,
+        if(!atlas.isBlurrable()){
+            System.out.println("Blurring from Lighs");
+            currentLeaf.getTexture().getTextureData().prepare();
+            atlas.PrepareBlur(currentLeaf.getTexture().getTextureData().consumePixmap());
+        }
+        atlas.bind();
+
+        sb.draw(atlas.tex,
+                x - width / 2,
+                y - height / 2,
+                width / 2,
+                height / 2,
+                width,
+                height,
+                1,
+                1,
+                rotation,// scale
+                currentLeaf.getRegionX(),
+                currentLeaf.getRegionY(),
+                currentLeaf.getRegionWidth(),
+                currentLeaf.getRegionHeight(),
+                false,
+                false);
+
+      /*  sb.draw(currentLeaf,
                 x - width/2,
                 y - height/ 2,
                 width/2,
@@ -81,8 +107,7 @@ public class Leaf extends Box {
                 height,
                 1,
                 1,
-                rotation);
-//        sb.draw(currentLeaf,  x - width/2 , y - height/ 2, width, height);
+                rotation);*/
     }
 
     public void setWind(int wind){

@@ -13,6 +13,8 @@ public class WhiteButtons extends Box {
     private GlyphLayout layout;
     private TextureRegion background;
 
+    private boolean whiteBackground = true;
+
     private float backWidth;
     private float backHeight;
 
@@ -36,7 +38,9 @@ public class WhiteButtons extends Box {
 
     public void render(SpriteBatch sb){
 
-        sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
+        if(whiteBackground){
+            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
+        }
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
     }
 
@@ -54,4 +58,10 @@ public class WhiteButtons extends Box {
 
         return ret;
     }
+
+    public void setBackgroundVisibility(boolean show){
+        whiteBackground = show;
+    }
+
+
 }

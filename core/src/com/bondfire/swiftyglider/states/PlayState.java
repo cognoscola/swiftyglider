@@ -190,6 +190,7 @@ public class PlayState extends State {
         checkWallRate();
 
         checkIndicatorRate();
+
         /** checkCollision */
         checkCollision();
 
@@ -306,6 +307,10 @@ public class PlayState extends State {
 
                 System.out.println(Tag + "CheckDeath() Died, lastSavePoint:" + lastSavePoint);
                 gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
+
+                if( SwiftyGlider.adController != null){
+                    SwiftyGlider.adController.setAdVisibility(true);
+                }
             }
         }
     }
@@ -318,7 +323,6 @@ public class PlayState extends State {
             Wall wall = wallQueueActive.get(i);
 
            /** if yes, put them in the waitQueue*/
-
            if(wall.isDone()){
               wallQueueWaiting.add(wall);
                wallQueueActive.removeIndex(i);

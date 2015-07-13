@@ -19,6 +19,7 @@ public class DifficultyState extends State{
 
     String[] texts;
 
+    private WhiteButtons instruction;
     private Array<WhiteButtons> buttons;
     private BitmapFont bitmapFont;
 
@@ -29,6 +30,9 @@ public class DifficultyState extends State{
 
         buttons = new Array<WhiteButtons>();
         bitmapFont = SwiftyGlider.res.GeneratorFont();
+
+        instruction = new WhiteButtons(bitmapFont,"Choose Difficulty",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
+        instruction.setBackgroundVisibility(false);
 
         for(int i = 0; i <texts.length ; i++){
             buttons.add(
@@ -52,6 +56,7 @@ public class DifficultyState extends State{
 
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
+        instruction.render(sb);
         for(int i = 0; i <buttons.size; i++){
             buttons.get(i).render(sb);
         }
@@ -70,6 +75,11 @@ public class DifficultyState extends State{
                 if(buttons.get(i).contains(mouse.x, mouse.y)){
 //                    gsm.set(new PlayState(gsm, 200));
                     gsm.set(new PlayState(gsm, getLevel(i)));
+
+                    if( SwiftyGlider.adController != null){
+                        SwiftyGlider.adController.newRequest();
+                        SwiftyGlider.adController.setAdVisibility(false);
+                    }
                 }
             }
         }

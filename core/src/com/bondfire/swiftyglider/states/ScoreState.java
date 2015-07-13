@@ -41,7 +41,7 @@ public class ScoreState extends State {
         back = new Graphic(
                 SwiftyGlider.res.getAtlas("sprites").findRegion("g4454"),
                  50,
-                SwiftyGlider.HEIGHT - 50,
+                SwiftyGlider.HEIGHT - 100,
                 60,
                 60);
 
@@ -58,14 +58,14 @@ public class ScoreState extends State {
                 bitmapFont,
                 "Score:" + level,
                 SwiftyGlider.WIDTH /2 ,
-                SwiftyGlider.HEIGHT /4
+                SwiftyGlider.HEIGHT /4 + 20
         );
 
         hiScoreText = new WhiteButtons(
                 bitmapFont,
                 "Best:" + bestLevel,
                 SwiftyGlider.WIDTH /2 ,
-                SwiftyGlider.HEIGHT /4 - 50
+                SwiftyGlider.HEIGHT /4 - 50 + 20
         );
 
         this.lastSavePoint = lastSavePoint;
@@ -74,11 +74,21 @@ public class ScoreState extends State {
         /** check achievemen*/
         if(SwiftyGlider.playServices != null){
 
-            if(bestLevel > 0){
+            if(bestLevel > 75){
                 SwiftyGlider.playServices.Unlock(SwiftyGlider.ACHIEVE_PRO_GLIDER);
-                SwiftyGlider.playServices.Score(bestLevel);
+            }else if(bestLevel > PlayState.LV_GOINGFAST){
+                SwiftyGlider.playServices.Unlock(SwiftyGlider.ACHIEVE_SKY_GLIDER);
+            }else if(bestLevel > PlayState.LV_WINDSLOW - 1){
+                SwiftyGlider.playServices.Unlock(SwiftyGlider.ACHIEVE_PERSISTEN_GLIDER);
+            }else if(bestLevel > PlayState.LV_EYEOFNEEDLE){
+                SwiftyGlider.playServices.Unlock(SwiftyGlider.ACHIEVE_MASTER_GLIDER);
+            }else if(bestLevel >499){
+                SwiftyGlider.playServices.Unlock(SwiftyGlider.ACHIEVE_GRAND_MASTER_GLIDER);
             }
+
+            SwiftyGlider.playServices.Score(bestLevel);
         }
+
     }
 
     @Override
@@ -116,6 +126,11 @@ public class ScoreState extends State {
 
             if (start.contains(mouse.x, mouse.y)) {
                 gsm.set(new PlayState(gsm,lastSavePoint));
+
+                if( SwiftyGlider.adController != null){
+                    SwiftyGlider.adController.newRequest();
+                    SwiftyGlider.adController.setAdVisibility(false);
+                }
 //                gsm.set(new PlayState(gsm,PlayState.LV_WINDSLOW));
 //                gsm.set(new PlayState(gsm,PlayState.LV_SUPERSLOW));
             }

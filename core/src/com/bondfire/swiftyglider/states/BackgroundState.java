@@ -39,7 +39,12 @@ public class BackgroundState extends State  {
 
         backWall.render(sr);
         sb.setProjectionMatrix(cam.combined);
+
         sb.begin();
+
+        float bias = SwiftyGlider.MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
+        SwiftyGlider.shader.setUniformf("bias", bias);
+
         for(int i = 0; i < numofLeafs; i++){
             leafs[i].render(sb);
         }
