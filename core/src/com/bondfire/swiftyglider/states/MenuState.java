@@ -40,6 +40,7 @@ public class MenuState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
+        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.blurAmount);
         instruction.render(sb);
         start.render(sb);
         sb.end();
@@ -47,7 +48,6 @@ public class MenuState extends State {
 
     @Override
     public void handleInput() {
-
 
 
         /** get our mouse */

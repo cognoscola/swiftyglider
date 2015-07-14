@@ -1,5 +1,6 @@
 package com.bondfire.swiftyglider.ui;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -19,6 +20,8 @@ public class WhiteButtons extends Box {
     private float backWidth;
     private float backHeight;
 
+    private float textAlpha;
+
     BlurrableTextureAtlas atlas;
 
     public WhiteButtons(BitmapFont bitmapFont, String text, float x, float y){
@@ -31,6 +34,8 @@ public class WhiteButtons extends Box {
         layout = new GlyphLayout();
         layout.setText(bitmapFont,text);
 
+
+
         this.width = layout.width;
         this.height = layout.height;
 
@@ -42,6 +47,8 @@ public class WhiteButtons extends Box {
     }
 
     public void render(SpriteBatch sb){
+
+        textAlpha = 1- (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
 
         if(whiteBackground){
 
@@ -63,7 +70,12 @@ public class WhiteButtons extends Box {
                     false);
 //            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
         }
+
+        bitmapFont.setColor(1.0f,1.0f,1.0f, textAlpha );
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
+
+
+
     }
 
     @Override

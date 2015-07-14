@@ -40,7 +40,7 @@ public class BackgroundState extends State  {
         backWall.render(sr);
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-
+        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.blurAmount);
         for(int i = 0; i < numofLeafs; i++){
             leafs[i].render(sb);
         }

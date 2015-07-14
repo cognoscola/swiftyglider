@@ -93,6 +93,8 @@ public class SwiftyGlider extends ApplicationAdapter {
 
 	public static ShaderProgram shader;
 
+	public static float blurAmount;
+
 	public SwiftyGlider(int time){
 		timeInSeconds = time;
 	}
@@ -100,8 +102,13 @@ public class SwiftyGlider extends ApplicationAdapter {
 	public void injectAchievementGroup(PlayServicesObject group){
 		playServices = group;
 	}
+
 	public void injectAdController(AdController controller){
 		adController = controller;
+	}
+
+	public void setBlur(float blurPercent){
+		this.blurAmount = blurPercent;
 	}
 
 	@Override
@@ -142,7 +149,11 @@ public class SwiftyGlider extends ApplicationAdapter {
 		gsm.push(new MenuState(gsm));
 	}
 
+
+
 	/** Game loop libgdx uses 60hz */
+
+
 	@Override
 	public void render () {
 

@@ -32,7 +32,6 @@ public class Graphic extends Box{
 
     }
 
-
     public void render(SpriteBatch sb){
         if(!atlas.isBlurrable()){
             System.out.println("Blurring from Lighs");
@@ -40,7 +39,6 @@ public class Graphic extends Box{
             atlas.PrepareBlur(image.getTexture().getTextureData().consumePixmap());
         }
         atlas.bind();
-
         sb.draw(atlas.tex,
                 x - width / 2,
                 y - height / 2,

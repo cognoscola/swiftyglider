@@ -107,6 +107,7 @@ public class ScoreState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
+        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.blurAmount);
         back.render(sb);
         instruction.render(sb);
         start.render(sb);

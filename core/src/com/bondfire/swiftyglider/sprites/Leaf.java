@@ -81,8 +81,8 @@ public class Leaf extends Box {
         }
         atlas.bind();
 
-        float bias = SwiftyGlider.MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
-        SwiftyGlider.shader.setUniformf("bias", bias);
+      /*  float bias = SwiftyGlider.MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
+        SwiftyGlider.shader.setUniformf("bias", bias);*/
 
         sb.draw(atlas.tex,
                 x - width / 2,
