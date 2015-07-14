@@ -65,6 +65,7 @@ public class Leaf extends Box {
             this.x = SwiftyGlider.WIDTH;
             rotation = MathUtils.random(360f);
         }
+
         /** if we reach the right side of the screen */
         else if (this.x > SwiftyGlider.WIDTH + currentLeaf.getRegionWidth()) {
             this.x = 0 - currentLeaf.getRegionWidth();
