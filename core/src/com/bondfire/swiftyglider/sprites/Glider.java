@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
+import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
 
@@ -54,6 +55,8 @@ public class Glider extends Box {
 
     private float wind;
 
+    BlurrableTextureAtlas atlas;
+
     public Glider(float x, float y) {
 
         System.out.println("New Glider");
@@ -64,10 +67,12 @@ public class Glider extends Box {
         this.width = SCALE_GLIDER * SwiftyGlider.WIDTH;
         this.height = SCALE_GLIDER * SwiftyGlider.WIDTH;
 
-        body = SwiftyGlider.res.getAtlas("sprites").findRegion("glider");
-        explosion = SwiftyGlider.res.getAtlas("sprites").findRegion("explosion");
-        tail_left = SwiftyGlider.res.getAtlas("sprites").findRegion("tail_left");
-        tail_right = SwiftyGlider.res.getAtlas("sprites").findRegion("tail_right");
+        atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+
+        body = atlas.findRegion("glider");
+        explosion = atlas.findRegion("explosion");
+        tail_left = atlas.findRegion("tail_left");
+        tail_right = atlas.findRegion("tail_right");
 
         filter = new LinkedList<Float>();
 
@@ -148,12 +153,74 @@ public class Glider extends Box {
     }
 
     public void render(SpriteBatch sb){
+
+        if(!atlas.isBlurrable()){
+            System.out.println("Blurring from Lighs");
+            body.getTexture().getTextureData().prepare();
+            atlas.PrepareBlur(body.getTexture().getTextureData().consumePixmap());
+        }
+        atlas.bind();
+
         if(!(deathTimer > TIME_DEATH)){
             if(death_latch){
-                sb.draw(explosion, x - width / 2, y - height / 2, width, height);
+
+                sb.draw(atlas.tex,
+                        x - width / 2,
+                        y - height / 2,
+                        width / 2,
+                        height / 2,
+                        width ,
+                        height ,
+                        1,
+                        1,
+                        0,// scale
+                        explosion.getRegionX(),
+                        explosion.getRegionY(),
+                        explosion.getRegionWidth(),
+                        explosion.getRegionHeight(),
+                        false,
+                        false);
+
+
+//                sb.draw(explosion, x - width / 2, y - height / 2, width, height);
             }else{
-                sb.draw(collidingWind ? explosion:body, x - width / 2, y - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
-                sb.draw(tailFlapping ? tail_left:tail_right, x - width / 2, y - height - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
+
+                sb.draw(atlas.tex,
+                        x - width / 2,
+                        y - height / 2,
+                        width / 2,
+                        height / 2,
+                        (width - width * Math.abs(velocity_X)/1200 ) ,
+                        height ,
+                        1,
+                        1,
+                        0,// scale
+                        collidingWind ?  explosion.getRegionX():body.getRegionX(),
+                        collidingWind ?  explosion.getRegionY():body.getRegionY(),
+                        collidingWind ?  explosion.getRegionWidth():body.getRegionWidth(),
+                        collidingWind ?  explosion.getRegionHeight():body.getRegionHeight(),
+                        false,
+                        false);
+
+                sb.draw(atlas.tex,
+                        x - width / 2,
+                        y - height - height / 2,
+                        width / 2,
+                        height / 2,
+                        (width - width * Math.abs(velocity_X)/1200 ) ,
+                        height ,
+                        1,
+                        1,
+                        0,// scale
+                        tailFlapping ?  tail_left.getRegionX():tail_right.getRegionX(),
+                        tailFlapping ?  tail_left.getRegionY():tail_right.getRegionY(),
+                        tailFlapping ?  tail_left.getRegionWidth():tail_right.getRegionWidth(),
+                        tailFlapping ?  tail_left.getRegionHeight():tail_right.getRegionHeight(),
+                        false,
+                        false);
+
+//                sb.draw(collidingWind ? explosion:body, x - width / 2, y - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
+//                sb.draw(tailFlapping ? tail_left:tail_right, x - width / 2, y - height - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
             }
         }
     }

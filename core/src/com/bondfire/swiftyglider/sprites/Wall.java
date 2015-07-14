@@ -3,6 +3,7 @@ package com.bondfire.swiftyglider.sprites;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
 
@@ -44,14 +45,19 @@ public class Wall extends Box {
     private float rightWallRotate;
     private boolean swap;
 
+    BlurrableTextureAtlas atlas;
+
 
     public Wall( float canvasWidth, float gapLength) {
         this.gapLength = gapLength;
         this.canvasWidth = canvasWidth;
 
+
         this.y = SwiftyGlider.HEIGHT;
-        leftWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_left");
-        rightWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_right");
+
+        atlas =(BlurrableTextureAtlas) SwiftyGlider.res.getAtlas("sprites");
+        leftWall =atlas.findRegion("wall_left");
+        rightWall = atlas.findRegion("wall_right");
 
         rightWallWidth = SwiftyGlider.WIDTH;
 //        rightWallHeight = rightWall.getRegionHeight();
@@ -70,8 +76,10 @@ public class Wall extends Box {
         this.canvasWidth = canvasWidth;
 
         this.timer = MAX_TIME * startingHeight;
-        leftWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_left");
-        rightWall = SwiftyGlider.res.getAtlas("sprites").findRegion("wall_right");
+
+        atlas =(BlurrableTextureAtlas) SwiftyGlider.res.getAtlas("sprites");
+        leftWall =atlas.findRegion("wall_left");
+        rightWall = atlas.findRegion("wall_right");
 
         rightWallWidth = SwiftyGlider.WIDTH;
 //        rightWallHeight = rightWall.getRegionHeight();
@@ -98,7 +106,48 @@ public class Wall extends Box {
 
     public void render(SpriteBatch sb){
 
-        sb.draw(swap ? rightWall:leftWall,
+        if(!atlas.isBlurrable()){
+            System.out.println("Blurring from Lighs");
+            leftWall.getTexture().getTextureData().prepare();
+            atlas.PrepareBlur(leftWall.getTexture().getTextureData().consumePixmap());
+        }
+        atlas.bind();
+
+        sb.draw(atlas.tex,
+                leftWallPosition_X - leftWallWidth/2,
+                y - leftWallHeight / 2,
+                leftWallWidth/2,
+                leftWallHeight/2,
+                leftWallWidth ,
+                leftWallHeight ,
+                1,
+                1,
+                leftWallRotate,// scale
+                swap ? rightWall.getRegionX():leftWall.getRegionX(),
+                swap ? rightWall.getRegionY():leftWall.getRegionY(),
+                swap ? rightWall.getRegionWidth():leftWall.getRegionWidth(),
+                swap ? rightWall.getRegionHeight():leftWall.getRegionHeight(),
+                false,
+                false);
+
+        sb.draw(atlas.tex,
+                rightWallPosition_X - rightWallWidth/2,
+                y - rightWallHeight / 2,
+                rightWallWidth/2,
+                rightWallHeight/2,
+                rightWallWidth ,
+                rightWallHeight ,
+                1,
+                1,
+                rightWallRotate,// scale
+                swap ? leftWall.getRegionX():rightWall.getRegionX(),
+                swap ? leftWall.getRegionY():rightWall.getRegionY(),
+                swap ? leftWall.getRegionWidth():rightWall.getRegionWidth(),
+                swap ? leftWall.getRegionHeight():rightWall.getRegionHeight(),
+                false,
+                false);
+
+       /* sb.draw(swap ? rightWall:leftWall,
                 leftWallPosition_X - leftWallWidth/2,
                 y - leftWallHeight / 2,
                 leftWallWidth/2,
@@ -118,7 +167,7 @@ public class Wall extends Box {
                 rightWallHeight,
                 1,
                 1,
-                leftWallRotate);
+                rightWallRotate);*/
 
 //        sb.draw(leftWall,  leftWallPosition_X - leftWallWidth/2, y - leftWallHeight / 2, leftWallWidth, leftWallHeight);
 //        sb.draw(rightWall, rightWallPosition_X - rightWallWidth/2, y - rightWallHeight / 2, rightWallWidth, rightWallHeight);

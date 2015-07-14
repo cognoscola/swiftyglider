@@ -34,8 +34,6 @@ public class WhiteButtons extends Box {
         layout = new GlyphLayout();
         layout.setText(bitmapFont,text);
 
-
-
         this.width = layout.width;
         this.height = layout.height;
 
@@ -48,10 +46,9 @@ public class WhiteButtons extends Box {
 
     public void render(SpriteBatch sb){
 
-        textAlpha = 1- (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
+        textAlpha = SwiftyGlider.blurAmount;
 
         if(whiteBackground){
-
             sb.draw(atlas.tex,
                     x - width / 2,
                     y - height / 2,
@@ -71,7 +68,7 @@ public class WhiteButtons extends Box {
 //            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
         }
 
-        bitmapFont.setColor(1.0f,1.0f,1.0f, textAlpha );
+        bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (textAlpha/4) );
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
 
 

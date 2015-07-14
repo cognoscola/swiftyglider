@@ -128,7 +128,7 @@ public class SwiftyGlider extends ApplicationAdapter {
 
 		/** load the blur shader */
 		FileHandle[] blurfiles = res.getShaders("blurShader");
-		shader = new ShaderProgram(VERT,FRAG);
+		shader = new ShaderProgram(blurfiles[0],blurfiles[1]);
 		if (!shader.isCompiled()) {
 			Gdx.app.log("ShaderLessons", "Could not compile shaders: "+shader.getLog());
 			Gdx.app.exit();
@@ -149,14 +149,14 @@ public class SwiftyGlider extends ApplicationAdapter {
 		gsm.push(new MenuState(gsm));
 	}
 
-
-
 	/** Game loop libgdx uses 60hz */
 
 
 	@Override
 	public void render () {
-
+		//TODO Remove
+		float bias = MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
+		setBlur(bias);
 
 		/** CLear the screen */
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
