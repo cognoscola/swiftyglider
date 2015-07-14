@@ -55,7 +55,7 @@ public class SwiftyGlider extends ApplicationAdapter {
 					"	gl_FragColor = texColor * vColor;\n" +
 					"}";
 
-	public final static float MAX_BLUR = 5f;
+	public final static float MAX_BLUR = 4f;
 
 	/** actual game dimensions (not the screen size )*/
 	public static final String TITLE= "Swifty Glider";
@@ -139,7 +139,7 @@ public class SwiftyGlider extends ApplicationAdapter {
 		gsm.push(new BackgroundState(gsm, timeInSeconds));
 
 		/** push the menu state*/
-//		gsm.push(new MenuState(gsm));
+		gsm.push(new MenuState(gsm));
 	}
 
 	/** Game loop libgdx uses 60hz */

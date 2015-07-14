@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 
 public class WhiteButtons extends Box {
@@ -18,6 +19,8 @@ public class WhiteButtons extends Box {
     private float backWidth;
     private float backHeight;
 
+    BlurrableTextureAtlas atlas;
+
     public WhiteButtons(BitmapFont bitmapFont, String text, float x, float y){
 
         this.text = text;
@@ -31,7 +34,9 @@ public class WhiteButtons extends Box {
         this.width = layout.width;
         this.height = layout.height;
 
-        background = SwiftyGlider.res.getAtlas("sprites").findRegion("button");
+        atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+
+        background = atlas.findRegion("button");
         backWidth = background.getRegionWidth();
         backHeight = background.getRegionHeight();
     }
@@ -39,7 +44,24 @@ public class WhiteButtons extends Box {
     public void render(SpriteBatch sb){
 
         if(whiteBackground){
-            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
+
+            sb.draw(atlas.tex,
+                    x - width / 2,
+                    y - height / 2,
+                    width / 2,
+                    height / 2,
+                    width ,
+                    height ,
+                    1,
+                    1,
+                    0,// scale
+                    background.getRegionX(),
+                    background.getRegionY(),
+                    background.getRegionWidth(),
+                    background.getRegionHeight(),
+                    false,
+                    false);
+//            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
         }
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
     }

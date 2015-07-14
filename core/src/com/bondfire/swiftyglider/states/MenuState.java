@@ -2,6 +2,7 @@ package com.bondfire.swiftyglider.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Graphic;
 
@@ -16,12 +17,16 @@ public class MenuState extends State {
     public MenuState(GSM gsm){
         super(gsm);
 
+        BlurrableTextureAtlas atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+
         instruction = new Graphic(
-                SwiftyGlider.res.getAtlas("sprites").findRegion("instructions"),
+                atlas,
+                atlas.findRegion("instructions"),
                 SwiftyGlider.WIDTH/2,
                 SwiftyGlider.HEIGHT*3/4 );
         start = new Graphic(
-                SwiftyGlider.res.getAtlas("sprites").findRegion("start"),
+                atlas,
+                atlas.findRegion("start"),
                 SwiftyGlider.WIDTH/2,
                 SwiftyGlider.HEIGHT/2);
     }
@@ -35,8 +40,6 @@ public class MenuState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-
-
         instruction.render(sb);
         start.render(sb);
         sb.end();
