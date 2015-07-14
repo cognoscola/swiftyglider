@@ -13,5 +13,6 @@ uniform float bias;
 
 void main() {
     vec4 texColor = texture2D(u_texture, vTexCoord, bias);
-    gl_FragColor = texColor * vColor;
+    gl_FragColor = texColor * vColor * vec4(1.0,1.0,1.0,0.01);
+
 }

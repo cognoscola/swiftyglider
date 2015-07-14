@@ -18,7 +18,6 @@ public class Leaf extends Box {
     private float END_Y;
 
     private float wind;
-
     private float rotation;
 
     BlurrableTextureAtlas atlas;
@@ -90,8 +89,8 @@ public class Leaf extends Box {
                 y - height / 2,
                 width / 2,
                 height / 2,
-                width + bias*10,
-                height + bias*10,
+                width ,
+                height ,
                 1,
                 1,
                 rotation,// scale
