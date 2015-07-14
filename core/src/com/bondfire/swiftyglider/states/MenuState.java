@@ -40,7 +40,7 @@ public class MenuState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.blurAmount);
+        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
         instruction.render(sb);
         start.render(sb);
         sb.end();

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.handler.Content;
 import com.bondfire.app.services.AdController;
 import com.bondfire.app.services.PlayServicesObject;
@@ -81,7 +82,7 @@ public class SwiftyGlider extends ApplicationAdapter {
 	public static AdController adController;
 
 	/** we use it to draw */
-	private SpriteBatch sb;
+	private BlurrableSpriteBatch sb;
 
 	/** game state manager */
 	private GSM gsm; //our gsm here
@@ -108,7 +109,9 @@ public class SwiftyGlider extends ApplicationAdapter {
 	}
 
 	public void setBlur(float blurPercent){
+		//No longer getting 4f
 		this.blurAmount = blurPercent;
+		sb.setBlurAmount(blurAmount);
 	}
 
 	@Override
@@ -134,7 +137,7 @@ public class SwiftyGlider extends ApplicationAdapter {
 			Gdx.app.exit();
 		}
 
-		sb = new SpriteBatch();
+		sb = new BlurrableSpriteBatch();
 		sb.setShader(shader);
 		shader.begin();
 		shader.setUniformf("bias", 0f);
@@ -154,10 +157,11 @@ public class SwiftyGlider extends ApplicationAdapter {
 
 	@Override
 	public void render () {
-		//TODO Remove
-		float bias = MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
-		setBlur(bias);
 
+		if(appType == Application.ApplicationType.Desktop){
+			float bias = MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
+			setBlur(bias);
+		}
 		/** CLear the screen */
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		gsm.update(Gdx.graphics.getDeltaTime());

@@ -56,7 +56,7 @@ public class DifficultyState extends State{
 
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.blurAmount);
+        SwiftyGlider.shader.setUniformf("bias",SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
         instruction.render(sb);
         for(int i = 0; i <buttons.size; i++){
             buttons.get(i).render(sb);

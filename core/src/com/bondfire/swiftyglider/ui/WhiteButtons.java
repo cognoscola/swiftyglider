@@ -68,7 +68,7 @@ public class WhiteButtons extends Box {
 //            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
         }
 
-        bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (textAlpha/4) );
+        bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (textAlpha) );
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
 
 
