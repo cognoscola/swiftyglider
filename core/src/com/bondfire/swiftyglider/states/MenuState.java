@@ -12,10 +12,9 @@ import com.bondfire.swiftyglider.ui.Graphic;
 public class MenuState extends State {
 
     private final static float INSTRUCTION_HEIGHT_R = 0.35f;
-    private final static float INSTRUCTION_WIDTH_R = 0.6f;
+    private final static float INSTRUCTION_WIDTH_R = 0.7f;
     private final static float START_WIDTH_R = 0.25f;
     private final static float START_HEIGH_R = 0.1f;
-
 
     private Graphic instruction;
     private Graphic start;

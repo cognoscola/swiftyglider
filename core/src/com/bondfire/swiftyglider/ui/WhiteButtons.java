@@ -52,6 +52,7 @@ public class WhiteButtons extends Box {
         textAlpha = SwiftyGlider.blurAmount;
 
         if(whiteBackground){
+
             sb.draw(atlas.tex,
                     x - width / 2,
                     y - height / 2 ,
@@ -70,10 +71,8 @@ public class WhiteButtons extends Box {
                     false);
 //            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
         }
-
         bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (textAlpha) );
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
-
     }
 
     @Override
