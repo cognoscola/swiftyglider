@@ -10,6 +10,8 @@ import com.bondfire.swiftyglider.ui.Box;
 
 public class Leaf extends Box {
 
+    private final static float LEAF_R = 0.2f;
+
     private TextureRegion[] leafs = new TextureRegion[3];
     private TextureRegion currentLeaf;
 
@@ -37,9 +39,9 @@ public class Leaf extends Box {
         /** assign a random leaf to use */
         currentLeaf =  leafs[MathUtils.random(2)];
 
-        this.width = currentLeaf.getRegionWidth();
-        this.height = currentLeaf.getRegionHeight();
-        this.END_Y = 0 - currentLeaf.getRegionHeight();
+        this.width = LEAF_R * SwiftyGlider.WIDTH;
+        this.height =LEAF_R * SwiftyGlider.WIDTH;
+        this.END_Y = 0 - height;
         rotation = MathUtils.random(360f);
     }
 

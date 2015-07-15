@@ -111,7 +111,9 @@ public class SwiftyGlider extends ApplicationAdapter {
 	public void setBlur(float blurPercent){
 		//No longer getting 4f
 		this.blurAmount = blurPercent;
-		sb.setBlurAmount(blurAmount);
+		if(sb != null){
+			sb.setBlurAmount(blurAmount);
+		}
 	}
 
 	@Override
@@ -125,7 +127,7 @@ public class SwiftyGlider extends ApplicationAdapter {
 		preferences = Gdx.app.getPreferences(TITLE);
 
 		res = new Content();
-		res.LoadAtlas("swiftyglider.pack", "sprites"); //our path to the file and the key
+		res.LoadAtlas("swifty.pack", "sprites"); //our path to the file and the key
 		res.LoadFont("open_sans.ttf");
 		res.LoadShaders("shaders/blurVertex.glsl","shaders/blurFragment.glsl","blurShader");
 
@@ -154,12 +156,11 @@ public class SwiftyGlider extends ApplicationAdapter {
 
 	/** Game loop libgdx uses 60hz */
 
-
 	@Override
 	public void render () {
 
 		if(appType == Application.ApplicationType.Desktop){
-			float bias = MAX_BLUR * (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
+			float bias = (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
 			setBlur(bias);
 		}
 		/** CLear the screen */

@@ -1,103 +1,103 @@
 
-swiftyglider.png
+swifty.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 wall_right
   rotate: false
-  xy: 1, 855
-  size: 800, 150
-  orig: 800, 150
+  xy: 1, 872
+  size: 1380, 138
+  orig: 1380, 138
   offset: 0, 0
   index: -1
 wall_left
   rotate: false
-  xy: 1, 703
-  size: 800, 150
-  orig: 800, 150
-  offset: 0, 0
-  index: -1
-instructions
-  rotate: false
-  xy: 1, 305
-  size: 500, 396
-  orig: 500, 396
+  xy: 1, 732
+  size: 1380, 138
+  orig: 1380, 138
   offset: 0, 0
   index: -1
 indicator_line
   rotate: false
-  xy: 1, 203
-  size: 700, 100
-  orig: 700, 100
+  xy: 1, 615
+  size: 1150, 115
+  orig: 1150, 115
   offset: 0, 0
   index: -1
-button
+instructions
   rotate: false
-  xy: 1, 1
-  size: 300, 200
-  orig: 300, 200
-  offset: 0, 0
-  index: -1
-back_icon
-  rotate: false
-  xy: 803, 825
-  size: 180, 180
-  orig: 180, 180
+  xy: 1, 153
+  size: 575, 460
+  orig: 575, 460
   offset: 0, 0
   index: -1
 leaf2
   rotate: false
-  xy: 503, 549
-  size: 152, 152
-  orig: 152, 152
+  xy: 578, 313
+  size: 300, 300
+  orig: 300, 300
   offset: 0, 0
   index: -1
 leaf1
   rotate: false
-  xy: 303, 49
-  size: 152, 152
-  orig: 152, 152
+  xy: 1383, 710
+  size: 300, 300
+  orig: 300, 300
   offset: 0, 0
   index: -1
 leaf3
   rotate: false
-  xy: 503, 395
-  size: 152, 152
-  orig: 152, 152
+  xy: 1685, 710
+  size: 300, 300
+  orig: 300, 300
+  offset: 0, 0
+  index: -1
+button
+  rotate: false
+  xy: 880, 413
+  size: 300, 200
+  orig: 300, 200
+  offset: 0, 0
+  index: -1
+start
+  rotate: false
+  xy: 1, 1
+  size: 300, 150
+  orig: 300, 150
   offset: 0, 0
   index: -1
 tail_right
   rotate: false
-  xy: 457, 51
+  xy: 578, 161
   size: 150, 150
   orig: 150, 150
   offset: 0, 0
   index: -1
 tail_left
   rotate: false
-  xy: 657, 551
+  xy: 303, 1
   size: 150, 150
   orig: 150, 150
   offset: 0, 0
   index: -1
 glider
   rotate: false
-  xy: 657, 399
+  xy: 730, 161
   size: 150, 150
   orig: 150, 150
   offset: 0, 0
   index: -1
-start
+back_icon
   rotate: false
-  xy: 803, 723
-  size: 200, 100
-  orig: 200, 100
+  xy: 455, 1
+  size: 150, 150
+  orig: 150, 150
   offset: 0, 0
   index: -1
 explosion
   rotate: false
-  xy: 809, 593
-  size: 128, 128
-  orig: 128, 128
+  xy: 1153, 665
+  size: 65, 65
+  orig: 65, 65
   offset: 0, 0
   index: -1

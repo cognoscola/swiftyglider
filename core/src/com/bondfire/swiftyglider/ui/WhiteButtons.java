@@ -15,6 +15,8 @@ public class WhiteButtons extends Box {
     private GlyphLayout layout;
     private TextureRegion background;
 
+    private final static float padding = 30f;
+
     private boolean whiteBackground = true;
 
     private float backWidth;
@@ -40,8 +42,9 @@ public class WhiteButtons extends Box {
         atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
 
         background = atlas.findRegion("button");
-        backWidth = background.getRegionWidth();
-        backHeight = background.getRegionHeight();
+
+        backWidth = width;
+        backHeight = height;
     }
 
     public void render(SpriteBatch sb){
@@ -51,14 +54,14 @@ public class WhiteButtons extends Box {
         if(whiteBackground){
             sb.draw(atlas.tex,
                     x - width / 2,
-                    y - height / 2,
+                    y - height / 2 ,
                     width / 2,
                     height / 2,
-                    width ,
-                    height ,
+                    backWidth ,
+                    backHeight ,
                     1,
                     1,
-                    0,// scale
+                    0,//rotation
                     background.getRegionX(),
                     background.getRegionY(),
                     background.getRegionWidth(),
@@ -70,8 +73,6 @@ public class WhiteButtons extends Box {
 
         bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (textAlpha) );
         bitmapFont.draw(sb,text, x - width/2, y + height/2);
-
-
 
     }
 
