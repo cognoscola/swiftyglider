@@ -15,9 +15,12 @@ public class MenuState extends State {
     private final static float INSTRUCTION_WIDTH_R = 0.7f;
     private final static float START_WIDTH_R = 0.25f;
     private final static float START_HEIGH_R = 0.1f;
+    private final static float MULTIPLAYER_WIDTH_R = 0.25f;
+    private final static float MULTIPLAYER_HEIGHT_R =  0.1f;
 
     private Graphic instruction;
     private Graphic start;
+    private Graphic multiplayer;
 
     public MenuState(GSM gsm){
         super(gsm);
@@ -38,6 +41,14 @@ public class MenuState extends State {
                 SwiftyGlider.HEIGHT/2,
                 START_WIDTH_R * SwiftyGlider.WIDTH,
                 START_HEIGH_R * SwiftyGlider.HEIGHT);
+
+        multiplayer = new Graphic(
+                atlas,
+                atlas.findRegion("start"),
+                SwiftyGlider.WIDTH/2,
+                SwiftyGlider.HEIGHT/2 - 100,
+                MULTIPLAYER_WIDTH_R * SwiftyGlider.WIDTH,
+                MULTIPLAYER_HEIGHT_R * SwiftyGlider.HEIGHT);
     }
 
     @Override
@@ -52,12 +63,12 @@ public class MenuState extends State {
         SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
         instruction.render(sb);
         start.render(sb);
+        multiplayer.render(sb);
         sb.end();
     }
 
     @Override
     public void handleInput() {
-
 
         /** get our mouse */
         if(Gdx.input.justTouched()){
@@ -68,7 +79,10 @@ public class MenuState extends State {
             if(start.contains(mouse.x,mouse.y)){
                 gsm.set(new DifficultyState(gsm));
             }
+
+            if (multiplayer.contains(mouse.x, mouse.y)) {
+                gsm.set(new MultiplayerMenuState(gsm));
+            }
         }
     }
-
 }

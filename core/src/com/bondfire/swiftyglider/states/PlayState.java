@@ -10,7 +10,7 @@ import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.sprites.Glider;
 import com.bondfire.swiftyglider.sprites.Indicator;
 import com.bondfire.swiftyglider.sprites.Wall;
-import com.bondfire.swiftyglider.ui.WhiteButtons;
+import com.bondfire.swiftyglider.ui.WhiteButton;
 
 /** our play state. */
 public class PlayState extends State {
@@ -50,7 +50,7 @@ public class PlayState extends State {
     private Array<Wall> wallQueueActive;
 
     /** text ***/
-    private WhiteButtons scoreText;
+    private WhiteButton scoreText;
     private BitmapFont bitmapFont;
 
     /** Game Logic */
@@ -90,7 +90,7 @@ public class PlayState extends State {
         wallQueueActive =  new Array<Wall>();
 
         /**prepare out text*/
-        bitmapFont = SwiftyGlider.res.GeneratorFont();
+        bitmapFont = SwiftyGlider.res.getBmpFont();
         reset();
         setLevel(level);
     }
@@ -292,7 +292,7 @@ public class PlayState extends State {
     }
 
     private void updateScore(int level){
-        scoreText = new WhiteButtons(
+        scoreText = new WhiteButton(
                 bitmapFont,
                 "" + level,
                 SwiftyGlider.WIDTH * 5/6,

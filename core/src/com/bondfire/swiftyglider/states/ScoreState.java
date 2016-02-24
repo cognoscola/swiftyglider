@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Graphic;
-import com.bondfire.swiftyglider.ui.WhiteButtons;
+import com.bondfire.swiftyglider.ui.WhiteButton;
 
 public class ScoreState extends State {
 
@@ -22,8 +22,8 @@ public class ScoreState extends State {
     private Graphic back;
 
     /** text ***/
-    private WhiteButtons scoreText;
-    private WhiteButtons hiScoreText;
+    private WhiteButton scoreText;
+    private WhiteButton hiScoreText;
     private BitmapFont bitmapFont;
 
     private int lastSavePoint;
@@ -46,7 +46,7 @@ public class ScoreState extends State {
         }
 
         this.level = level;
-        bitmapFont = SwiftyGlider.res.GeneratorFont();
+        bitmapFont = SwiftyGlider.res.getBmpFont();
 
         back = new Graphic(atlas,
                 atlas.findRegion("back_icon"),
@@ -70,14 +70,14 @@ public class ScoreState extends State {
                 START_WIDTH_R * SwiftyGlider.WIDTH,
                 START_HEIGH_R * SwiftyGlider.HEIGHT);
 
-        scoreText = new WhiteButtons(
+        scoreText = new WhiteButton(
                 bitmapFont,
                 "Score:" + level,
                 SwiftyGlider.WIDTH /2 ,
                 SwiftyGlider.HEIGHT /4 + 20
         );
 
-        hiScoreText = new WhiteButtons(
+        hiScoreText = new WhiteButton(
                 bitmapFont,
                 "Best:" + bestLevel,
                 SwiftyGlider.WIDTH /2 ,

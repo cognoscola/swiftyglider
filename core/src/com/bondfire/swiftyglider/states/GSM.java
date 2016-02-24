@@ -1,7 +1,6 @@
 package com.bondfire.swiftyglider.states;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 
 import java.util.Stack;
 

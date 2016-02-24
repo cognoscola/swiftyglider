@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
@@ -163,7 +164,6 @@ public class Glider extends Box {
 
         if(!(deathTimer > TIME_DEATH)){
             if(death_latch){
-
                 sb.draw(atlas.tex,
                         x - width / 2,
                         y - height / 2,

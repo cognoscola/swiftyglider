@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.bondfire.swiftyglider.SwiftyGlider;
-import com.bondfire.swiftyglider.ui.WhiteButtons;
+import com.bondfire.swiftyglider.ui.WhiteButton;
 
 public class DifficultyState extends State{
 
@@ -19,8 +19,8 @@ public class DifficultyState extends State{
 
     String[] texts;
 
-    private WhiteButtons instruction;
-    private Array<WhiteButtons> buttons;
+    private WhiteButton instruction;
+    private Array<WhiteButton> buttons;
     private BitmapFont bitmapFont;
 
     public DifficultyState(GSM gsm){
@@ -28,15 +28,15 @@ public class DifficultyState extends State{
 
         texts = getNames(SwiftyGlider.preferences.getInteger(ScoreState.KEY_BEST,0));
 
-        buttons = new Array<WhiteButtons>();
-        bitmapFont = SwiftyGlider.res.GeneratorFont();
+        buttons = new Array<WhiteButton>();
+        bitmapFont = SwiftyGlider.res.getBmpFont();
 
-        instruction = new WhiteButtons(bitmapFont,"Choose Difficulty",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
+        instruction = new WhiteButton(bitmapFont,"Choose Difficulty",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
         instruction.setBackgroundVisibility(false);
 
         for(int i = 0; i <texts.length ; i++){
             buttons.add(
-                    new WhiteButtons(
+                    new WhiteButton(
                             bitmapFont,
                             texts[i],
                             SwiftyGlider.WIDTH/2,
