@@ -1,10 +1,12 @@
 package com.bondfire.swiftyglider.states;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Graphic;
+import com.bondfire.swiftyglider.ui.WhiteButton;
 
 /**
  * Render our main menu
@@ -13,19 +15,17 @@ public class MenuState extends State {
 
     private final static float INSTRUCTION_HEIGHT_R = 0.35f;
     private final static float INSTRUCTION_WIDTH_R = 0.7f;
-    private final static float START_WIDTH_R = 0.25f;
-    private final static float START_HEIGH_R = 0.1f;
-    private final static float MULTIPLAYER_WIDTH_R = 0.25f;
-    private final static float MULTIPLAYER_HEIGHT_R =  0.1f;
 
     private Graphic instruction;
-    private Graphic start;
-    private Graphic multiplayer;
+
+    private WhiteButton multiplayer;
+    private WhiteButton singleplayer;
 
     public MenuState(GSM gsm){
         super(gsm);
 
         BlurrableTextureAtlas atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+        BitmapFont bitmapFont = SwiftyGlider.res.getBmpFont();
 
         instruction = new Graphic(
                 atlas,
@@ -34,21 +34,13 @@ public class MenuState extends State {
                 SwiftyGlider.HEIGHT*3/4,
                 INSTRUCTION_WIDTH_R * SwiftyGlider.WIDTH,
                 INSTRUCTION_HEIGHT_R * SwiftyGlider.HEIGHT);
-        start = new Graphic(
-                atlas,
-                atlas.findRegion("start"),
-                SwiftyGlider.WIDTH/2,
-                SwiftyGlider.HEIGHT/2,
-                START_WIDTH_R * SwiftyGlider.WIDTH,
-                START_HEIGH_R * SwiftyGlider.HEIGHT);
 
-        multiplayer = new Graphic(
-                atlas,
-                atlas.findRegion("start"),
-                SwiftyGlider.WIDTH/2,
-                SwiftyGlider.HEIGHT/2 - 100,
-                MULTIPLAYER_WIDTH_R * SwiftyGlider.WIDTH,
-                MULTIPLAYER_HEIGHT_R * SwiftyGlider.HEIGHT);
+        singleplayer = new WhiteButton(bitmapFont, "Singleplayer",
+                SwiftyGlider.WIDTH / 2,
+                SwiftyGlider.HEIGHT / 2);
+
+        multiplayer = new WhiteButton(bitmapFont, "Multiplayer",
+                SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 2 -100);
     }
 
     @Override
@@ -62,7 +54,7 @@ public class MenuState extends State {
         sb.begin();
         SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
         instruction.render(sb);
-        start.render(sb);
+        singleplayer.render(sb);
         multiplayer.render(sb);
         sb.end();
     }
@@ -76,7 +68,7 @@ public class MenuState extends State {
             mouse.y = Gdx.input.getY();
             cam.unproject(mouse);
 
-            if(start.contains(mouse.x,mouse.y)){
+            if(singleplayer.contains(mouse.x,mouse.y)){
                 gsm.set(new DifficultyState(gsm));
             }
 

@@ -16,13 +16,12 @@ import com.bondfire.swiftyglider.ui.WhiteButton;
 public class MultiplayerMenuState extends State {
 
     private Graphic back;
-
     BlurrableTextureAtlas atlas;
-
-    private WhiteButton instruction;
-    private WhiteButton joinRoom;
-
-    private BitmapFont bitmapFont;
+    private static WhiteButton disconnectedinstruction;
+    private static WhiteButton connectedInstruction;
+    private static WhiteButton joinRoom;
+    private static WhiteButton survival;
+    private static BitmapFont bitmapFont;
 
     protected MultiplayerMenuState(GSM gsm) {
         super(gsm);
@@ -37,35 +36,21 @@ public class MultiplayerMenuState extends State {
                 60,
                 60);
 
-
-
-
-        if (Gdx.app.getType() == Application.ApplicationType.Android) {
-            if (SwiftyGlider.room.isConnected()) {
-
-            }else{
-                showDisconnectedView();
-            }
-        }else{
-            showDisconnectedView();
-        }
-    }
-
-    public void refreshRoomStatus(){
-
-    }
-
-    public void showDisconnectedView(){
-        //Show text and a button that takes your to social room
-        instruction = new WhiteButton(bitmapFont,"You must be connected to a Party to play in " +
-                "Multiplayer mode.",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
-        instruction.setBackgroundVisibility(false);
-        instruction.setWrap(true);
-        instruction.setWidth(300f);
-
+        survival = new WhiteButton(bitmapFont, "Survival",
+                SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 + 170);
         joinRoom = new WhiteButton(bitmapFont, "Join a Party!",
                 SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 2 -100);
 
+        disconnectedinstruction = new WhiteButton(bitmapFont,"You must be connected to a Party to play in " +
+                "Multiplayer mode.",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
+        disconnectedinstruction.setBackgroundVisibility(false);
+        disconnectedinstruction.setWrap(true);
+        disconnectedinstruction.setWidth(300f);
+
+
+        connectedInstruction = new WhiteButton(bitmapFont,"Choose Mode",
+                SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
+        connectedInstruction.setBackgroundVisibility(false);
     }
 
 
@@ -76,13 +61,18 @@ public class MultiplayerMenuState extends State {
 
     @Override
     public void render(SpriteBatch sb) {
-
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
+        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
         back.render(sb);
-        instruction.render(sb);
-        joinRoom.render(sb);
+
+        if (SwiftyGlider.room.isConnected()) {
+            connectedInstruction.render(sb);
+            survival.render(sb);
+        }else{
+            joinRoom.render(sb);
+            disconnectedinstruction.render(sb);
+        }
         sb.end();
     }
 
@@ -99,7 +89,7 @@ public class MultiplayerMenuState extends State {
             }
 
             if (Gdx.app.getType() == Application.ApplicationType.Android) {
-                if(back.contains(mouse.x,mouse.y)){
+                if(joinRoom.contains(mouse.x,mouse.y)){
                     SwiftyGlider.paltformController.ShowMatches();
                 }
             }

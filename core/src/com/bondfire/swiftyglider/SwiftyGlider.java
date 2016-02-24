@@ -22,6 +22,7 @@ import com.bondfire.app.services.ServiceUtils;
 import com.bondfire.swiftyglider.states.BackgroundState;
 import com.bondfire.swiftyglider.states.GSM;
 import com.bondfire.swiftyglider.states.MenuState;
+import com.bondfire.swiftyglider.states.MultiplayerMenuState;
 
 /** This covers LibGdx basics, expect lots of notes  */
 public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultiplayerMessageReceiver{
@@ -93,7 +94,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			realTimeService.setReceiver(this);
 			realTimeService.getSender().bindReceiver(this);
 		} catch (NullPointerException e) {
-			System.out.println("Error!");
+			Gdx.app.log(TAG,"injectRealTimeServices() ",e);
 		}
 	}
 
@@ -144,6 +145,8 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 		if (Gdx.app.getType() == Application.ApplicationType.Android) {
 			paltformController.getService(ServiceUtils.REAL_TIME_SERVICE);
+			paltformController.setInformation("Swifty Glider", "Guide your character through the " +
+					"obstacles by tilting your phone in various ways.",false);
 		}
 	}
 

@@ -56,6 +56,10 @@ public class GSM {
         }
     }
 
+    public State peek() {
+        return states.peek();
+    }
+
     public State getBackground(){
        return states.get(STATE_BACKGROUND);
     }
