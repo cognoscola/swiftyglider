@@ -1,9 +1,6 @@
 package com.bondfire.swiftyglider.ui;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.assets.loaders.BitmapFontLoader;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -29,6 +26,8 @@ public class WhiteButton extends Box {
 
     BlurrableTextureAtlas atlas;
 
+    private OnItemSelectedListener listener;
+
     public WhiteButton(BitmapFont bitmapFont, String text, float x, float y){
 
         this.text = text;
@@ -44,10 +43,10 @@ public class WhiteButton extends Box {
 
         atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
 
-
         background = atlas.findRegion("button");
         backWidth = width;
         backHeight = height;
+
     }
 
     public void render(SpriteBatch sb){
@@ -83,6 +82,7 @@ public class WhiteButton extends Box {
         }
     }
 
+
     @Override
     public boolean contains(float x, float y) {
 
@@ -98,6 +98,10 @@ public class WhiteButton extends Box {
         return ret;
     }
 
+    public void setText(String text) {
+        layout.setText(bitmapFont,text);
+    }
+
     public void setWrap(boolean isWrap) {
         this.isWrapping = isWrap;
     }
@@ -110,5 +114,10 @@ public class WhiteButton extends Box {
         whiteBackground = show;
     }
 
+    public void setListener(OnItemSelectedListener listener) {this.listener = listener;}
+
+    public interface OnItemSelectedListener {
+        void OnItemSelected();
+    }
 
 }

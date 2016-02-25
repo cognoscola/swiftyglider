@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Graphic;
+import com.bondfire.swiftyglider.ui.RadioGroup;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
 /**
@@ -15,20 +16,26 @@ import com.bondfire.swiftyglider.ui.WhiteButton;
  */
 public class MultiplayerMenuState extends State {
 
+    private static final String TAG = MultiplayerMenuState.class.getName();
+
     private Graphic back;
     BlurrableTextureAtlas atlas;
     private static WhiteButton disconnectedinstruction;
     private static WhiteButton connectedInstruction;
     private static WhiteButton joinRoom;
     private static WhiteButton survival;
+    private static WhiteButton second;
     private static BitmapFont bitmapFont;
+    private static RadioGroup group;
+    private static WhiteButton readyStatement;
+    private static WhiteButton begin;
 
     protected MultiplayerMenuState(GSM gsm) {
         super(gsm);
 
         bitmapFont = SwiftyGlider.res.getBmpFont();
-
         atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+
         back = new Graphic(atlas,
                 atlas.findRegion("back_icon"),
                 50,
@@ -36,8 +43,22 @@ public class MultiplayerMenuState extends State {
                 60,
                 60);
 
+        group = new RadioGroup();
         survival = new WhiteButton(bitmapFont, "Survival",
                 SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 + 170);
+        survival.setListener(new WhiteButton.OnItemSelectedListener() {
+            @Override
+            public void OnItemSelected() {
+                Gdx.app.log(TAG, "OnItemSelected() Clicked Survial mode");
+            }
+        });
+        group.add(survival);
+
+        second = new WhiteButton(bitmapFont, "Second Mode",
+                SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 + 120);
+        second.setBackgroundVisibility(false);
+        group.add(second);
+
         joinRoom = new WhiteButton(bitmapFont, "Join a Party!",
                 SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 2 -100);
 
@@ -47,12 +68,14 @@ public class MultiplayerMenuState extends State {
         disconnectedinstruction.setWrap(true);
         disconnectedinstruction.setWidth(300f);
 
-
         connectedInstruction = new WhiteButton(bitmapFont,"Choose Mode",
                 SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
         connectedInstruction.setBackgroundVisibility(false);
-    }
 
+        readyStatement =new WhiteButton(bitmapFont,"1/2 Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -100);
+        readyStatement.setBackgroundVisibility(false);
+        begin =  new WhiteButton(bitmapFont,"START ROUND",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -200);
+    }
 
     @Override
     public void update(float dt) {
@@ -69,6 +92,9 @@ public class MultiplayerMenuState extends State {
         if (SwiftyGlider.room.isConnected()) {
             connectedInstruction.render(sb);
             survival.render(sb);
+            second.render(sb);
+            readyStatement.render(sb);
+            begin.render(sb);
         }else{
             joinRoom.render(sb);
             disconnectedinstruction.render(sb);
@@ -92,6 +118,16 @@ public class MultiplayerMenuState extends State {
                 if(joinRoom.contains(mouse.x,mouse.y)){
                     SwiftyGlider.paltformController.ShowMatches();
                 }
+            }
+            group.justTouched(mouse.x,mouse.y);
+
+            if (readyStatement.contains(mouse.x, mouse.y)) {
+                SwiftyGlider.paltformController.ShowMatches();
+            }
+
+            if (begin.contains(mouse.x, mouse.y)) {
+                //TODO get the mode
+                Gdx.app.log(TAG,"handleInput() Start Clicked");
             }
         }
     }
