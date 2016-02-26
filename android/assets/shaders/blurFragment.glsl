@@ -5,14 +5,14 @@
 //#define LOWP
 //#endif
 
-varying vec4 vColor;
-varying vec2 vTexCoord;
+varying vec4 v_Color;
+varying vec2 v_TexCoord;
 
 uniform sampler2D u_texture;
-uniform float bias;
+uniform float u_bias;
 
 void main() {
-    vec4 texColor = texture2D(u_texture, vTexCoord, bias);
-    gl_FragColor = texColor * vColor;
+    vec4 texColor = texture2D(u_texture, v_TexCoord, u_bias);
+    gl_FragColor = texColor * v_Color;
 
 }

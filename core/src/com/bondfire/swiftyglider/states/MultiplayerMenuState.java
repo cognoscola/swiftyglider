@@ -30,8 +30,12 @@ public class MultiplayerMenuState extends State {
     private static WhiteButton readyStatement;
     private static WhiteButton begin;
 
-    protected MultiplayerMenuState(GSM gsm) {
+
+    private boolean requestSent;
+
+    public MultiplayerMenuState(GSM gsm) {
         super(gsm);
+
 
         bitmapFont = SwiftyGlider.res.getBmpFont();
         atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
@@ -75,18 +79,27 @@ public class MultiplayerMenuState extends State {
         readyStatement =new WhiteButton(bitmapFont,"1/2 Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -100);
         readyStatement.setBackgroundVisibility(false);
         begin =  new WhiteButton(bitmapFont,"START ROUND",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -200);
+
+        requestSent = false;
     }
 
     @Override
     public void update(float dt) {
         handleInput();
+
+        if (SwiftyGlider.room.isConnected()) {
+            if (!requestSent) {
+                requestSent = true;
+                SwiftyGlider.realTimeService.getSender().RequestParticipants();
+            }
+        }
     }
 
     @Override
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
+//        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
         back.render(sb);
 
         if (SwiftyGlider.room.isConnected()) {

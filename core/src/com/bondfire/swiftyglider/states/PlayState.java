@@ -264,7 +264,7 @@ public class PlayState extends State {
         /** Before we draw anything, we always, always need to set the camera */
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR *SwiftyGlider.blurAmount);
+//        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR *SwiftyGlider.blurAmount);
         line.render(sb);
         for(int i = 0; i < wallQueueActive.size; i++){
             wallQueueActive.get(i).render(sb);

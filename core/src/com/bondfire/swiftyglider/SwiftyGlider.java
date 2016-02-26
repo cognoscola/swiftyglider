@@ -73,6 +73,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static float blurAmount;
 	public static RealTimeRoom room;
 
+	public static int biasLocation;
 
 	public SwiftyGlider(int time){
 		timeInSeconds = time;
@@ -88,11 +89,21 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	public void injectConsoleController(PlatformInterfaceController controller){paltformController = controller;}
 
+
 	public void injectRealTimeServices(RealTimeMultiplayerService rtService){
 		realTimeService = rtService;
 		try {
 			realTimeService.setReceiver(this);
 			realTimeService.getSender().bindReceiver(this);
+
+			//After we bind the game's services, find out if we should go to multiplayer room
+			if(realTimeService.getSender().shouldGoToMultiplayerMenu()){
+				/** push the multiplayer menu state **/
+				gsm.push(new MultiplayerMenuState(gsm));
+			}else{
+				/** push the menu state*/
+				gsm.push(new MenuState(gsm));
+			}
 		} catch (NullPointerException e) {
 			Gdx.app.log(TAG,"injectRealTimeServices() ",e);
 		}
@@ -125,23 +136,22 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		FileHandle[] blurfiles = res.getShaders("blurShader");
 		shader = new ShaderProgram(blurfiles[0],blurfiles[1]);
 		if (!shader.isCompiled()) {
-			Gdx.app.log("ShaderLessons", "Could not compile shaders: "+shader.getLog());
+			Gdx.app.log("Shader Compile ERROR!!", "Could not compile shaders: "+shader.getLog());
 			Gdx.app.exit();
 		}
 
 		sb = new BlurrableSpriteBatch();
 		sb.setShader(shader);
 		shader.begin();
-		shader.setUniformf("bias", 0f);
+		biasLocation = shader.getUniformLocation("u_bias");
+		shader.setUniformf(biasLocation,0f);
+//		shader.setUniformf("bias", 0f);
 		shader.end();
 
 		gsm = new GSM();
 
 		/** push our background */
 		gsm.push(new BackgroundState(gsm, timeInSeconds));
-
-		/** push the menu state*/
-		gsm.push(new MenuState(gsm));
 
 		if (Gdx.app.getType() == Application.ApplicationType.Android) {
 			paltformController.getService(ServiceUtils.REAL_TIME_SERVICE);
@@ -159,6 +169,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		}
 		/** CLear the screen */
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 		gsm.update(Gdx.graphics.getDeltaTime());
 		gsm.render(sb);
 	}

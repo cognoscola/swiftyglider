@@ -104,7 +104,6 @@ public class ScoreState extends State {
 
             SwiftyGlider.playServices.Score(bestLevel);
         }
-
     }
 
     @Override
@@ -116,7 +115,7 @@ public class ScoreState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
+//        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
         back.render(sb);
         instruction.render(sb);
         start.render(sb);
