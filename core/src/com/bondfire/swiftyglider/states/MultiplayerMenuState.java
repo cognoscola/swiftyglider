@@ -30,7 +30,6 @@ public class MultiplayerMenuState extends State {
     private static WhiteButton readyStatement;
     private static WhiteButton begin;
 
-
     private boolean requestSent;
 
     public MultiplayerMenuState(GSM gsm) {
@@ -87,10 +86,13 @@ public class MultiplayerMenuState extends State {
     public void update(float dt) {
         handleInput();
 
+        //We put the invitations on the update block because it could be that we enter this
+        //state while being disconnected, and then later connect to a roome while still
+        //remaining in this game state. So invitations go out when we have polled a connected state
         if (SwiftyGlider.room.isConnected()) {
             if (!requestSent) {
                 requestSent = true;
-                SwiftyGlider.realTimeService.getSender().RequestParticipants();
+                SwiftyGlider.realTimeService.getSender().CreateGameInvitations();
             }
         }
     }
@@ -124,6 +126,8 @@ public class MultiplayerMenuState extends State {
             cam.unproject(mouse);
 
             if(back.contains(mouse.x,mouse.y)){
+                //Destroy any pending invitations
+                SwiftyGlider.realTimeService.getSender().DestroyGameInvitations();
                 gsm.set(new MenuState(gsm));
             }
 
