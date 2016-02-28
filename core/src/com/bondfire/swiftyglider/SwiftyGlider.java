@@ -12,12 +12,13 @@ import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.callbacks.PlatformInterfaceController;
 import com.bondfire.app.handler.Content;
 import com.bondfire.app.services.AdController;
+import com.bondfire.app.services.GameRoom;
 import com.bondfire.app.services.PlayServicesObject;
 
 import com.bondfire.app.services.RealTimeMultiplayerMessage;
 import com.bondfire.app.services.RealTimeMultiplayerMessageReceiver;
 import com.bondfire.app.services.RealTimeMultiplayerService;
-import com.bondfire.app.services.RealTimeRoom;
+
 import com.bondfire.app.services.ServiceUtils;
 import com.bondfire.swiftyglider.states.BackgroundState;
 import com.bondfire.swiftyglider.states.GSM;
@@ -71,7 +72,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static int timeInSeconds;
 	public static ShaderProgram shader;
 	public static float blurAmount;
-	public static RealTimeRoom room;
+	public static GameRoom room;
 
 	public static int biasLocation;
 
@@ -180,7 +181,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	}
 
 	@Override
-	public void onRoomConfigurationChanged(RealTimeRoom inRoom) {
+	public void onRoomConfigurationChanged(GameRoom inRoom) {
 		Gdx.app.log(TAG,"onRoomConfigurationChanged() ");
 		room = inRoom;
 	}

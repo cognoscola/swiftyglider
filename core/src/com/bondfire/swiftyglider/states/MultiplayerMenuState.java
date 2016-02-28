@@ -35,7 +35,6 @@ public class MultiplayerMenuState extends State {
     public MultiplayerMenuState(GSM gsm) {
         super(gsm);
 
-
         bitmapFont = SwiftyGlider.res.getBmpFont();
         atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
 
@@ -93,6 +92,7 @@ public class MultiplayerMenuState extends State {
             if (!requestSent) {
                 requestSent = true;
                 SwiftyGlider.realTimeService.getSender().CreateGameInvitations();
+                SwiftyGlider.realTimeService.getSender().setGameConnectionReady(true);
             }
         }
     }
@@ -128,6 +128,7 @@ public class MultiplayerMenuState extends State {
             if(back.contains(mouse.x,mouse.y)){
                 //Destroy any pending invitations
                 SwiftyGlider.realTimeService.getSender().DestroyGameInvitations();
+                SwiftyGlider.realTimeService.getSender().setGameConnectionReady(false);
                 gsm.set(new MenuState(gsm));
             }
 
