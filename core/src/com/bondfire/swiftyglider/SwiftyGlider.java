@@ -12,6 +12,7 @@ import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.callbacks.PlatformInterfaceController;
 import com.bondfire.app.handler.Content;
 import com.bondfire.app.services.AdController;
+import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.app.services.PlayServicesObject;
 
@@ -72,9 +73,11 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static int timeInSeconds;
 	public static ShaderProgram shader;
 	public static float blurAmount;
+	public static int biasLocation;
+
+	/**networking stuff **/
 	public static GameRoom room;
 
-	public static int biasLocation;
 
 	public SwiftyGlider(int time){
 		timeInSeconds = time;
@@ -90,7 +93,6 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	public void injectConsoleController(PlatformInterfaceController controller){paltformController = controller;}
 
-
 	public void injectRealTimeServices(RealTimeMultiplayerService rtService){
 		realTimeService = rtService;
 		try {
@@ -100,7 +102,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			//After we bind the game's services, find out if we should go to multiplayer room
 			if(realTimeService.getSender().shouldGoToMultiplayerMenu()){
 				/** push the multiplayer menu state **/
-				gsm.push(new MultiplayerMenuState(gsm));
+				gsm.push(new MultiplayerMenuState(gsm, room));
 			}else{
 				/** push the menu state*/
 				gsm.push(new MenuState(gsm));
@@ -159,6 +161,11 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			paltformController.setInformation("Swifty Glider", "Guide your character through the " +
 					"obstacles by tilting your phone in various ways.",false);
 		}
+		//Temporarily create fake stuff
+		if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
+
+			gsm.push(new MenuState(gsm));
+		}
 	}
 
 	/** Game loop libgdx uses 60hz */
@@ -168,9 +175,9 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			float bias = (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
 			setBlur(bias);
 		}
+
 		/** CLear the screen */
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
 		gsm.update(Gdx.graphics.getDeltaTime());
 		gsm.render(sb);
 	}
@@ -182,13 +189,19 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	@Override
 	public void onRoomConfigurationChanged(GameRoom inRoom) {
-		Gdx.app.log(TAG,"onRoomConfigurationChanged() ");
+		Gdx.app.log(TAG,"onRoomConfigurationChanged() Size:" + inRoom.getParticipants().size);
 		room = inRoom;
+		if (gsm.peek() instanceof MultiplayerMenuState) {
+			((MultiplayerMenuState) gsm.peek()).updateRoom(room);
+		}
 	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
+		if (appType == Application.ApplicationType.Android) {
+			SwiftyGlider.realTimeService.getSender().DestroyGameConnection();
+		}
 		playServices = null;
 	}
 }

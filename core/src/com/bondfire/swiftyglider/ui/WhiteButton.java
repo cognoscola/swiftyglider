@@ -15,8 +15,6 @@ public class WhiteButton extends Box {
     private GlyphLayout layout;
     private TextureRegion background;
 
-    private final static float padding = 30f;
-
     private boolean whiteBackground = true;
     private boolean isWrapping = false;
     private float wrapWidth = 100;
@@ -25,8 +23,6 @@ public class WhiteButton extends Box {
     private float textAlpha;
 
     BlurrableTextureAtlas atlas;
-
-    private OnItemSelectedListener listener;
 
     public WhiteButton(BitmapFont bitmapFont, String text, float x, float y){
 
@@ -46,7 +42,6 @@ public class WhiteButton extends Box {
         background = atlas.findRegion("button");
         backWidth = width;
         backHeight = height;
-
     }
 
     public void render(SpriteBatch sb){
@@ -54,7 +49,6 @@ public class WhiteButton extends Box {
         textAlpha = SwiftyGlider.blurAmount;
 
         if(whiteBackground){
-
             sb.draw(atlas.tex,
                     x - width / 2,
                     y - height / 2 ,
@@ -71,7 +65,6 @@ public class WhiteButton extends Box {
                     background.getRegionHeight(),
                     false,
                     false);
-//            sb.draw(background, x- width/2 - 10, y-height/2 -10,width + 20,height + 20);
         }
         bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (textAlpha) );
 
@@ -99,7 +92,8 @@ public class WhiteButton extends Box {
     }
 
     public void setText(String text) {
-        layout.setText(bitmapFont,text);
+        this.text =text;
+        layout.setText(bitmapFont,this.text);
     }
 
     public void setWrap(boolean isWrap) {
@@ -110,14 +104,8 @@ public class WhiteButton extends Box {
         this.wrapWidth =width;
     }
 
-    public void setBackgroundVisibility(boolean show){
+    public void hasBackground(boolean show){
         whiteBackground = show;
-    }
-
-    public void setListener(OnItemSelectedListener listener) {this.listener = listener;}
-
-    public interface OnItemSelectedListener {
-        void OnItemSelected();
     }
 
 }

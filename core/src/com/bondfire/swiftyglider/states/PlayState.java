@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
+import com.bondfire.app.services.GameParticipant;
+import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.sprites.Glider;
 import com.bondfire.swiftyglider.sprites.Indicator;
@@ -80,8 +82,14 @@ public class PlayState extends State {
 
     static boolean collidingLatch = false;
 
-    public PlayState(GSM gsm, int level){
+    /** ONLINE STUFF */
+    private GameRoom room;
+    private Array<Glider> opponentGliders;
+
+    public PlayState(GSM gsm, int level, GameRoom room){
         super(gsm);
+
+        this.room = room;
 
         /** load our sprites */
         glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4);
@@ -92,7 +100,30 @@ public class PlayState extends State {
         /**prepare out text*/
         bitmapFont = SwiftyGlider.res.getBmpFont();
         reset();
-        setLevel(level);
+
+
+        if (roomExists()) {
+            //this is online mode
+            opponentGliders = new Array<Glider>();
+            for (GameParticipant participant : room.getParticipants()) {
+
+                //if this is us
+                if (participant.getParticipantId() == room.getClientId()){
+                    glider.setDispayName(participant.getParticipantName());
+                    glider.setParticipantId(participant.getParticipantId());
+                    continue;
+                }
+                //this is other people
+                Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
+                glider.setParticipantId(participant.getParticipantId());
+                glider.setDispayName(participant.getParticipantName());
+                opponentGliders.add(glider);
+            }
+
+        }else{
+            //we are playing single player mode
+            setLevel(level);
+        }
     }
 
     public void reset(){
@@ -173,38 +204,43 @@ public class PlayState extends State {
                 /** find out if our object was clicked */
                 glider.setX(mouse.x);
                 glider.setY(mouse.y);
-
             }
         }
     }
 
+
     @Override
     public void update(float dt) {
 
-        wallTimer +=dt;
-        indicatorTimer +=dt;
+        if (roomExists()) {
+            glider.update(dt);
+        } else {
 
-        checkDeath(dt);
+            wallTimer += dt;
+            indicatorTimer += dt;
 
-        /** Update this state*/
-        checkWallRate();
+            checkDeath(dt);
 
-        checkIndicatorRate();
+            /** Update this state*/
+            checkWallRate();
 
-        /** checkCollision */
-        checkCollision();
+            checkIndicatorRate();
 
-        /** weather*/
-        calculateWeather(dt);
+            /** checkCollision */
+            checkCollision();
 
-        /** update everything inside this state */
-        handleInput();
-        glider.update(dt);
-        line.update(dt);
+            /** weather*/
+            calculateWeather(dt);
 
-        /** for each wall, update them */
-        for(int i = 0; i < wallQueueActive.size; i++){
-            wallQueueActive.get(i).update(dt);
+            /** update everything inside this state */
+            handleInput();
+            glider.update(dt);
+            line.update(dt);
+
+            /** for each wall, update them */
+            for (int i = 0; i < wallQueueActive.size; i++) {
+                wallQueueActive.get(i).update(dt);
+            }
         }
     }
 
@@ -264,16 +300,25 @@ public class PlayState extends State {
         /** Before we draw anything, we always, always need to set the camera */
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-//        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR *SwiftyGlider.blurAmount);
-        line.render(sb);
-        for(int i = 0; i < wallQueueActive.size; i++){
-            wallQueueActive.get(i).render(sb);
-        }
-        glider.render(sb);
 
-        /** render our score */
-        if(scoreText != null )
-        scoreText.render(sb);
+        if (roomExists()) {
+
+            for (Glider glider : opponentGliders) {
+                glider.render(sb);
+            }
+            glider.render(sb);
+        }else{
+
+            line.render(sb);
+            for(int i = 0; i < wallQueueActive.size; i++){
+                wallQueueActive.get(i).render(sb);
+            }
+            glider.render(sb);
+
+            /** render our score */
+            if(scoreText != null )
+                scoreText.render(sb);
+        }
 
         sb.end();
     }
@@ -442,4 +487,11 @@ public class PlayState extends State {
         }
 
     }
+
+    //handle room stuff
+    public boolean roomExists(){
+        return room != null;
+    }
+
+
 }

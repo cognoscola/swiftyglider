@@ -1,9 +1,12 @@
 package com.bondfire.swiftyglider.states;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+import com.bondfire.app.services.GameParticipant;
+import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
@@ -75,7 +78,15 @@ public class MenuState extends State {
             }
 
             if (multiplayer.contains(mouse.x, mouse.y)) {
-                gsm.set(new MultiplayerMenuState(gsm));
+                if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
+                    GameRoom room = new GameRoom();
+                    room.setClientId("ID");
+                    room.setGameHostId("ID");
+                    room.getParticipants().add(new GameParticipant());
+                    gsm.set(new MultiplayerMenuState(gsm, room));
+                }else{
+                    gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room));
+                }
             }
         }
     }

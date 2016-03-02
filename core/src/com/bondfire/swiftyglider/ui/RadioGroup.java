@@ -27,15 +27,15 @@ public class RadioGroup{
             WhiteButton button = buttons.get(i);
             if (button.contains(x, y)) {
                 shouldChange =true;
-                button.setBackgroundVisibility(true);
+                button.hasBackground(true);
                 selectedItemIndex = i;
             } else {
-                button.setBackgroundVisibility(false);
+                button.hasBackground(false);
             }
         }
 
         if (!shouldChange) {
-            buttons.get(selectedItemIndex).setBackgroundVisibility(true);
+            buttons.get(selectedItemIndex).hasBackground(true);
         }
     }
 

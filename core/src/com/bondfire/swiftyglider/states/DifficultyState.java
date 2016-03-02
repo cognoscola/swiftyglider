@@ -32,7 +32,7 @@ public class DifficultyState extends State{
         bitmapFont = SwiftyGlider.res.getBmpFont();
 
         instruction = new WhiteButton(bitmapFont,"Choose Difficulty",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270 );
-        instruction.setBackgroundVisibility(false);
+        instruction.hasBackground(false);
 
         for(int i = 0; i <texts.length ; i++){
             buttons.add(
@@ -56,7 +56,6 @@ public class DifficultyState extends State{
 
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-//        SwiftyGlider.shader.setUniformf("bias",SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
         instruction.render(sb);
         for(int i = 0; i <buttons.size; i++){
             buttons.get(i).render(sb);
@@ -75,7 +74,7 @@ public class DifficultyState extends State{
             for(int i = 0; i <buttons.size; i++){
                 if(buttons.get(i).contains(mouse.x, mouse.y)){
 //                    gsm.set(new PlayState(gsm, 200));
-                    gsm.set(new PlayState(gsm, getLevel(i)));
+                    gsm.set(new PlayState(gsm, getLevel(i), null));
 
                     if( SwiftyGlider.adController != null){
                         SwiftyGlider.adController.newRequest();

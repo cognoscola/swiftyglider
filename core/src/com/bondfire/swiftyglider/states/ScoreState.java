@@ -141,7 +141,7 @@ public class ScoreState extends State {
             cam.unproject(mouse);
 
             if (start.contains(mouse.x, mouse.y)) {
-                gsm.set(new PlayState(gsm,lastSavePoint));
+                gsm.set(new PlayState(gsm,lastSavePoint,null));
 
                 if( SwiftyGlider.adController != null){
                     SwiftyGlider.adController.newRequest();

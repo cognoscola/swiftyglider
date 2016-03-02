@@ -4,8 +4,6 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.decals.Decal;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
@@ -16,7 +14,6 @@ import java.util.LinkedList;
  * Here is our glider class. It will render/updat everything that has to do with
  * our glider. We extend the Box because we will want to use it to check for collisions
  */
-
 public class Glider extends Box {
 
     private final static String Tag = "Glider";
@@ -38,7 +35,6 @@ public class Glider extends Box {
     private float velocity_X;
     private final static float Kconstant = 0.2f;
     private final static float Vconstant = 0.5556f;
-
     private final static float amplitude = 55; //measure the strength of our accelerometer signal
 
     /** Y movement smoothing filter */
@@ -50,13 +46,32 @@ public class Glider extends Box {
     static boolean death_latch = false;
 
     /** tail flapping */
-    static boolean tailFlapping        = true;
-    static float   tailFlappingCounter = 0;
-    static float   tailFlappingRate    = 0.1f;
+    private boolean tailFlapping        = true;
+    private float   tailFlappingCounter = 0;
+    private float   tailFlappingRate    = 0.1f;
 
     private float wind;
 
     BlurrableTextureAtlas atlas;
+
+    /*** MULTIPLAYER STUFF ***/
+    /** ID OF THE GLIDER (when we're in multiplayer mode */
+    public String getParticipantId() {
+        return participantId;
+    }
+    public void setParticipantId(String participantId) {
+        this.participantId = participantId;
+    }
+    private String participantId;
+
+    /**name of person **/
+    public String getDispayName() {
+        return dispayName;
+    }
+    public void setDispayName(String dispayName) {
+        this.dispayName = dispayName;
+    }
+    public String dispayName;
 
     public Glider(float x, float y) {
 
