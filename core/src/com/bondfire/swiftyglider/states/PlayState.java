@@ -332,7 +332,8 @@ public class PlayState extends State {
 
         if (roomExists()) {
 
-            for (Glider glider : opponentGliders) {
+            for (int i = 0; i < opponentGliders.size; i++) {
+                Glider glider = opponentGliders.get(i);
                 glider.render(sb);
             }
             glider.render(sb);
@@ -528,7 +529,8 @@ public class PlayState extends State {
             Gdx.app.log(TAG, "receiveMessage() POSITION UPDATE ");
 
             inPositionMessage = SwiftyGlider.json.fromJson( PositionMessage.class,message);
-            for (Glider glider : opponentGliders) {
+            for (int i = 0; i < opponentGliders.size; i++) {
+                Glider glider = opponentGliders.get(i);
                 if (glider.getParticipantId().equals(senderId)) {
                     glider.setX(inPositionMessage.x);
                     glider.setY(inPositionMessage.y);
@@ -536,7 +538,5 @@ public class PlayState extends State {
                 }
             }
         }
-
     }
-
 }
