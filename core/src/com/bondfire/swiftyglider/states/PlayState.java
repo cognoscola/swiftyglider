@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.Array;
 import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.network.PositionMessage;
 import com.bondfire.swiftyglider.sprites.Glider;
 import com.bondfire.swiftyglider.sprites.Indicator;
 import com.bondfire.swiftyglider.sprites.Wall;
@@ -17,7 +18,7 @@ import com.bondfire.swiftyglider.ui.WhiteButton;
 /** our play state. */
 public class PlayState extends State {
 
-    private final static String Tag = "PlayState";
+    private final static String TAG = "PlayState";
 
     /** set the max number of fingers */
     private final int MAX_FINGERS = 0;
@@ -85,6 +86,12 @@ public class PlayState extends State {
     /** ONLINE STUFF */
     private GameRoom room;
     private Array<Glider> opponentGliders;
+    private float positionUpdateTimer = 0.0f;
+    private static float MAX_POSITION_UPDATE_TIMER = 0.5f;
+
+    private static PositionMessage outPositionMessage;
+    private static PositionMessage inPositionMessage;
+
 
     public PlayState(GSM gsm, int level, GameRoom room){
         super(gsm);
@@ -103,6 +110,9 @@ public class PlayState extends State {
 
 
         if (roomExists()) {
+
+            outPositionMessage = new PositionMessage();
+
             //this is online mode
             opponentGliders = new Array<Glider>();
             for (GameParticipant participant : room.getParticipants()) {
@@ -140,7 +150,7 @@ public class PlayState extends State {
     }
 
     public void setLevel(int level){
-        System.out.println(Tag + " setLEvel(level):  " +  level);
+        System.out.println(TAG + " setLEvel(level):  " +  level);
         glider.setWind(0);
         lastSavePoint = level;
         this.level = level;
@@ -208,12 +218,30 @@ public class PlayState extends State {
         }
     }
 
-
     @Override
     public void update(float dt) {
 
         if (roomExists()) {
             glider.update(dt);
+
+            if (room.isConnected()) {
+                positionUpdateTimer +=dt;
+                if (positionUpdateTimer > MAX_POSITION_UPDATE_TIMER) {
+                    for (Glider glider : opponentGliders) {
+
+                        outPositionMessage.x = glider.getX();
+                        outPositionMessage.y = glider.getY();
+
+                        SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                glider.getParticipantId(),
+                                SwiftyGlider.json.toJson(outPositionMessage),
+                                false
+                        );
+                    }
+                    positionUpdateTimer = 0;
+                }
+            }
+
         } else {
 
             wallTimer += dt;
@@ -351,7 +379,7 @@ public class PlayState extends State {
             if(deathTimer > DEATH_TIME){
                 ((BackgroundState)gsm.getBackground()).setWind(0);
 
-                System.out.println(Tag + "CheckDeath() Died, lastSavePoint:" + lastSavePoint);
+                System.out.println(TAG + "CheckDeath() Died, lastSavePoint:" + lastSavePoint);
                 gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
 
                 if( SwiftyGlider.adController != null){
@@ -399,7 +427,7 @@ public class PlayState extends State {
     }
 
     private void updateWallFrequency() {
-        System.out.println(Tag + " updateFrequency() Level:" + level);
+        System.out.println(TAG + " updateFrequency() Level:" + level);
         if (level > LV_EYEOFNEEDLE) {
             isOnSaveLevels = false;
             wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION;
@@ -493,5 +521,22 @@ public class PlayState extends State {
         return room != null;
     }
 
+    public void receiveMessage(String message, String senderId) {
+
+        //Check our message data actionType
+        if (message.contains(PositionMessage.MESSAGE_TYPE)) {
+            Gdx.app.log(TAG, "receiveMessage() POSITION UPDATE ");
+
+            inPositionMessage = SwiftyGlider.json.fromJson( PositionMessage.class,message);
+            for (Glider glider : opponentGliders) {
+                if (glider.getParticipantId().equals(senderId)) {
+                    glider.setX(inPositionMessage.x);
+                    glider.setY(inPositionMessage.y);
+                    break;
+                }
+            }
+        }
+
+    }
 
 }

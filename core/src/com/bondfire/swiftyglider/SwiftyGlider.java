@@ -8,28 +8,31 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.utils.Json;
 import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.callbacks.PlatformInterfaceController;
 import com.bondfire.app.handler.Content;
 import com.bondfire.app.services.AdController;
-import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.app.services.PlayServicesObject;
 
-import com.bondfire.app.services.RealTimeMultiplayerMessage;
 import com.bondfire.app.services.RealTimeMultiplayerMessageReceiver;
 import com.bondfire.app.services.RealTimeMultiplayerService;
 
 import com.bondfire.app.services.ServiceUtils;
+import com.bondfire.swiftyglider.network.GameStateMessage;
 import com.bondfire.swiftyglider.states.BackgroundState;
 import com.bondfire.swiftyglider.states.GSM;
 import com.bondfire.swiftyglider.states.MenuState;
 import com.bondfire.swiftyglider.states.MultiplayerMenuState;
+import com.bondfire.swiftyglider.states.PlayState;
 
 /** This covers LibGdx basics, expect lots of notes  */
 public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultiplayerMessageReceiver{
 
 	private static final String TAG = SwiftyGlider.class.getName();
+
+	public static Json json;
 
 	public final static float MAX_BLUR = 4f;
 	/** actual game dimensions (not the screen size )*/
@@ -77,6 +80,8 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	/**networking stuff **/
 	public static GameRoom room;
+	public static GameStateMessage outStateMessage;
+	public static GameStateMessage inStateMessage;
 
 
 	public SwiftyGlider(int time){
@@ -122,7 +127,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	@Override
 	public void create () {
-		/** first check the application type */
+		/** first check the application actionType */
 		appType = Gdx.app.getType();
 
 		/** set the clear color (color that shows when everything on the screen is cleared  */
@@ -157,9 +162,11 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		gsm.push(new BackgroundState(gsm, timeInSeconds));
 
 		if (Gdx.app.getType() == Application.ApplicationType.Android) {
+			json = new Json();
+			outStateMessage = new GameStateMessage();
 			paltformController.getService(ServiceUtils.REAL_TIME_SERVICE);
 			paltformController.setInformation("Swifty Glider", "Guide your character through the " +
-					"obstacles by tilting your phone in various ways.",false);
+					"obstacles by tilting your phone in various ways.", false);
 		}
 		//Temporarily create fake stuff
 		if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
@@ -183,8 +190,24 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	}
 
 	@Override
-	public void onGamePacketReceived(RealTimeMultiplayerMessage realTimeMultiplayerMessage) {
-		Gdx.app.log(TAG,"onGamePacketReceived() ");
+	public void onGameMessageReceived(String data, String senderId) {
+		Gdx.app.log(TAG, "onGamePacketReceived() ");
+
+		if (gsm.peek() instanceof PlayState) {
+			((PlayState) gsm.peek()).receiveMessage(data,senderId);
+		}
+
+		if (gsm.peek() instanceof MultiplayerMenuState) {
+			if (data.contains(GameStateMessage.MESSAGE_TYPE)) {
+				Gdx.app.log(TAG, "onGameMessageReceived() RECEIVED  GameStateMessage");
+
+				inStateMessage = json.fromJson(GameStateMessage.class, data);
+
+				if (inStateMessage.actionType == GameStateMessage.TYPE_GAME_START){
+					gsm.set(new PlayState(gsm,0,room));
+				}
+			}
+		}
 	}
 
 	@Override

@@ -5,8 +5,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.network.GameStateMessage;
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
@@ -17,7 +19,6 @@ import com.bondfire.swiftyglider.ui.WhiteButton;
 public class MultiplayerMenuState extends State {
 
     private static final String TAG = MultiplayerMenuState.class.getName();
-
 
     private Graphic back;
     BlurrableTextureAtlas atlas;
@@ -165,8 +166,23 @@ public class MultiplayerMenuState extends State {
 
             if (begin.contains(mouse.x, mouse.y)) {
                 if (room.isHost()) {
+
+                    SwiftyGlider.outStateMessage.actionType = GameStateMessage.TYPE_GAME_START;
+
+
                     /** start the round */
-                    gsm.set(new PlayState(gsm,0,room));
+                    gsm.set(new PlayState(gsm, 0, room));
+
+                    if (room.isConnected()) {
+                        for (GameParticipant participant : room.getParticipants()) {
+                            if(participant.getParticipantId().equals(room.getClientId()))continue;
+                            SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                    participant.getParticipantId(),
+                                    SwiftyGlider.json.toJson(SwiftyGlider.outStateMessage),
+                                    true
+                            );
+                        }
+                    }
                 }
             }
         }
