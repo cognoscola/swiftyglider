@@ -10,6 +10,7 @@ import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.network.PositionMessage;
+import com.bondfire.swiftyglider.network.WallMessage;
 import com.bondfire.swiftyglider.sprites.Glider;
 import com.bondfire.swiftyglider.sprites.Indicator;
 import com.bondfire.swiftyglider.sprites.Wall;
@@ -68,7 +69,7 @@ public class PlayState extends State {
 
     /** timing logic */
     static float wallTimer = 0f;      //timer and also the initial start time
-    static float wallFrequency = 3f;  //frequency of wall appearance
+    static float wallAppearanceFrequency = 3f;  //frequency of wall appearance
     static float indicatorTimer = 2f; //timer for indicator
     static float indicatorFrequency = 2f; //how frequently we should display the white line
     static float deathTimer = 0f; //keeps track of time passed since death;
@@ -80,17 +81,19 @@ public class PlayState extends State {
     private boolean windDistanceSafetyLatch = false;
     private float WIND_MAX_TIMER            = 3f;
     static int WIND_CHANCE                  = 2;            //Likely hood out of 100 that the wind will change
-
     static boolean collidingLatch = false;
 
     /** ONLINE STUFF */
     private GameRoom room;
     private Array<Glider> opponentGliders;
     private float positionUpdateTimer = 0.0f;
-    private static float MAX_POSITION_UPDATE_TIMER = 0.1f;
+    private static float MAX_POSITION_UPDATE_TIMER = 0.03f;  //50 messages per second
 
-    private static PositionMessage outPositionMessage;
-    private static PositionMessage inPositionMessage;
+    private static PositionMessage outPositionMessage; //a place to store outgoing position message
+    private static PositionMessage inPositionMessage;  //a place to store incoming position message
+    private static WallMessage inWallMessage;          //a place to store outgoing wall message
+    private static WallMessage outWallMessage;         //a place to store incoming wall message
+
 
     public PlayState(GSM gsm, int level, GameRoom room){
         super(gsm);
@@ -107,10 +110,11 @@ public class PlayState extends State {
         bitmapFont = SwiftyGlider.res.getBmpFont();
         reset();
 
-
         if (roomExists()) {
 
             outPositionMessage = new PositionMessage();
+            inWallMessage = new WallMessage();
+            outWallMessage = new WallMessage();
 
             //this is online mode
             opponentGliders = new Array<Glider>();
@@ -118,14 +122,14 @@ public class PlayState extends State {
 
                 //if this is us
                 if (participant.getParticipantId() == room.getClientId()){
-                    glider.setDispayName(participant.getParticipantName());
                     glider.setParticipantId(participant.getParticipantId());
+                    glider.setDispayName(participant.getParticipantName().substring(0,2) + ".");
                     continue;
                 }
                 //this is other people
                 Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
                 glider.setParticipantId(participant.getParticipantId());
-                glider.setDispayName(participant.getParticipantName());
+                glider.setDispayName(participant.getParticipantName().substring(0,2) + ".");
                 opponentGliders.add(glider);
             }
 
@@ -140,7 +144,7 @@ public class PlayState extends State {
         colliding = false;
         wallTimer = 0f;
         deathTimer = 0f;
-        wallFrequency = 3f;
+        wallAppearanceFrequency = 3f;
         collidingLatch = false;
         windDistanceSafetyLatch = true;
 
@@ -221,27 +225,10 @@ public class PlayState extends State {
     public void update(float dt) {
 
         if (roomExists()) {
-            glider.update(dt);
 
-            if (room.isConnected()) {
-                positionUpdateTimer +=dt;
-                if (positionUpdateTimer > MAX_POSITION_UPDATE_TIMER) {
-                    for (int i = 0; i < opponentGliders.size; i++) {
-
-                        Glider glider = opponentGliders.get(i);
-                        outPositionMessage.x = this.glider.getX();
-                        outPositionMessage.y = this.glider.getY();
-                        outPositionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_POSITION;
-
-                        SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                                glider.getParticipantId(),
-                                SwiftyGlider.json.toJson(outPositionMessage),
-                                false
-                        );
-                    }
-                    positionUpdateTimer = 0;
-                }
-            }
+            /** Update this state*/
+            updateWallState();
+            updatePlayers(dt);
 
         } else {
 
@@ -251,7 +238,7 @@ public class PlayState extends State {
             checkDeath(dt);
 
             /** Update this state*/
-            checkWallRate();
+            updateWallState();
 
             checkIndicatorRate();
 
@@ -263,7 +250,14 @@ public class PlayState extends State {
 
             /** update everything inside this state */
             handleInput();
+
+            /**update appearance/positions of any players */
+            updatePlayers(dt);
+
+
             glider.update(dt);
+
+
             line.update(dt);
 
             /** for each wall, update them */
@@ -272,6 +266,8 @@ public class PlayState extends State {
             }
         }
     }
+
+
 
     private void calculateWeather(float dt){
         if(level > 399){
@@ -314,7 +310,8 @@ public class PlayState extends State {
             return;
         }
 
-        /** safe to switch */
+        /** make sure the wind changes while the player's height is not the same as a wall's height, changes
+         * must happen in between walls.*/
         windSafetyTimer = WIND_MAX_TIMER;
         if(MathUtils.random(100) < WIND_CHANCE && !windDistanceSafetyLatch){
             int wind = MathUtils.random(strength*2) - strength;
@@ -391,10 +388,34 @@ public class PlayState extends State {
         }
     }
 
+    private void updatePlayers(float dt){
+        glider.update(dt);
 
-    private void checkWallRate(){
+        if (room.isConnected()) {
+            positionUpdateTimer +=dt;
+            if (positionUpdateTimer > MAX_POSITION_UPDATE_TIMER) {
+                for (int i = 0; i < opponentGliders.size; i++) {
 
-        /** for each in the active queue, check if they are done.*/
+                    Glider glider = opponentGliders.get(i);
+                    outPositionMessage.x = this.glider.getX();
+                    outPositionMessage.y = this.glider.getY();
+                    outPositionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_POSITION;
+
+                    SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                            glider.getParticipantId(),
+                            SwiftyGlider.json.toJson(outPositionMessage),
+                            false
+                    );
+                }
+                positionUpdateTimer = 0;
+            }
+        }
+    }
+
+
+    private void updateWallState(){
+
+        /** for each wall in the active queue, check if they are done.*/
        for( i = 0; i < wallQueueActive.size; i++ ){
             Wall wall = wallQueueActive.get(i);
 
@@ -405,19 +426,21 @@ public class PlayState extends State {
            }
        }
 
+        if (!roomExists()) {
+            checkNextWallReady();
+        }
+    }
+
+
+    private void checkNextWallReady(){
         /** Check if it is time to put a new wall on the screen */
-        if(wallTimer >= wallFrequency ) {
+        if(wallTimer >= wallAppearanceFrequency) {
 
             /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
              * is empty just make a new wall.*/
             if(!isOnSaveLevels){ /** don't make new walls while on safe levels */
-                Wall wall;
-                if(wallQueueWaiting.size != 0)
-                    wall = wallQueueWaiting.pop();
-                else{
-                    wall = new Wall(SwiftyGlider.WIDTH, gapLength);
-                }
-
+                Wall wall = getANonActiveWall();
+                /**if we havent crashed yet */
                 if(!collidingLatch) {
                     wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
                     wallQueueActive.add(wall);
@@ -428,36 +451,51 @@ public class PlayState extends State {
         }
     }
 
+    /**
+     * Returns a wall not currently active
+     * @return a wall
+     */
+    private Wall getANonActiveWall(){
+        Wall wall;
+        if(wallQueueWaiting.size != 0)
+            wall = wallQueueWaiting.pop();
+        else{
+            wall = new Wall(SwiftyGlider.WIDTH, gapLength);
+        }
+        return wall;
+    }
+
+
     private void updateWallFrequency() {
         System.out.println(TAG + " updateFrequency() Level:" + level);
         if (level > LV_EYEOFNEEDLE) {
             isOnSaveLevels = false;
-            wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION;
+            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION;
             Wall.setDescentSpeed(1.5f);
         } else if (level > LV_EYEOFNEEDLE - 1) {
             isOnSaveLevels = true;
             setLevel(level);
             Wall.setDescentSpeed(2);
         } else if (level > LV_WINDSLOW) {
-            wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210) * LEVEL_AMPLIFICATION;
+            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210) * LEVEL_AMPLIFICATION;
             isOnSaveLevels = false;
         } else if (level > LV_WINDSLOW - 1) {
             isOnSaveLevels = true;
             setLevel(level);
         } else if (level >= LV_SUPERSLOW) {
-            wallFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 110) * LEVEL_AMPLIFICATION;
+            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 110) * LEVEL_AMPLIFICATION;
             isOnSaveLevels = false;
         } else if (level > LV_SUPERSLOW - 1) {
             isOnSaveLevels = true;
             setLevel(level);
         } else if (level > LV_WINDFAST) {
-            wallFrequency = WALL_RATE_DEFAULT - (level - LV_WINDFAST + 40) * LEVEL_AMPLIFICATION;
+            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_WINDFAST + 40) * LEVEL_AMPLIFICATION;
             isOnSaveLevels = false;
         } else if (level > LV_WINDFAST - 1) {
             isOnSaveLevels = true;
             setLevel(level);
         } else if (level > LV_GOINGFAST) {
-            wallFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40) * LEVEL_AMPLIFICATION;
+            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40) * LEVEL_AMPLIFICATION;
             isOnSaveLevels = false;
         } else if (level > LV_GOINGFAST - 1) { //148
             setLevel(level);
@@ -465,14 +503,14 @@ public class PlayState extends State {
             isOnSaveLevels = true;
         } else if (level >= LV_FIRSTWIND) {
             isOnSaveLevels = false;
-            wallFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND) * LEVEL_AMPLIFICATION;
+            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND) * LEVEL_AMPLIFICATION;
         } else if (level >= LV_FIRSTWIND - 1) {
             setLevel(level + 1);
         } else if (level >= LV_FIRSTWIND - 2) {
             isOnSaveLevels = true;
         } else {
             isOnSaveLevels = false;
-            wallFrequency = WALL_RATE_DEFAULT - (level )* LEVEL_AMPLIFICATION;
+            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level )* LEVEL_AMPLIFICATION;
         }
     }
 
@@ -522,11 +560,15 @@ public class PlayState extends State {
         return room != null;
     }
 
+    /**
+     * Receive game messages sent by other clients
+     * @param message game message
+     * @param senderId the sender participant ID
+     */
     public void receiveMessage(String message, String senderId) {
 
         //Check our message data actionType
         if (message.contains(SwiftyGlider.MESSAGE_TYPE_POSITION)) {
-            Gdx.app.log(TAG, "receiveMessage() POSITION UPDATE ");
 
             inPositionMessage = SwiftyGlider.json.fromJson( PositionMessage.class,message);
             for (int i = 0; i < opponentGliders.size; i++) {
@@ -536,6 +578,16 @@ public class PlayState extends State {
                     glider.setY(inPositionMessage.y);
                     break;
                 }
+            }
+        }
+
+        if (message.contains(SwiftyGlider.MESSAGE_TYPE_WALL)) {
+            inWallMessage = SwiftyGlider.json.fromJson(WallMessage.class, message);
+            Wall wall = getANonActiveWall();
+            /**if we havent crashed yet */
+            if(!collidingLatch) {
+                wall.RecycleWall(SwiftyGlider.WIDTH, inWallMessage.gapLength,inWallMessage.gapPosition);
+                wallQueueActive.add(wall);
             }
         }
     }

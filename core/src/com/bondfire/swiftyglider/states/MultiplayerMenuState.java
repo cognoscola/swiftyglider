@@ -154,8 +154,11 @@ public class MultiplayerMenuState extends State {
             }
 
             if (Gdx.app.getType() == Application.ApplicationType.Android) {
-                if(joinRoom.contains(mouse.x,mouse.y)){
-                    SwiftyGlider.paltformController.ShowMatches();
+                if(joinRoom.contains(mouse.x, mouse.y)) {
+
+                    if (!room.isConnected()) {
+                        SwiftyGlider.paltformController.ShowMatches();
+                    }
                 }
             }
 //            group.justTouched(mouse.x,mouse.y);
@@ -165,7 +168,7 @@ public class MultiplayerMenuState extends State {
             }
 
             if (begin.contains(mouse.x, mouse.y)) {
-                if (room.isHost()) {
+                if (room.isHost() && room.isConnected()) {
 
                     SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
                     SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;

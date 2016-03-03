@@ -2,6 +2,7 @@ package com.bondfire.swiftyglider.sprites;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
@@ -51,7 +52,6 @@ public class Glider extends Box {
     private float   tailFlappingRate    = 0.1f;
 
     private float wind;
-
     BlurrableTextureAtlas atlas;
 
     /*** MULTIPLAYER STUFF ***/
@@ -72,11 +72,17 @@ public class Glider extends Box {
         this.dispayName = dispayName;
     }
     public String dispayName;
+    public static BitmapFont bitmapFont;
+
 
     public Glider(float x, float y) {
 
         System.out.println("New Glider");
         reset();
+
+        if (bitmapFont == null) {
+            bitmapFont = SwiftyGlider.res.getBmpFont();
+        }
 
         this.x = x;
 
@@ -200,6 +206,7 @@ public class Glider extends Box {
 //                sb.draw(explosion, x - width / 2, y - height / 2, width, height);
             }else{
 
+                //Draw the body
                 sb.draw(atlas.tex,
                         x - width / 2,
                         y - height / 2,
@@ -217,6 +224,7 @@ public class Glider extends Box {
                         false,
                         false);
 
+                //draw the tail
                 sb.draw(atlas.tex,
                         x - width / 2,
                         y - height - height / 2,
@@ -234,8 +242,12 @@ public class Glider extends Box {
                         false,
                         false);
 
-//                sb.draw(collidingWind ? explosion:body, x - width / 2, y - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
-//                sb.draw(tailFlapping ? tail_left:tail_right, x - width / 2, y - height - height / 2, (width - width * Math.abs(velocity_X)/1200 ), height);
+                if (getDispayName() != null) {
+                    if (!getDispayName().isEmpty()) {
+                        bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (SwiftyGlider.blurAmount) );
+                        bitmapFont.draw(sb, getDispayName(), x - width /3, y + 10 );
+                    }
+                }
             }
         }
     }

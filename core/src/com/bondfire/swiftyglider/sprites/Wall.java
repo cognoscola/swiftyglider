@@ -40,7 +40,7 @@ public class Wall extends Box {
     private boolean isDoneLatch;
     private float canvasWidth;
 
-
+    /** for giving the wall a more random appearance **/
     private float leftWallRotate;
     private float rightWallRotate;
     private boolean swap;
@@ -173,6 +173,11 @@ public class Wall extends Box {
 //        sb.draw(rightWall, rightWallPosition_X - rightWallWidth/2, y - rightWallHeight / 2, rightWallWidth, rightWallHeight);
     }
 
+    /**
+     * Recycles the wall, giving the gap position a random length /
+     * @param gameWidth
+     * @param gapLength
+     */
     public void RecycleWall(float gameWidth, float gapLength){
 
         /** reset the height and timer */
@@ -188,6 +193,25 @@ public class Wall extends Box {
         this.leftWallPosition_X = gapPosition - gapLength/2 - leftWallWidth/2;
         this.rightWallPosition_X = gapPosition + gapLength/2 + rightWallWidth/2;
     }
+
+
+
+    /** Recycle the wall with a given position **/
+    public void RecycleWall(float gameWidth, float gapLength, float gapPosition) {
+        this.y = SwiftyGlider.HEIGHT;
+        timer = 0;
+
+        /** decide how rotation should happen randomly */
+        randomnizeWall();
+
+        /** determine X position of the gap and the walls */
+        this.gapLength = gapLength;
+        this.gapPosition = gapPosition;
+        this.leftWallPosition_X = gapPosition - gapLength/2 - leftWallWidth/2;
+        this.rightWallPosition_X = gapPosition + gapLength/2 + rightWallWidth/2;
+    }
+
+
 
     public void FirstWall(float CanvasWidth, float gapLength){
 
@@ -206,8 +230,8 @@ public class Wall extends Box {
             case 2: leftWallRotate = 180;  rightWallRotate = 180f; swap = false; break;
             case 3: leftWallRotate = 0f;   rightWallRotate = 0f;   swap = false; break;
             case 4: leftWallRotate = 0f;   rightWallRotate = 0f;   swap = true; break;
-            case 5: leftWallRotate = 180;  rightWallRotate = 0;    swap =   true; break;
-            case 6: leftWallRotate = 0f;   rightWallRotate = 180f; swap  = true; break;
+            case 5: leftWallRotate = 180;  rightWallRotate = 0;    swap = true; break;
+            case 6: leftWallRotate = 0f;   rightWallRotate = 180f; swap = true; break;
             case 7: leftWallRotate = 180;  rightWallRotate = 180f; swap = true; break;
         }
     }

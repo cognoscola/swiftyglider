@@ -13,6 +13,7 @@ import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.callbacks.PlatformInterfaceController;
 import com.bondfire.app.handler.Content;
 import com.bondfire.app.services.AdController;
+import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.app.services.PlayServicesObject;
 
@@ -49,6 +50,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	public final static String MESSAGE_TYPE_ACTION   = "STATE_MESSAGE";
 	public final static String MESSAGE_TYPE_POSITION = "POS_MESSAGE";
+	public final static String MESSAGE_TYPE_WALL= "WALL_MESSAGE"; //new wall incoming
 	public static int TYPE_GAME_START= 0;
 	public static int TYPE_GAME_STOP = 1;
 	public static int TYPE_START_ACK = 2;
@@ -178,7 +180,11 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		//Temporarily create fake stuff
 		if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
 
-			gsm.push(new MenuState(gsm));
+			GameRoom room = new GameRoom();
+			GameParticipant participant = new GameParticipant();
+			participant.setParticipantName("Guillermo");
+			room.getParticipants().add(participant);
+			gsm.push(new PlayState(gsm, 0, room));
 		}
 	}
 
