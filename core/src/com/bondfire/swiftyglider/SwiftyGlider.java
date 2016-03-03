@@ -46,6 +46,13 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static final int ACHIEVE_MASTER_GLIDER       = 3;
 	public static final int ACHIEVE_GRAND_MASTER_GLIDER = 4;
 
+
+	public final static String MESSAGE_TYPE_ACTION   = "STATE_MESSAGE";
+	public final static String MESSAGE_TYPE_POSITION = "POS_MESSAGE";
+	public static int TYPE_GAME_START= 0;
+	public static int TYPE_GAME_STOP = 1;
+	public static int TYPE_START_ACK = 2;
+
 	/** our assets */
     public static Content res;
 
@@ -191,19 +198,17 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	@Override
 	public void onGameMessageReceived(String data, String senderId) {
-		Gdx.app.log(TAG, "onGamePacketReceived() ");
 
 		if (gsm.peek() instanceof PlayState) {
 			((PlayState) gsm.peek()).receiveMessage(data,senderId);
 		}
 
 		if (gsm.peek() instanceof MultiplayerMenuState) {
-			if (data.contains(GameStateMessage.MESSAGE_TYPE)) {
+			if (data.contains(MESSAGE_TYPE_ACTION)) {
 				Gdx.app.log(TAG, "onGameMessageReceived() RECEIVED  GameStateMessage");
 
 				inStateMessage = json.fromJson(GameStateMessage.class, data);
-
-				if (inStateMessage.actionType == GameStateMessage.TYPE_GAME_START){
+				if (inStateMessage.actionType == TYPE_GAME_START){
 					gsm.set(new PlayState(gsm,0,room));
 				}
 			}

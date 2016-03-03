@@ -87,11 +87,10 @@ public class PlayState extends State {
     private GameRoom room;
     private Array<Glider> opponentGliders;
     private float positionUpdateTimer = 0.0f;
-    private static float MAX_POSITION_UPDATE_TIMER = 0.5f;
+    private static float MAX_POSITION_UPDATE_TIMER = 0.1f;
 
     private static PositionMessage outPositionMessage;
     private static PositionMessage inPositionMessage;
-
 
     public PlayState(GSM gsm, int level, GameRoom room){
         super(gsm);
@@ -227,10 +226,12 @@ public class PlayState extends State {
             if (room.isConnected()) {
                 positionUpdateTimer +=dt;
                 if (positionUpdateTimer > MAX_POSITION_UPDATE_TIMER) {
-                    for (Glider glider : opponentGliders) {
+                    for (int i = 0; i < opponentGliders.size; i++) {
 
-                        outPositionMessage.x = glider.getX();
-                        outPositionMessage.y = glider.getY();
+                        Glider glider = opponentGliders.get(i);
+                        outPositionMessage.x = this.glider.getX();
+                        outPositionMessage.y = this.glider.getY();
+                        outPositionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_POSITION;
 
                         SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
                                 glider.getParticipantId(),
@@ -513,7 +514,6 @@ public class PlayState extends State {
                 }
             }
         }
-
     }
 
     //handle room stuff
@@ -524,7 +524,7 @@ public class PlayState extends State {
     public void receiveMessage(String message, String senderId) {
 
         //Check our message data actionType
-        if (message.contains(PositionMessage.MESSAGE_TYPE)) {
+        if (message.contains(SwiftyGlider.MESSAGE_TYPE_POSITION)) {
             Gdx.app.log(TAG, "receiveMessage() POSITION UPDATE ");
 
             inPositionMessage = SwiftyGlider.json.fromJson( PositionMessage.class,message);

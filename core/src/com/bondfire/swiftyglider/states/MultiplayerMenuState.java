@@ -167,15 +167,15 @@ public class MultiplayerMenuState extends State {
             if (begin.contains(mouse.x, mouse.y)) {
                 if (room.isHost()) {
 
-                    SwiftyGlider.outStateMessage.actionType = GameStateMessage.TYPE_GAME_START;
-
+                    SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
+                    SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
 
                     /** start the round */
                     gsm.set(new PlayState(gsm, 0, room));
 
                     if (room.isConnected()) {
                         for (GameParticipant participant : room.getParticipants()) {
-                            if(participant.getParticipantId().equals(room.getClientId()))continue;
+                            if (participant.getParticipantId().equals(room.getClientId())) continue;
                             SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
                                     participant.getParticipantId(),
                                     SwiftyGlider.json.toJson(SwiftyGlider.outStateMessage),
