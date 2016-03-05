@@ -25,11 +25,28 @@ public class Wall extends Box {
     private TextureRegion leftWall;
     private TextureRegion rightWall;
 
-    private static float MAX_TIME = 5f;  //time it takes for the wall to descent
+    public static float getMaxWallLifetime() {
+        return MAX_WALL_LIFETIME;
+    }
+
+    public static void setMaxWallLifetime(float maxWallLifetime) {
+        MAX_WALL_LIFETIME = maxWallLifetime;
+    }
+
+    private static float MAX_WALL_LIFETIME = 5f;  //time it takes for the wall to descent
     private float timer;
     private float END_Y;
 
+    public float getGapPosition() {
+        return gapPosition;
+    }
+
     private float gapPosition;
+
+    public float getGapLength() {
+        return gapLength;
+    }
+
     private float gapLength;
     private float leftWallPosition_X;
     private float rightWallPosition_X;
@@ -51,7 +68,6 @@ public class Wall extends Box {
     public Wall( float canvasWidth, float gapLength) {
         this.gapLength = gapLength;
         this.canvasWidth = canvasWidth;
-
 
         this.y = SwiftyGlider.HEIGHT;
 
@@ -75,7 +91,7 @@ public class Wall extends Box {
         this.gapLength = gapLength;
         this.canvasWidth = canvasWidth;
 
-        this.timer = MAX_TIME * startingHeight;
+        this.timer = MAX_WALL_LIFETIME * startingHeight;
 
         atlas =(BlurrableTextureAtlas) SwiftyGlider.res.getAtlas("sprites");
         leftWall =atlas.findRegion("wall_left");
@@ -98,9 +114,8 @@ public class Wall extends Box {
     public void update(float dt){
         if(this.y > END_Y){
             timer += dt;
-            this.y = SwiftyGlider.HEIGHT - timer/ MAX_TIME * SwiftyGlider.HEIGHT;
+            this.y = SwiftyGlider.HEIGHT - timer/ MAX_WALL_LIFETIME * SwiftyGlider.HEIGHT;
             if(this.y < END_Y) this.y = END_Y;
-//          System.out.print("\ndt:" + timer + " Distance travelled: " +timer/ MAX_TIME * SwiftyGlider.HEIGHT );
         }
     }
 
@@ -195,7 +210,6 @@ public class Wall extends Box {
     }
 
 
-
     /** Recycle the wall with a given position **/
     public void RecycleWall(float gameWidth, float gapLength, float gapPosition) {
         this.y = SwiftyGlider.HEIGHT;
@@ -261,7 +275,7 @@ public class Wall extends Box {
         return false;
     }
 
-    public static void setDescentSpeed(float t){
-        MAX_TIME = t;
+    public static void setWallLifeTime(float t){
+        MAX_WALL_LIFETIME = t;
     }
 }

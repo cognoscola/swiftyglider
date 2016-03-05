@@ -40,11 +40,15 @@ public class Glider extends Box {
 
     /** Y movement smoothing filter */
     private LinkedList<Float> filter;
-    static float filterAverage = 0;
-    static int filterIndex = 0;
+    float filterAverage = 0;
+    int filterIndex = 0;
     final static int FILTER_LENGTH = 10;
 
-    static boolean death_latch = false;
+    public boolean isDead() {
+        return death_latch;
+    }
+
+    private boolean death_latch = false;
 
     /** tail flapping */
     private boolean tailFlapping        = true;
@@ -241,7 +245,6 @@ public class Glider extends Box {
                         tailFlapping ?  tail_left.getRegionHeight():tail_right.getRegionHeight(),
                         false,
                         false);
-
                 if (getDispayName() != null) {
                     if (!getDispayName().isEmpty()) {
                         bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (SwiftyGlider.blurAmount) );

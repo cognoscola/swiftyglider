@@ -9,6 +9,9 @@ import com.badlogic.gdx.utils.Array;
 import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.network.CollisionMessage;
+import com.bondfire.swiftyglider.network.EnvironmenMessage;
+import com.bondfire.swiftyglider.network.GameStateMessage;
 import com.bondfire.swiftyglider.network.PositionMessage;
 import com.bondfire.swiftyglider.network.WallMessage;
 import com.bondfire.swiftyglider.sprites.Glider;
@@ -81,23 +84,31 @@ public class PlayState extends State {
     private boolean windDistanceSafetyLatch = false;
     private float WIND_MAX_TIMER            = 3f;
     static int WIND_CHANCE                  = 2;            //Likely hood out of 100 that the wind will change
+
     static boolean collidingLatch = false;
 
     /** ONLINE STUFF */
     private GameRoom room;
     private Array<Glider> opponentGliders;
+    private static boolean isEveryoneElseDead = false;
     private float positionUpdateTimer = 0.0f;
     private static float MAX_POSITION_UPDATE_TIMER = 0.03f;  //50 messages per second
 
-    private static PositionMessage outPositionMessage; //a place to store outgoing position message
-    private static PositionMessage inPositionMessage;  //a place to store incoming position message
-    private static WallMessage inWallMessage;          //a place to store outgoing wall message
-    private static WallMessage outWallMessage;         //a place to store incoming wall message
+    private static PositionMessage outPositionMessage; //outgoing position message
+    private static PositionMessage inPositionMessage;  //incoming position message
+    private static WallMessage inWallMessage;          //outgoing wall message
+    private static WallMessage outWallMessage;         //incoming wall message
+    private static EnvironmenMessage inEnvMessage;
+    private static EnvironmenMessage outEnvMessage;
+    private static CollisionMessage inCollisionMessage; //incoming collision message
+    private static CollisionMessage outCollisionMessage; //outgoing collion message
+    private static GameStateMessage inStateMessage;
+    private static GameStateMessage outStateMessage;
 
 
     public PlayState(GSM gsm, int level, GameRoom room){
-        super(gsm);
 
+        super(gsm);
         this.room = room;
 
         /** load our sprites */
@@ -115,6 +126,12 @@ public class PlayState extends State {
             outPositionMessage = new PositionMessage();
             inWallMessage = new WallMessage();
             outWallMessage = new WallMessage();
+            inEnvMessage = new EnvironmenMessage();
+            outEnvMessage = new EnvironmenMessage();
+            inCollisionMessage = new CollisionMessage();
+            outCollisionMessage = new CollisionMessage();
+            inStateMessage = new GameStateMessage();
+            outStateMessage = new GameStateMessage();
 
             //this is online mode
             opponentGliders = new Array<Glider>();
@@ -132,9 +149,10 @@ public class PlayState extends State {
                 glider.setDispayName(participant.getParticipantName().substring(0,2) + ".");
                 opponentGliders.add(glider);
             }
-
+            if (room.isHost()) {
+                setLevel(level);
+            }
         }else{
-            //we are playing single player mode
             setLevel(level);
         }
     }
@@ -153,7 +171,7 @@ public class PlayState extends State {
     }
 
     public void setLevel(int level){
-        System.out.println(TAG + " setLEvel(level):  " +  level);
+        System.out.println(TAG + " setLEvel(level):  " + level);
         glider.setWind(0);
         lastSavePoint = level;
         this.level = level;
@@ -163,38 +181,62 @@ public class PlayState extends State {
             gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
             wallTimer =  (WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION) * 0.5f;
         }else if(level >=LV_WINDSLOW ) {
-            Wall.setDescentSpeed(10f);
+            Wall.setWallLifeTime(10f);
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
             gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
         }else  if(level >= LV_SUPERSLOW) {
             gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_25;
-            Wall.setDescentSpeed(10f);
+            Wall.setWallLifeTime(10f);
             /** because this level is super slow, the walls already part way down */
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
 
         } else if(level >= LV_WINDFAST) {
-            Wall.setDescentSpeed(2f);
+            Wall.setWallLifeTime(2f);
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_65;
             gapLength = SwiftyGlider.WIDTH * SCALE_GAPLENGTH_230;
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
         }else if(level >= LV_GOINGFAST) {
-            Wall.setDescentSpeed(2f);
+            Wall.setWallLifeTime(2f);
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
             gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
         }else if(level >=LV_FIRSTWIND ) {
-            Wall.setDescentSpeed(5f);
+            Wall.setWallLifeTime(5f);
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
             gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
         } else {
-            Wall.setDescentSpeed(5f);
+            Wall.setWallLifeTime(5f);
             windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
             gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
             wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+        }
+
+        // send out results if there
+        if (roomExists()) {
+
+            if (room.isConnected() && room.isHost()) {
+
+                wallQueueActive.clear();
+
+                outEnvMessage.wind = 0;
+                outEnvMessage.windHeightOffset = windHeightOffset;
+                outEnvMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ENV;
+
+                for (int i = 0; i < opponentGliders.size; i++) {
+
+                    Gdx.app.log(TAG,"setLevel() SENT ENV MESSAGE ");
+                    Glider glider = opponentGliders.get(i);
+                    SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                            glider.getParticipantId(),
+                            SwiftyGlider.json.toJson(outEnvMessage),
+                            true
+                    );
+                }
+            }
         }
     }
 
@@ -224,49 +266,38 @@ public class PlayState extends State {
     @Override
     public void update(float dt) {
 
+        wallTimer += dt;
+        indicatorTimer += dt;
+
         if (roomExists()) {
 
             /** Update this state*/
+            checkDeath(dt);
             updateWallState();
+            checkCollision();
             updatePlayers(dt);
+            updateWallPositions(dt);
 
         } else {
 
-            wallTimer += dt;
-            indicatorTimer += dt;
-
             checkDeath(dt);
-
-            /** Update this state*/
             updateWallState();
-
             checkIndicatorRate();
-
-            /** checkCollision */
             checkCollision();
-
-            /** weather*/
             calculateWeather(dt);
-
-            /** update everything inside this state */
             handleInput();
-
-            /**update appearance/positions of any players */
             updatePlayers(dt);
-
-
-            glider.update(dt);
-
-
             line.update(dt);
-
-            /** for each wall, update them */
-            for (int i = 0; i < wallQueueActive.size; i++) {
-                wallQueueActive.get(i).update(dt);
-            }
+            updateWallPositions(dt);
         }
     }
 
+    private void updateWallPositions(float dt){
+        /** for each wall, update them */
+        for (int i = 0; i < wallQueueActive.size; i++) {
+            wallQueueActive.get(i).update(dt);
+        }
+    }
 
 
     private void calculateWeather(float dt){
@@ -329,6 +360,9 @@ public class PlayState extends State {
 
         if (roomExists()) {
 
+            for(int i = 0; i < wallQueueActive.size; i++){
+                wallQueueActive.get(i).render(sb);
+            }
             for (int i = 0; i < opponentGliders.size; i++) {
                 Glider glider = opponentGliders.get(i);
                 glider.render(sb);
@@ -379,7 +413,41 @@ public class PlayState extends State {
                 ((BackgroundState)gsm.getBackground()).setWind(0);
 
                 System.out.println(TAG + "CheckDeath() Died, lastSavePoint:" + lastSavePoint);
-                gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
+
+                if (roomExists()) {
+                    //if everyone is dead except one person, tell everyone to stop the game
+                    if (room.isHost()) {
+
+                        isEveryoneElseDead = true;
+                        for (int i = 0; i < opponentGliders.size; i++) {
+                            //while someone is still alive
+                            if (!(opponentGliders.get(i).isDead())) {
+                                isEveryoneElseDead = false;
+                                break;
+                            }
+                        }
+
+                        //if everyone is dead
+                        if (isEveryoneElseDead && collidingLatch) {
+                            //send out stop message
+
+                            outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
+                            outStateMessage.actionType = SwiftyGlider.TYPE_GAME_STOP;
+
+                            for (int i = 0; i < opponentGliders.size; i++) {
+                                Glider glider = opponentGliders.get(i);
+                                SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                        glider.getParticipantId(),
+                                        SwiftyGlider.json.toJson(outStateMessage),
+                                        true
+                                );
+                            }
+                            gsm.set(new MultiplayerMenuState(gsm, room));
+                        }
+                    }
+                } else{
+                    gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
+                }
 
                 if( SwiftyGlider.adController != null){
                     SwiftyGlider.adController.setAdVisibility(true);
@@ -391,27 +459,30 @@ public class PlayState extends State {
     private void updatePlayers(float dt){
         glider.update(dt);
 
-        if (room.isConnected()) {
-            positionUpdateTimer +=dt;
-            if (positionUpdateTimer > MAX_POSITION_UPDATE_TIMER) {
-                for (int i = 0; i < opponentGliders.size; i++) {
+        if (roomExists()) {
+            //if we're connected and we're not dead
+            if (room.isConnected() && !collidingLatch) {
+                positionUpdateTimer +=dt;
+                if (positionUpdateTimer > MAX_POSITION_UPDATE_TIMER) {
 
-                    Glider glider = opponentGliders.get(i);
                     outPositionMessage.x = this.glider.getX();
                     outPositionMessage.y = this.glider.getY();
                     outPositionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_POSITION;
 
-                    SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                            glider.getParticipantId(),
-                            SwiftyGlider.json.toJson(outPositionMessage),
-                            false
-                    );
+                    for (int i = 0; i < opponentGliders.size; i++) {
+
+                        Glider glider = opponentGliders.get(i);
+                        SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                glider.getParticipantId(),
+                                SwiftyGlider.json.toJson(outPositionMessage),
+                                false
+                        );
+                    }
+                    positionUpdateTimer = 0;
                 }
-                positionUpdateTimer = 0;
             }
         }
     }
-
 
     private void updateWallState(){
 
@@ -428,26 +499,77 @@ public class PlayState extends State {
 
         if (!roomExists()) {
             checkNextWallReady();
+        }else if (room.isHost()) {
+            checkNextWallReady();
         }
     }
 
+    /**
+     * Checks if we are ready to display the next wall
+     */
+    private void checkNextWallReady() {
 
-    private void checkNextWallReady(){
-        /** Check if it is time to put a new wall on the screen */
-        if(wallTimer >= wallAppearanceFrequency) {
+        if (!roomExists()) {
+            /** Check if it is time to put a new wall on the screen */
+            if (wallTimer >= wallAppearanceFrequency) {
 
-            /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
-             * is empty just make a new wall.*/
-            if(!isOnSaveLevels){ /** don't make new walls while on safe levels */
-                Wall wall = getANonActiveWall();
-                /**if we havent crashed yet */
-                if(!collidingLatch) {
-                    wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
-                    wallQueueActive.add(wall);
+                Gdx.app.log(TAG,"checkNextWallReady() create new WALL");
+
+                /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
+                 * is empty just make a new wall.*/
+                if (!isOnSaveLevels) { /** don't make new walls while on safe levels */
+                    Wall wall = getANonActiveWall();
+                    /**if we havent crashed yet */
+                    if (!collidingLatch) {
+                        wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
+                        wallQueueActive.add(wall);
+                    }
                 }
+                wallTimer = 0;
+                /** Update Wall frequency ()*/
             }
-            wallTimer = 0;
-            /** Update Wall frequency ()*/
+
+        }else if (room.isHost()) {
+
+            /** Check if it is time to put a new wall on the screen */
+            if (wallTimer >= wallAppearanceFrequency) {
+
+                Gdx.app.log(TAG,"checkNextWallReady() create new WALL");
+
+
+                /** if yes, fetch a wall from the waitQueue and reset it*/
+                Wall wall = getANonActiveWall();
+                wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
+
+                //pass it to other players first
+                outWallMessage.gapLength = wall.getGapLength();
+                outWallMessage.gapPosition = wall.getGapPosition();
+                outWallMessage.lifeTime = Wall.getMaxWallLifetime();
+                outWallMessage.messageType = SwiftyGlider.MESSAGE_TYPE_WALL;
+
+                Gdx.app.log(TAG,"checkNextWallReady() SENT WALL");
+
+                if (room.isConnected()) {
+                    for (int i = 0; i < opponentGliders.size; i++) {
+                        Glider glider = opponentGliders.get(i);
+                        SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                glider.getParticipantId(),
+                                SwiftyGlider.json.toJson(outWallMessage),
+                                true
+                        );
+                    }
+                }
+
+                /**if we havent crashed yet */
+                if (!collidingLatch) {
+                    wallQueueActive.add(wall);
+                } else {
+                    //put it back into the wait queue
+                    wallQueueWaiting.add(wall);
+                }
+                wallTimer = 0;
+                /** Update Wall frequency ()*/
+            }
         }
     }
 
@@ -471,11 +593,11 @@ public class PlayState extends State {
         if (level > LV_EYEOFNEEDLE) {
             isOnSaveLevels = false;
             wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION;
-            Wall.setDescentSpeed(1.5f);
+            Wall.setWallLifeTime(1.5f);
         } else if (level > LV_EYEOFNEEDLE - 1) {
             isOnSaveLevels = true;
             setLevel(level);
-            Wall.setDescentSpeed(2);
+            Wall.setWallLifeTime(2);
         } else if (level > LV_WINDSLOW) {
             wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210) * LEVEL_AMPLIFICATION;
             isOnSaveLevels = false;
@@ -524,18 +646,35 @@ public class PlayState extends State {
                 /** Are we colliding with any walls?*/
                 colliding = wall.colliding(glider.getX(), glider.getY(), glider.getWidth(), glider.getHeight());
                 glider.setColliding(colliding);
+
+
                 /** We don't want the colliding value to change back to false by
                  * checking another wall it is not colliding with, so terminate the loop*/
-
-                if(colliding) {
+                if (colliding) {
                     i = wallQueueActive.size;
 
-                    if(colliding && !collidingLatch){
+                    if (colliding && !collidingLatch) {
 
-                        if (SwiftyGlider.appType == Application.ApplicationType.Android){
+                        //vibrate our client
+                        if (SwiftyGlider.appType == Application.ApplicationType.Android) {
                             Gdx.input.vibrate(200);
                         }
                         collidingLatch = true;
+
+                        //let everyone else know we crashed if needed
+                        if (roomExists()) {
+                            if (room.isConnected()) {
+                                outCollisionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_COLLIDE;
+                                for (int i = 0; i < opponentGliders.size; i++) {
+                                    Glider glider = opponentGliders.get(i);
+                                    SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                            glider.getParticipantId(),
+                                            SwiftyGlider.json.toJson(outCollisionMessage),
+                                            true
+                                    );
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -567,9 +706,8 @@ public class PlayState extends State {
      */
     public void receiveMessage(String message, String senderId) {
 
-        //Check our message data actionType
+        // POSITION UPDATE FROM A PLAYER
         if (message.contains(SwiftyGlider.MESSAGE_TYPE_POSITION)) {
-
             inPositionMessage = SwiftyGlider.json.fromJson( PositionMessage.class,message);
             for (int i = 0; i < opponentGliders.size; i++) {
                 Glider glider = opponentGliders.get(i);
@@ -581,13 +719,43 @@ public class PlayState extends State {
             }
         }
 
+        //WALL INCOMING FROM A HOST
         if (message.contains(SwiftyGlider.MESSAGE_TYPE_WALL)) {
             inWallMessage = SwiftyGlider.json.fromJson(WallMessage.class, message);
-            Wall wall = getANonActiveWall();
             /**if we havent crashed yet */
             if(!collidingLatch) {
+
+                Wall wall = getANonActiveWall();
                 wall.RecycleWall(SwiftyGlider.WIDTH, inWallMessage.gapLength,inWallMessage.gapPosition);
+                Wall.setMaxWallLifetime(inWallMessage.lifeTime);
                 wallQueueActive.add(wall);
+            }
+        }
+
+        if (message.contains(SwiftyGlider.MESSAGE_TYPE_ENV)) {
+            inEnvMessage = SwiftyGlider.json.fromJson(EnvironmenMessage.class, message);
+            if(!collidingLatch) {
+                this.windHeightOffset = inEnvMessage.windHeightOffset;
+                this.glider.setWind(inEnvMessage.wind);
+            }
+        }
+
+        if (message.contains((SwiftyGlider.MESSAGE_TYPE_COLLIDE))) {
+            inCollisionMessage = SwiftyGlider.json.fromJson(CollisionMessage.class, message);
+            for (int i = 0; i < opponentGliders.size; i++) {
+                Glider glider = opponentGliders.get(i);
+                if (glider.getParticipantId().equals(senderId)) {
+                    glider.setColliding(true);
+                }
+            }
+        }
+
+        if (message.contains(SwiftyGlider.MESSAGE_TYPE_ACTION)) {
+            Gdx.app.log(TAG, "onGameMessageReceived() RECEIVED  GameStateMessage");
+
+            inStateMessage = SwiftyGlider.json.fromJson(GameStateMessage.class, message);
+            if (inStateMessage.actionType == SwiftyGlider.TYPE_GAME_STOP) {
+                gsm.set(new MultiplayerMenuState(gsm, room));
             }
         }
     }

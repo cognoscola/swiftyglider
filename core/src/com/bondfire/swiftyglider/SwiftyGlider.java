@@ -47,10 +47,11 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static final int ACHIEVE_MASTER_GLIDER       = 3;
 	public static final int ACHIEVE_GRAND_MASTER_GLIDER = 4;
 
-
 	public final static String MESSAGE_TYPE_ACTION   = "STATE_MESSAGE";
 	public final static String MESSAGE_TYPE_POSITION = "POS_MESSAGE";
-	public final static String MESSAGE_TYPE_WALL= "WALL_MESSAGE"; //new wall incoming
+	public final static String MESSAGE_TYPE_WALL     = "WALL_MESSAGE"; //new wall incoming
+	public final static String MESSAGE_TYPE_ENV      = "ENV_MESSAGE";
+	public final static String MESSAGE_TYPE_COLLIDE = "COLLIDE_MESSAGE"; //so that all clients know that they are collided
 	public static int TYPE_GAME_START= 0;
 	public static int TYPE_GAME_STOP = 1;
 	public static int TYPE_START_ACK = 2;

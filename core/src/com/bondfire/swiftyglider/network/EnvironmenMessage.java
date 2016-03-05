@@ -5,6 +5,11 @@ package com.bondfire.swiftyglider.network;
  */
 public class EnvironmenMessage {
 
-
+    /** contains information about a round's environment, such as if
+     * there is wind, and wall descent speed
+     */
+    public String messageType;
+    public float windHeightOffset;
+    public int wind;
 
 }
