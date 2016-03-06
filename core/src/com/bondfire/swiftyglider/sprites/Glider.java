@@ -68,6 +68,12 @@ public class Glider extends Box {
     }
     private String participantId;
 
+    public void setIsOpponent(boolean isOpponent) {
+        this.isOpponent = isOpponent;
+    }
+
+    private boolean isOpponent = false;
+
     /**name of person **/
     public String getDispayName() {
         return dispayName;
@@ -77,6 +83,7 @@ public class Glider extends Box {
     }
     public String dispayName;
     public static BitmapFont bitmapFont;
+
 
 
     public Glider(float x, float y) {
@@ -126,18 +133,21 @@ public class Glider extends Box {
         }
     }
 
-    public void update(float dt){
-        if(death_latch){
-            deathTimer +=dt;
+    public void update(float dt) {
+        if (death_latch) {
+            deathTimer += dt;
         }
+
+        //if this instance of the glider is ours, get movement
+        if (!isOpponent) {
             /** Calculate our glider movement based on accelerometer */
-            if(!death_latch) {
+            if (!death_latch) {
 
                 if (SwiftyGlider.appType == Application.ApplicationType.Android
                         || SwiftyGlider.appType == Application.ApplicationType.iOS) {
 
                     /** Calculate X movement */
-                    this.velocity_X = this.velocity_X * Vconstant + Gdx.input.getAccelerometerX() * amplitude * Kconstant + amplitude * Gdx.input.getAccelerometerX() + wind*30;
+                    this.velocity_X = this.velocity_X * Vconstant + Gdx.input.getAccelerometerX() * amplitude * Kconstant + amplitude * Gdx.input.getAccelerometerX() + wind * 30;
                     this.x = this.x - velocity_X * dt;
 
                     /** if the horizontal position reaches the right edge,  */
@@ -149,18 +159,20 @@ public class Glider extends Box {
                         this.x = 0 + width / 2;
                         velocity_X = 0;
                     }
-                    this.y = (SwiftyGlider.HEIGHT / 2 -  getYAverage() * 30);
-                    tailFlappingRate = 0.1f + 0.01f*Gdx.input.getAccelerometerY();
+                    this.y = (SwiftyGlider.HEIGHT / 2 - getYAverage() * 30);
+                    tailFlappingRate = 0.1f + 0.01f * Gdx.input.getAccelerometerY();
                 }
             }
-//        }
+        }
 
-        tailFlappingCounter +=dt;
-        if(tailFlappingCounter > tailFlappingRate){
+
+        tailFlappingCounter += dt;
+        if (tailFlappingCounter > tailFlappingRate) {
             tailFlapping = !tailFlapping;
             tailFlappingCounter = 0;
         }
     }
+
 
     public float getYAverage(){
         /** Calculate Y movement */
@@ -187,7 +199,7 @@ public class Glider extends Box {
         }
         atlas.bind();
 
-        if(!(deathTimer > TIME_DEATH)){
+        if(deathTimer < TIME_DEATH){
             if(death_latch){
                 sb.draw(atlas.tex,
                         x - width / 2,
@@ -205,7 +217,6 @@ public class Glider extends Box {
                         explosion.getRegionHeight(),
                         false,
                         false);
-
 
 //                sb.draw(explosion, x - width / 2, y - height / 2, width, height);
             }else{

@@ -36,8 +36,9 @@ public class MultiplayerMenuState extends State {
 
     private GameRoom room;
 
-    public MultiplayerMenuState(GSM gsm, GameRoom room) {
+    public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
         super(gsm);
+
 
         bitmapFont = SwiftyGlider.res.getBmpFont();
         atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
@@ -83,7 +84,7 @@ public class MultiplayerMenuState extends State {
         this.room = room;
 
         readyStatement.hasBackground(false);
-        requestSent = false;
+        requestSent = skipNetworkRequest;
     }
 
     @Override
@@ -119,7 +120,6 @@ public class MultiplayerMenuState extends State {
         sb.begin();
 //        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
         back.render(sb);
-
 
         if (room.isConnected()) {
 //            connectedInstruction.render(sb);
@@ -172,6 +172,9 @@ public class MultiplayerMenuState extends State {
 
                     SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
                     SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
+
+                    //turn off the add
+                    SwiftyGlider.setAddVisibiliyFalse();
 
                     /** start the round */
                     gsm.set(new PlayState(gsm, 0, room));

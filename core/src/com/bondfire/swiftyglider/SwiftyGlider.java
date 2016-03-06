@@ -117,7 +117,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			//After we bind the game's services, find out if we should go to multiplayer room
 			if(realTimeService.getSender().shouldGoToMultiplayerMenu()){
 				/** push the multiplayer menu state **/
-				gsm.push(new MultiplayerMenuState(gsm, room));
+				gsm.push(new MultiplayerMenuState(gsm, room,false));
 			}else{
 				/** push the menu state*/
 				gsm.push(new MenuState(gsm));
@@ -207,7 +207,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public void onGameMessageReceived(String data, String senderId) {
 
 		if (gsm.peek() instanceof PlayState) {
-			((PlayState) gsm.peek()).receiveMessage(data,senderId);
+			((PlayState) gsm.peek()).receiveMessage(data, senderId);
 		}
 
 		if (gsm.peek() instanceof MultiplayerMenuState) {
@@ -216,6 +216,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 				inStateMessage = json.fromJson(GameStateMessage.class, data);
 				if (inStateMessage.actionType == TYPE_GAME_START){
+					setAddVisibiliyFalse();
 					gsm.set(new PlayState(gsm,0,room));
 				}
 			}
@@ -238,5 +239,13 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			SwiftyGlider.realTimeService.getSender().DestroyGameConnection();
 		}
 		playServices = null;
+	}
+
+	public static void setAddVisibiliyFalse() {
+
+		if (adController != null) {
+			adController.newRequest();
+			adController.setAdVisibility(false);
+		}
 	}
 }

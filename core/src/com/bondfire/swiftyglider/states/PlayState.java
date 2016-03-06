@@ -141,12 +141,14 @@ public class PlayState extends State {
                 if (participant.getParticipantId() == room.getClientId()){
                     glider.setParticipantId(participant.getParticipantId());
                     glider.setDispayName(participant.getParticipantName().substring(0,2) + ".");
+                    glider.setIsOpponent(false);
                     continue;
                 }
                 //this is other people
                 Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
                 glider.setParticipantId(participant.getParticipantId());
-                glider.setDispayName(participant.getParticipantName().substring(0,2) + ".");
+                glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
+                glider.setIsOpponent(true);
                 opponentGliders.add(glider);
             }
             if (room.isHost()) {
@@ -363,6 +365,7 @@ public class PlayState extends State {
             for(int i = 0; i < wallQueueActive.size; i++){
                 wallQueueActive.get(i).render(sb);
             }
+
             for (int i = 0; i < opponentGliders.size; i++) {
                 Glider glider = opponentGliders.get(i);
                 glider.render(sb);
@@ -442,7 +445,7 @@ public class PlayState extends State {
                                         true
                                 );
                             }
-                            gsm.set(new MultiplayerMenuState(gsm, room));
+                            gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room, true));
                         }
                     }
                 } else{
@@ -458,6 +461,12 @@ public class PlayState extends State {
 
     private void updatePlayers(float dt){
         glider.update(dt);
+
+        for (int i = 0; i < opponentGliders.size; i++) {
+
+            Glider glider = opponentGliders.get(i);
+            glider.update(dt);
+        }
 
         if (roomExists()) {
             //if we're connected and we're not dead
@@ -561,12 +570,7 @@ public class PlayState extends State {
                 }
 
                 /**if we havent crashed yet */
-                if (!collidingLatch) {
-                    wallQueueActive.add(wall);
-                } else {
-                    //put it back into the wait queue
-                    wallQueueWaiting.add(wall);
-                }
+                wallQueueActive.add(wall);
                 wallTimer = 0;
                 /** Update Wall frequency ()*/
             }
@@ -723,13 +727,11 @@ public class PlayState extends State {
         if (message.contains(SwiftyGlider.MESSAGE_TYPE_WALL)) {
             inWallMessage = SwiftyGlider.json.fromJson(WallMessage.class, message);
             /**if we havent crashed yet */
-            if(!collidingLatch) {
 
-                Wall wall = getANonActiveWall();
-                wall.RecycleWall(SwiftyGlider.WIDTH, inWallMessage.gapLength,inWallMessage.gapPosition);
-                Wall.setMaxWallLifetime(inWallMessage.lifeTime);
-                wallQueueActive.add(wall);
-            }
+            Wall wall = getANonActiveWall();
+            wall.RecycleWall(SwiftyGlider.WIDTH, inWallMessage.gapLength, inWallMessage.gapPosition);
+            Wall.setMaxWallLifetime(inWallMessage.lifeTime);
+            wallQueueActive.add(wall);
         }
 
         if (message.contains(SwiftyGlider.MESSAGE_TYPE_ENV)) {
@@ -755,7 +757,7 @@ public class PlayState extends State {
 
             inStateMessage = SwiftyGlider.json.fromJson(GameStateMessage.class, message);
             if (inStateMessage.actionType == SwiftyGlider.TYPE_GAME_STOP) {
-                gsm.set(new MultiplayerMenuState(gsm, room));
+                gsm.set(new MultiplayerMenuState(gsm, room,true));
             }
         }
     }

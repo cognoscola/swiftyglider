@@ -83,9 +83,9 @@ public class MenuState extends State {
                     room.setClientId("ID");
                     room.setGameHostId("ID");
                     room.getParticipants().add(new GameParticipant());
-                    gsm.set(new MultiplayerMenuState(gsm, room));
+                    gsm.set(new MultiplayerMenuState(gsm, room,true));
                 }else{
-                    gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room));
+                    gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room,false));
                 }
             }
         }
