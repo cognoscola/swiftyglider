@@ -8,7 +8,6 @@ import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
-import com.bondfire.swiftyglider.network.GameStateMessage;
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
@@ -34,11 +33,8 @@ public class MultiplayerMenuState extends State {
 
     private boolean requestSent;
 
-    private GameRoom room;
-
     public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
         super(gsm);
-
 
         bitmapFont = SwiftyGlider.res.getBmpFont();
         atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
@@ -79,9 +75,13 @@ public class MultiplayerMenuState extends State {
                 SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -100);
         guestInstruction.hasBackground(false);
         begin = new WhiteButton(bitmapFont, "START ROUND", SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 - 100);
-        readyStatement =new WhiteButton(bitmapFont,room.getParticipants().size + " Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2);
 
-        this.room = room;
+        if (roomExists()) {
+            readyStatement =new WhiteButton(bitmapFont,room.getParticipants().size + " Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2);
+        }else{
+            readyStatement =new WhiteButton(bitmapFont,"0 Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2);
+        }
+
 
         readyStatement.hasBackground(false);
         requestSent = skipNetworkRequest;
@@ -94,23 +94,25 @@ public class MultiplayerMenuState extends State {
         //We put the invitations on the update block because it could be that we enter this
         //state while being disconnected, and then later connect to a roome while still
         //remaining in this game state. So invitations go out when we have polled a connected state
-        if (room.isConnected()) {
-            if (!requestSent) {
-                requestSent = true;
-                SwiftyGlider.realTimeService.getSender().CreateGameInvitations();
-                SwiftyGlider.realTimeService.getSender().setGameConnectionReady();
+        if (roomExists()) {
+            if (SwiftyGlider.room.isConnected()) {
+                if (!requestSent) {
+                    requestSent = true;
+                    SwiftyGlider.realTimeService.getSender().CreateGameInvitations();
+                    SwiftyGlider.realTimeService.getSender().setGameConnectionReady();
+                }
             }
         }
     }
 
-
-    public void updateRoom(GameRoom room) {
-        this.room = room;
-        updatePlayerCount(room.getParticipants().size);
+    public void updateRoom() {
+        if (roomExists()) {
+            updatePlayerCount(SwiftyGlider.room.getParticipants().size);
+        }
     }
 
     private void updatePlayerCount(int count){
-        Gdx.app.log(TAG,"updatePlayerCount() " + count);
+        Gdx.app.log(TAG, "updatePlayerCount() " + count);
         readyStatement.setText(count + " Players Ready");
     }
 
@@ -121,16 +123,22 @@ public class MultiplayerMenuState extends State {
 //        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
         back.render(sb);
 
-        if (room.isConnected()) {
+        if (roomExists()) {
+            if (SwiftyGlider.room.isConnected()) {
 //            connectedInstruction.render(sb);
 //            survival.render(sb);
 //            second.render(sb);
-            readyStatement.render(sb);
-            if (room.isHost()) {
-                begin.render(sb);
-            } else {
-                guestInstruction.render(sb);
+                readyStatement.render(sb);
+                if (SwiftyGlider.room.isHost()) {
+                    begin.render(sb);
+                } else {
+                    guestInstruction.render(sb);
+                }
+            }else{
+                joinRoom.render(sb);
+                disconnectedinstruction.render(sb);
             }
+
         } else {
             joinRoom.render(sb);
             disconnectedinstruction.render(sb);
@@ -156,41 +164,54 @@ public class MultiplayerMenuState extends State {
             if (Gdx.app.getType() == Application.ApplicationType.Android) {
                 if(joinRoom.contains(mouse.x, mouse.y)) {
 
-                    if (!room.isConnected()) {
+                    if (roomExists()) {
+                        if (!SwiftyGlider.room.isConnected()) {
+                            SwiftyGlider.paltformController.ShowMatches();
+                        }
+                    }else{
                         SwiftyGlider.paltformController.ShowMatches();
                     }
                 }
             }
 //            group.justTouched(mouse.x,mouse.y);
 
-            if (readyStatement.contains(mouse.x, mouse.y)) {
-                SwiftyGlider.paltformController.ShowMatches();
-            }
-
             if (begin.contains(mouse.x, mouse.y)) {
-                if (room.isHost() && room.isConnected()) {
+                if (roomExists()) {
+                    if (SwiftyGlider.room.isHost() && SwiftyGlider.room.isConnected()) {
 
-                    SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
-                    SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
+                        SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
+                        SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
 
-                    //turn off the add
-                    SwiftyGlider.setAddVisibiliyFalse();
+                        //turn off the add
+                        SwiftyGlider.setAddVisibiliyFalse();
 
-                    /** start the round */
-                    gsm.set(new PlayState(gsm, 0, room));
+                        /** start the round */
+                        gsm.set(new PlayState(gsm, 0, SwiftyGlider.room));
 
-                    if (room.isConnected()) {
-                        for (GameParticipant participant : room.getParticipants()) {
-                            if (participant.getParticipantId().equals(room.getClientId())) continue;
-                            SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                                    participant.getParticipantId(),
-                                    SwiftyGlider.json.toJson(SwiftyGlider.outStateMessage),
-                                    true
-                            );
+                        if (SwiftyGlider.room.isConnected()) {
+                            for (GameParticipant participant : SwiftyGlider.room.getParticipants()) {
+                                if (participant.getParticipantId().equals(SwiftyGlider.room.getClientId())) continue;
+                                SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                        participant.getParticipantId(),
+                                        SwiftyGlider.json.toJson(SwiftyGlider.outStateMessage),
+                                        true
+                                );
+                            }
                         }
                     }
                 }
             }
+
+
+            if (readyStatement.contains(mouse.x, mouse.y)) {
+                SwiftyGlider.paltformController.ShowMatches();
+            }
         }
     }
+
+    private boolean roomExists() {
+        return SwiftyGlider.room != null;
+    }
+
+
 }

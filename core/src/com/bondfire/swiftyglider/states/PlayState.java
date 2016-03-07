@@ -23,6 +23,7 @@ import com.bondfire.swiftyglider.ui.WhiteButton;
 public class PlayState extends State {
 
     private final static String TAG = "PlayState";
+    private final static boolean d_updateRoom = true;
 
     /** set the max number of fingers */
     private final int MAX_FINGERS = 0;
@@ -88,7 +89,6 @@ public class PlayState extends State {
     static boolean collidingLatch = false;
 
     /** ONLINE STUFF */
-    private GameRoom room;
     private Array<Glider> opponentGliders;
     private static boolean isEveryoneElseDead = false;
     private float positionUpdateTimer = 0.0f;
@@ -109,7 +109,8 @@ public class PlayState extends State {
     public PlayState(GSM gsm, int level, GameRoom room){
 
         super(gsm);
-        this.room = room;
+
+        SwiftyGlider.keepScreenOn();
 
         /** load our sprites */
         glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4);
@@ -220,7 +221,7 @@ public class PlayState extends State {
         // send out results if there
         if (roomExists()) {
 
-            if (room.isConnected() && room.isHost()) {
+            if (SwiftyGlider.room.isConnected() && SwiftyGlider.room.isHost()) {
 
                 wallQueueActive.clear();
 
@@ -415,11 +416,10 @@ public class PlayState extends State {
             if(deathTimer > DEATH_TIME){
                 ((BackgroundState)gsm.getBackground()).setWind(0);
 
-                System.out.println(TAG + "CheckDeath() Died, lastSavePoint:" + lastSavePoint);
 
                 if (roomExists()) {
                     //if everyone is dead except one person, tell everyone to stop the game
-                    if (room.isHost()) {
+                    if (SwiftyGlider.room.isHost()) {
 
                         isEveryoneElseDead = true;
                         for (int i = 0; i < opponentGliders.size; i++) {
@@ -446,10 +446,12 @@ public class PlayState extends State {
                                 );
                             }
                             gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room, true));
+                            SwiftyGlider.stopKeepingScreenOn();
                         }
                     }
                 } else{
                     gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
+                    SwiftyGlider.stopKeepingScreenOn();
                 }
 
                 if( SwiftyGlider.adController != null){
@@ -462,15 +464,16 @@ public class PlayState extends State {
     private void updatePlayers(float dt){
         glider.update(dt);
 
-        for (int i = 0; i < opponentGliders.size; i++) {
-
-            Glider glider = opponentGliders.get(i);
-            glider.update(dt);
-        }
-
         if (roomExists()) {
+            //update the opponent player animations
+            for (int i = 0; i < opponentGliders.size; i++) {
+                Glider glider = opponentGliders.get(i);
+                glider.update(dt);
+            }
+
+
             //if we're connected and we're not dead
-            if (room.isConnected() && !collidingLatch) {
+            if (SwiftyGlider.room.isConnected() && !collidingLatch) {
                 positionUpdateTimer +=dt;
                 if (positionUpdateTimer > MAX_POSITION_UPDATE_TIMER) {
 
@@ -508,7 +511,7 @@ public class PlayState extends State {
 
         if (!roomExists()) {
             checkNextWallReady();
-        }else if (room.isHost()) {
+        }else if (SwiftyGlider.room.isHost()) {
             checkNextWallReady();
         }
     }
@@ -538,7 +541,7 @@ public class PlayState extends State {
                 /** Update Wall frequency ()*/
             }
 
-        }else if (room.isHost()) {
+        }else if (SwiftyGlider.room.isHost()) {
 
             /** Check if it is time to put a new wall on the screen */
             if (wallTimer >= wallAppearanceFrequency) {
@@ -558,7 +561,7 @@ public class PlayState extends State {
 
                 Gdx.app.log(TAG,"checkNextWallReady() SENT WALL");
 
-                if (room.isConnected()) {
+                if (SwiftyGlider.room.isConnected()) {
                     for (int i = 0; i < opponentGliders.size; i++) {
                         Glider glider = opponentGliders.get(i);
                         SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
@@ -667,7 +670,7 @@ public class PlayState extends State {
 
                         //let everyone else know we crashed if needed
                         if (roomExists()) {
-                            if (room.isConnected()) {
+                            if (SwiftyGlider.room.isConnected()) {
                                 outCollisionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_COLLIDE;
                                 for (int i = 0; i < opponentGliders.size; i++) {
                                     Glider glider = opponentGliders.get(i);
@@ -700,7 +703,7 @@ public class PlayState extends State {
 
     //handle room stuff
     public boolean roomExists(){
-        return room != null;
+        return SwiftyGlider.room != null;
     }
 
     /**
@@ -757,8 +760,70 @@ public class PlayState extends State {
 
             inStateMessage = SwiftyGlider.json.fromJson(GameStateMessage.class, message);
             if (inStateMessage.actionType == SwiftyGlider.TYPE_GAME_STOP) {
-                gsm.set(new MultiplayerMenuState(gsm, room,true));
+                gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room,true));
+                SwiftyGlider.stopKeepingScreenOn();
             }
+        }
+    }
+
+    /**
+     * Update the room because we have received a roomConfiguration changed signal.
+     * Someone joined or left or changed their configuration
+     * @param incomingGameRoom
+     */
+    public void updateRoom(GameRoom incomingGameRoom) {
+        if(d_updateRoom) Gdx.app.log(TAG, "updateRoom() ");
+
+        //compare this room to the incoming room, to see whats up happening
+        //Has someone left, or joined?
+        if (incomingGameRoom.getParticipants().size != opponentGliders.size + 1) {
+            if(d_updateRoom) Gdx.app.log(TAG, "updateRoom() Room Sizes don't match!");
+
+            //someone joined
+            if (incomingGameRoom.getParticipants().size > SwiftyGlider.room.getParticipants().size) {
+                //Do nothing right now
+            }
+
+            //someone left
+            if (incomingGameRoom.getParticipants().size < (opponentGliders.size  + 1)) {
+                if(d_updateRoom) Gdx.app.log(TAG, "updateRoom() Someone left");
+
+                //find out who left
+                boolean foundMatch = false;
+
+
+                //we didn't leave so scan through through the opponents list
+                for (int i = 0; i < opponentGliders.size; i++) {
+
+                    Glider glider = opponentGliders.get(i);
+                    foundMatch = false;
+
+                    if (d_updateRoom)
+                        Gdx.app.log(TAG, "updateRoom() Checking if " + glider.getDispayName() + " left");
+
+                    for (int j = 0; j < incomingGameRoom.getParticipants().size; j++) {
+
+                        GameParticipant participant = incomingGameRoom.getParticipants().get(j);
+                        if (participant.getParticipantId().equals(glider.getParticipantId())) {
+                            Gdx.app.log(TAG, "updateRoom() "+glider.getDispayName() + " is still here");
+                            foundMatch = true;
+                            break;
+                        }
+                    }
+
+                    // Check if we found this person in the new room configuration
+                    if (!foundMatch) {
+                        if (d_updateRoom)
+                            Gdx.app.log(TAG, "updateRoom() Setting " + glider.getDispayName() + " dead");
+                        //mark this glider as DEAD
+                        glider.setColliding(true);
+                        break;
+                    }
+                }
+            }
+        }else{
+            if(d_updateRoom) Gdx.app.log(TAG, "updateRoom() MATCHING ROOM SIZE " + "INROOM:" + incomingGameRoom.getParticipants().size +
+                    " CURRENT:" + SwiftyGlider.room.getParticipants().size);
         }
     }
 }

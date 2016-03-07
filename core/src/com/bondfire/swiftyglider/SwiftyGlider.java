@@ -27,6 +27,7 @@ import com.bondfire.swiftyglider.states.GSM;
 import com.bondfire.swiftyglider.states.MenuState;
 import com.bondfire.swiftyglider.states.MultiplayerMenuState;
 import com.bondfire.swiftyglider.states.PlayState;
+import com.bondfire.swiftyglider.states.State;
 
 /** This covers LibGdx basics, expect lots of notes  */
 public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultiplayerMessageReceiver{
@@ -92,7 +93,6 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static GameRoom room;
 	public static GameStateMessage outStateMessage;
 	public static GameStateMessage inStateMessage;
-
 
 	public SwiftyGlider(int time){
 		timeInSeconds = time;
@@ -226,10 +226,21 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	@Override
 	public void onRoomConfigurationChanged(GameRoom inRoom) {
 		Gdx.app.log(TAG,"onRoomConfigurationChanged() Size:" + inRoom.getParticipants().size);
-		room = inRoom;
-		if (gsm.peek() instanceof MultiplayerMenuState) {
-			((MultiplayerMenuState) gsm.peek()).updateRoom(room);
+		State state = gsm.peek();
+
+//before room changes
+		if (state instanceof PlayState) {
+			((PlayState) state).updateRoom(inRoom);
 		}
+
+//after room changes
+		room = inRoom;
+
+		if (state instanceof MultiplayerMenuState) {
+			((MultiplayerMenuState) state).updateRoom();
+		}
+
+
 	}
 
 	@Override
@@ -248,4 +259,17 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			adController.setAdVisibility(false);
 		}
 	}
+
+	public static void keepScreenOn() {
+		if (paltformController != null) {
+			paltformController.keepScreenOn();
+		}
+	}
+
+	public static void stopKeepingScreenOn(){
+		if (paltformController != null) {
+			paltformController.stopKeepingScreenOn();
+		}
+	}
+
 }
