@@ -105,7 +105,6 @@ public class PlayState extends State {
     private static GameStateMessage inStateMessage;
     private static GameStateMessage outStateMessage;
 
-
     public PlayState(GSM gsm, int level, GameRoom room){
 
         super(gsm);
@@ -145,12 +144,15 @@ public class PlayState extends State {
                     glider.setIsOpponent(false);
                     continue;
                 }
-                //this is other people
-                Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
-                glider.setParticipantId(participant.getParticipantId());
-                glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
-                glider.setIsOpponent(true);
-                opponentGliders.add(glider);
+
+                //this is other people, only add if they are not busy
+                if (participant.getPlayerStatus() != GameParticipant.STATUS_BUSY) {
+                    Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
+                    glider.setParticipantId(participant.getParticipantId());
+                    glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
+                    glider.setIsOpponent(true);
+                    opponentGliders.add(glider);
+                }
             }
             if (room.isHost()) {
                 setLevel(level);
@@ -668,20 +670,10 @@ public class PlayState extends State {
                         }
                         collidingLatch = true;
 
+
+
                         //let everyone else know we crashed if needed
-                        if (roomExists()) {
-                            if (SwiftyGlider.room.isConnected()) {
-                                outCollisionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_COLLIDE;
-                                for (int i = 0; i < opponentGliders.size; i++) {
-                                    Glider glider = opponentGliders.get(i);
-                                    SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                                            glider.getParticipantId(),
-                                            SwiftyGlider.json.toJson(outCollisionMessage),
-                                            true
-                                    );
-                                }
-                            }
-                        }
+                        tellEveryoneElseIdied();
                     }
                 }
             }
@@ -821,9 +813,44 @@ public class PlayState extends State {
                     }
                 }
             }
-        }else{
-            if(d_updateRoom) Gdx.app.log(TAG, "updateRoom() MATCHING ROOM SIZE " + "INROOM:" + incomingGameRoom.getParticipants().size +
-                    " CURRENT:" + SwiftyGlider.room.getParticipants().size);
         }
+
+        //Check player statuses
+        for (int i = 0; i < incomingGameRoom.getParticipants().size; i++) {
+            GameParticipant gameParticipant = incomingGameRoom.getParticipants().get(i);
+
+            //one of the participants became busy, kill him if he is in the round
+            if (gameParticipant.getPlayerStatus() == GameParticipant.STATUS_BUSY) {
+
+                for (int j = 0; j < opponentGliders.size; j++) {
+                    Glider glider = opponentGliders.get(j);
+                    glider.setColliding(true);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void tellEveryoneElseIdied(){
+        if (roomExists()) {
+            if (SwiftyGlider.room.isConnected()) {
+                outCollisionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_COLLIDE;
+                for (int i = 0; i < opponentGliders.size; i++) {
+                    Glider glider = opponentGliders.get(i);
+                    SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                            glider.getParticipantId(),
+                            SwiftyGlider.json.toJson(outCollisionMessage),
+                            true
+                    );
+                }
+            }
+        }
+    }
+
+    public void killSelf(){
+        collidingLatch = true;
+        colliding = true;
+        glider.setColliding(true);
+        tellEveryoneElseIdied();
     }
 }

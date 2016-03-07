@@ -239,8 +239,6 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		if (state instanceof MultiplayerMenuState) {
 			((MultiplayerMenuState) state).updateRoom();
 		}
-
-
 	}
 
 	@Override
@@ -272,4 +270,14 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		}
 	}
 
+	@Override
+	public void pause() {
+
+		State state = gsm.peek();
+		if (state instanceof PlayState) {
+			((PlayState)state).killSelf();
+		}
+
+		super.pause();
+	}
 }

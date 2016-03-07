@@ -32,6 +32,7 @@ public class MultiplayerMenuState extends State {
     private static WhiteButton begin;
 
     private boolean requestSent;
+    private static int count;
 
     public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
         super(gsm);
@@ -77,11 +78,12 @@ public class MultiplayerMenuState extends State {
         begin = new WhiteButton(bitmapFont, "START ROUND", SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 - 100);
 
         if (roomExists()) {
+
             readyStatement =new WhiteButton(bitmapFont,room.getParticipants().size + " Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2);
+            updateRoom();
         }else{
             readyStatement =new WhiteButton(bitmapFont,"0 Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2);
         }
-
 
         readyStatement.hasBackground(false);
         requestSent = skipNetworkRequest;
@@ -107,7 +109,14 @@ public class MultiplayerMenuState extends State {
 
     public void updateRoom() {
         if (roomExists()) {
-            updatePlayerCount(SwiftyGlider.room.getParticipants().size);
+
+            count = 0;
+            for (int i = 0; i < SwiftyGlider.room.getParticipants().size; i++) {
+                if (SwiftyGlider.room.getParticipants().get(i).getPlayerStatus() != GameParticipant.STATUS_BUSY) {
+                    count++;
+                }
+            }
+            updatePlayerCount(count);
         }
     }
 
