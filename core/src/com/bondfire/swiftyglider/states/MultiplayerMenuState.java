@@ -165,8 +165,10 @@ public class MultiplayerMenuState extends State {
 
             if(back.contains(mouse.x,mouse.y)){
                 //Destroy any pending invitations
-                SwiftyGlider.realTimeService.getSender().DestroyGameInvitations();
-                SwiftyGlider.realTimeService.getSender().DestroyGameConnection();
+                if (Gdx.app.getType() == Application.ApplicationType.Android) {
+                    SwiftyGlider.realTimeService.getSender().DestroyGameInvitations();
+                    SwiftyGlider.realTimeService.getSender().DestroyGameConnection();
+                }
                 gsm.set(new MenuState(gsm));
             }
 

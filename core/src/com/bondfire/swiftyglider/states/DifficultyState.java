@@ -4,7 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
+import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
 public class DifficultyState extends State{
@@ -19,12 +21,22 @@ public class DifficultyState extends State{
 
     String[] texts;
 
+    private Graphic back;
     private WhiteButton instruction;
     private Array<WhiteButton> buttons;
     private BitmapFont bitmapFont;
+    BlurrableTextureAtlas atlas;
 
     public DifficultyState(GSM gsm){
         super(gsm);
+
+        atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+        back = new Graphic(atlas,
+                atlas.findRegion("back_icon"),
+                50,
+                SwiftyGlider.HEIGHT - 100,
+                60,
+                60);
 
         texts = getNames(SwiftyGlider.preferences.getInteger(ScoreState.KEY_BEST,0));
 
@@ -56,6 +68,7 @@ public class DifficultyState extends State{
 
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
+        back.render(sb);
         instruction.render(sb);
         for(int i = 0; i <buttons.size; i++){
             buttons.get(i).render(sb);
@@ -70,6 +83,12 @@ public class DifficultyState extends State{
             mouse.x = Gdx.input.getX();
             mouse.y = Gdx.input.getY();
             cam.unproject(mouse);
+
+            if(back.contains(mouse.x,mouse.y)){
+                //Destroy any pending invitations
+                gsm.set(new MenuState(gsm));
+            }
+
 
             for(int i = 0; i <buttons.size; i++){
                 if(buttons.get(i).contains(mouse.x, mouse.y)){

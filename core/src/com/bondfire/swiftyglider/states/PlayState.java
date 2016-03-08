@@ -119,9 +119,10 @@ public class PlayState extends State {
 
         /**prepare out text*/
         bitmapFont = SwiftyGlider.res.getBmpFont();
+        opponentGliders = new Array<Glider>();
         reset();
 
-        if (roomExists()) {
+        if (roomExists() && SwiftyGlider.room.isConnected() && SwiftyGlider.room.getParticipants() != null) {
 
             outPositionMessage = new PositionMessage();
             inWallMessage = new WallMessage();
@@ -134,7 +135,8 @@ public class PlayState extends State {
             outStateMessage = new GameStateMessage();
 
             //this is online mode
-            opponentGliders = new Array<Glider>();
+
+
             for (GameParticipant participant : room.getParticipants()) {
 
                 //if this is us
@@ -274,7 +276,7 @@ public class PlayState extends State {
         wallTimer += dt;
         indicatorTimer += dt;
 
-        if (roomExists()) {
+        if (roomExists() && SwiftyGlider.room.isConnected()) {
 
             /** Update this state*/
             checkDeath(dt);
@@ -363,8 +365,7 @@ public class PlayState extends State {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
 
-        if (roomExists()) {
-
+        if (roomExists() && SwiftyGlider.room.isConnected()) {
             for(int i = 0; i < wallQueueActive.size; i++){
                 wallQueueActive.get(i).render(sb);
             }
@@ -386,7 +387,6 @@ public class PlayState extends State {
             if(scoreText != null )
                 scoreText.render(sb);
         }
-
         sb.end();
     }
 
@@ -419,37 +419,36 @@ public class PlayState extends State {
                 ((BackgroundState)gsm.getBackground()).setWind(0);
 
 
-                if (roomExists()) {
+                if (roomExists() && SwiftyGlider.room.isHost()) {
                     //if everyone is dead except one person, tell everyone to stop the game
-                    if (SwiftyGlider.room.isHost()) {
 
-                        isEveryoneElseDead = true;
+
+                    isEveryoneElseDead = true;
+                    for (int i = 0; i < opponentGliders.size; i++) {
+                        //while someone is still alive
+                        if (!(opponentGliders.get(i).isDead())) {
+                            isEveryoneElseDead = false;
+                            break;
+                        }
+                    }
+
+                    //if everyone is dead
+                    if (isEveryoneElseDead && collidingLatch) {
+                        //send out stop message
+
+                        outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
+                        outStateMessage.actionType = SwiftyGlider.TYPE_GAME_STOP;
+
                         for (int i = 0; i < opponentGliders.size; i++) {
-                            //while someone is still alive
-                            if (!(opponentGliders.get(i).isDead())) {
-                                isEveryoneElseDead = false;
-                                break;
-                            }
+                            Glider glider = opponentGliders.get(i);
+                            SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                    glider.getParticipantId(),
+                                    SwiftyGlider.json.toJson(outStateMessage),
+                                    true
+                            );
                         }
-
-                        //if everyone is dead
-                        if (isEveryoneElseDead && collidingLatch) {
-                            //send out stop message
-
-                            outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
-                            outStateMessage.actionType = SwiftyGlider.TYPE_GAME_STOP;
-
-                            for (int i = 0; i < opponentGliders.size; i++) {
-                                Glider glider = opponentGliders.get(i);
-                                SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                                        glider.getParticipantId(),
-                                        SwiftyGlider.json.toJson(outStateMessage),
-                                        true
-                                );
-                            }
-                            gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room, true));
-                            SwiftyGlider.stopKeepingScreenOn();
-                        }
+                        gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room, true));
+                        SwiftyGlider.stopKeepingScreenOn();
                     }
                 } else{
                     gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
@@ -466,7 +465,7 @@ public class PlayState extends State {
     private void updatePlayers(float dt){
         glider.update(dt);
 
-        if (roomExists()) {
+        if (roomExists() && SwiftyGlider.room.isConnected()) {
             //update the opponent player animations
             for (int i = 0; i < opponentGliders.size; i++) {
                 Glider glider = opponentGliders.get(i);
@@ -498,22 +497,22 @@ public class PlayState extends State {
         }
     }
 
-    private void updateWallState(){
+    private void updateWallState() {
 
         /** for each wall in the active queue, check if they are done.*/
-       for( i = 0; i < wallQueueActive.size; i++ ){
+        for (i = 0; i < wallQueueActive.size; i++) {
             Wall wall = wallQueueActive.get(i);
 
-           /** if yes, put them in the waitQueue*/
-           if(wall.isDone()){
-              wallQueueWaiting.add(wall);
-               wallQueueActive.removeIndex(i);
-           }
-       }
+            /** if yes, put them in the waitQueue*/
+            if (wall.isDone()) {
+                wallQueueWaiting.add(wall);
+                wallQueueActive.removeIndex(i);
+            }
+        }
 
-        if (!roomExists()) {
+        if (roomExists() && SwiftyGlider.room.isHost()) {
             checkNextWallReady();
-        }else if (SwiftyGlider.room.isHost()) {
+        }else{
             checkNextWallReady();
         }
     }
@@ -522,35 +521,10 @@ public class PlayState extends State {
      * Checks if we are ready to display the next wall
      */
     private void checkNextWallReady() {
-
-        if (!roomExists()) {
+        if (roomExists() && SwiftyGlider.room.isConnected() && SwiftyGlider.room.isHost()) {
             /** Check if it is time to put a new wall on the screen */
             if (wallTimer >= wallAppearanceFrequency) {
-
-                Gdx.app.log(TAG,"checkNextWallReady() create new WALL");
-
-                /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
-                 * is empty just make a new wall.*/
-                if (!isOnSaveLevels) { /** don't make new walls while on safe levels */
-                    Wall wall = getANonActiveWall();
-                    /**if we havent crashed yet */
-                    if (!collidingLatch) {
-                        wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
-                        wallQueueActive.add(wall);
-                    }
-                }
-                wallTimer = 0;
-                /** Update Wall frequency ()*/
-            }
-
-        }else if (SwiftyGlider.room.isHost()) {
-
-            /** Check if it is time to put a new wall on the screen */
-            if (wallTimer >= wallAppearanceFrequency) {
-
-                Gdx.app.log(TAG,"checkNextWallReady() create new WALL");
-
-
+                Gdx.app.log(TAG, "checkNextWallReady() WallTimer in Multiplayer!");
                 /** if yes, fetch a wall from the waitQueue and reset it*/
                 Wall wall = getANonActiveWall();
                 wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
@@ -561,7 +535,7 @@ public class PlayState extends State {
                 outWallMessage.lifeTime = Wall.getMaxWallLifetime();
                 outWallMessage.messageType = SwiftyGlider.MESSAGE_TYPE_WALL;
 
-                Gdx.app.log(TAG,"checkNextWallReady() SENT WALL");
+                Gdx.app.log(TAG, "checkNextWallReady() SENT WALL");
 
                 if (SwiftyGlider.room.isConnected()) {
                     for (int i = 0; i < opponentGliders.size; i++) {
@@ -579,8 +553,28 @@ public class PlayState extends State {
                 wallTimer = 0;
                 /** Update Wall frequency ()*/
             }
+
+        } else {
+            if (wallTimer >= wallAppearanceFrequency) {
+                Gdx.app.log(TAG, "checkNextWallReady() WallTimer in Single player!");
+
+                /** if yes, fetch a wall from the waitQueue and put it into the activeQueue if waitQueue
+                 * is empty just make a new wall.*/
+                if (!isOnSaveLevels) { /** don't make new walls while on safe levels */
+                    Wall wall = getANonActiveWall();
+                    /**if we havent crashed yet */
+                    if (!collidingLatch) {
+                        Gdx.app.log(TAG, "checkNextWallReady() Recyling wall!");
+                        wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
+                        wallQueueActive.add(wall);
+                    }
+                }
+                wallTimer = 0;
+                /** Update Wall frequency ()*/
+            }
         }
     }
+
 
     /**
      * Returns a wall not currently active
@@ -821,7 +815,6 @@ public class PlayState extends State {
 
             //one of the participants became busy, kill him if he is in the round
             if (gameParticipant.getPlayerStatus() == GameParticipant.STATUS_BUSY) {
-
                 for (int j = 0; j < opponentGliders.size; j++) {
                     Glider glider = opponentGliders.get(j);
                     glider.setColliding(true);
