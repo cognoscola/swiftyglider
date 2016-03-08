@@ -32,6 +32,7 @@ public class MultiplayerMenuState extends State {
     private static WhiteButton begin;
 
     private boolean requestSent;
+    private boolean disconnectLatch = false;
     private static int count;
 
     public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
@@ -98,11 +99,15 @@ public class MultiplayerMenuState extends State {
         //remaining in this game state. So invitations go out when we have polled a connected state
         if (roomExists()) {
             if (SwiftyGlider.room.isConnected()) {
+                disconnectLatch = false;
                 if (!requestSent) {
                     requestSent = true;
                     SwiftyGlider.realTimeService.getSender().CreateGameInvitations();
                     SwiftyGlider.realTimeService.getSender().setGameConnectionReady();
                 }
+            }else if (!disconnectLatch ) {
+                requestSent = false;
+                disconnectLatch = true;
             }
         }
     }
