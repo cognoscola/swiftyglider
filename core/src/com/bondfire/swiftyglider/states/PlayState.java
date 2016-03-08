@@ -12,6 +12,7 @@ import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.network.CollisionMessage;
 import com.bondfire.swiftyglider.network.EnvironmenMessage;
 import com.bondfire.swiftyglider.network.GameStateMessage;
+import com.bondfire.swiftyglider.network.LevelSyncMessage;
 import com.bondfire.swiftyglider.network.PositionMessage;
 import com.bondfire.swiftyglider.network.WallMessage;
 import com.bondfire.swiftyglider.sprites.Glider;
@@ -94,6 +95,8 @@ public class PlayState extends State {
     private float positionUpdateTimer = 0.0f;
     private static float MAX_POSITION_UPDATE_TIMER = 0.03f;  //50 messages per second
 
+    private boolean isMultiplayerMode;
+
     private static PositionMessage outPositionMessage; //outgoing position message
     private static PositionMessage inPositionMessage;  //incoming position message
     private static WallMessage inWallMessage;          //outgoing wall message
@@ -102,64 +105,72 @@ public class PlayState extends State {
     private static EnvironmenMessage outEnvMessage;
     private static CollisionMessage inCollisionMessage; //incoming collision message
     private static CollisionMessage outCollisionMessage; //outgoing collion message
-    private static GameStateMessage inStateMessage;
-    private static GameStateMessage outStateMessage;
+    private static GameStateMessage inStateMessage;   //incoming game state message
+    private static GameStateMessage outStateMessage;  //outgoing game state message
+    private static LevelSyncMessage inLevelMessage;
+    private static LevelSyncMessage outLevelMessage;
 
-    public PlayState(GSM gsm, int level, GameRoom room){
+    public PlayState(GSM gsm, int level, GameRoom room, boolean multiPlayer) {
 
         super(gsm);
+
+        this.isMultiplayerMode = multiPlayer;
 
         SwiftyGlider.keepScreenOn();
 
         /** load our sprites */
-        glider = new Glider(SwiftyGlider.WIDTH/2,SwiftyGlider.HEIGHT/4);
-        line   = new Indicator(SwiftyGlider.WIDTH/2, 0, SwiftyGlider.WIDTH, 50);
+        glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
+        line = new Indicator(SwiftyGlider.WIDTH / 2, 0, SwiftyGlider.WIDTH, 50);
         wallQueueWaiting = new Array<Wall>();
-        wallQueueActive =  new Array<Wall>();
+        wallQueueActive = new Array<Wall>();
 
         /**prepare out text*/
         bitmapFont = SwiftyGlider.res.getBmpFont();
         opponentGliders = new Array<Glider>();
         reset();
 
-        if (roomExists() && SwiftyGlider.room.isConnected() && SwiftyGlider.room.getParticipants() != null) {
+        if (isMultiplayerMode) {
+            if (roomExists() && SwiftyGlider.room.isConnected() && SwiftyGlider.room.getParticipants() != null) {
 
-            outPositionMessage = new PositionMessage();
-            inWallMessage = new WallMessage();
-            outWallMessage = new WallMessage();
-            inEnvMessage = new EnvironmenMessage();
-            outEnvMessage = new EnvironmenMessage();
-            inCollisionMessage = new CollisionMessage();
-            outCollisionMessage = new CollisionMessage();
-            inStateMessage = new GameStateMessage();
-            outStateMessage = new GameStateMessage();
+                outPositionMessage = new PositionMessage();
+                inWallMessage = new WallMessage();
+                outWallMessage = new WallMessage();
+                inEnvMessage = new EnvironmenMessage();
+                outEnvMessage = new EnvironmenMessage();
+                inCollisionMessage = new CollisionMessage();
+                outCollisionMessage = new CollisionMessage();
+                inStateMessage = new GameStateMessage();
+                outStateMessage = new GameStateMessage();
+                inLevelMessage = new LevelSyncMessage();
+                outLevelMessage = new LevelSyncMessage();
 
-            //this is online mode
+                //this is online mode
 
 
-            for (GameParticipant participant : room.getParticipants()) {
+                for (GameParticipant participant : room.getParticipants()) {
 
-                //if this is us
-                if (participant.getParticipantId() == room.getClientId()){
-                    glider.setParticipantId(participant.getParticipantId());
-                    glider.setDispayName(participant.getParticipantName().substring(0,2) + ".");
-                    glider.setIsOpponent(false);
-                    continue;
+                    //if this is us
+                    if (participant.getParticipantId() == room.getClientId()) {
+                        glider.setParticipantId(participant.getParticipantId());
+                        glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
+                        glider.setIsOpponent(false);
+                        continue;
+                    }
+
+                    //this is other people, only add if they are not busy
+                    if (participant.getPlayerStatus() != GameParticipant.STATUS_BUSY) {
+                        Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
+                        glider.setParticipantId(participant.getParticipantId());
+                        glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
+                        glider.setIsOpponent(true);
+                        opponentGliders.add(glider);
+                    }
                 }
-
-                //this is other people, only add if they are not busy
-                if (participant.getPlayerStatus() != GameParticipant.STATUS_BUSY) {
-                    Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
-                    glider.setParticipantId(participant.getParticipantId());
-                    glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
-                    glider.setIsOpponent(true);
-                    opponentGliders.add(glider);
+                if (room.isHost()) {
+                    setLevel(level);
                 }
             }
-            if (room.isHost()) {
-                setLevel(level);
-            }
-        }else{
+        } else {
             setLevel(level);
         }
     }
@@ -223,7 +234,7 @@ public class PlayState extends State {
         }
 
         // send out results if there
-        if (roomExists()) {
+        if (isMultiplayerMode && roomExists()) {
 
             if (SwiftyGlider.room.isConnected() && SwiftyGlider.room.isHost()) {
 
@@ -276,7 +287,7 @@ public class PlayState extends State {
         wallTimer += dt;
         indicatorTimer += dt;
 
-        if (roomExists() && SwiftyGlider.room.isConnected()) {
+        if (isMultiplayerMode && roomExists() && SwiftyGlider.room.isConnected()) {
 
             /** Update this state*/
             checkDeath(dt);
@@ -284,6 +295,9 @@ public class PlayState extends State {
             checkCollision();
             updatePlayers(dt);
             updateWallPositions(dt);
+            if (SwiftyGlider.room.isHost()) {
+                checkIndicatorRate();
+            }
 
         } else {
 
@@ -365,7 +379,7 @@ public class PlayState extends State {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
 
-        if (roomExists() && SwiftyGlider.room.isConnected()) {
+        if (isMultiplayerMode && roomExists() && SwiftyGlider.room.isConnected()) {
             for(int i = 0; i < wallQueueActive.size; i++){
                 wallQueueActive.get(i).render(sb);
             }
@@ -374,7 +388,9 @@ public class PlayState extends State {
                 Glider glider = opponentGliders.get(i);
                 glider.render(sb);
             }
+
             glider.render(sb);
+
         }else{
 
             line.render(sb);
@@ -400,10 +416,27 @@ public class PlayState extends State {
             indicatorTimer = 0f;
             updateScore(level++);
             updateWallFrequency();
+
+            if (isMultiplayerMode && roomExists()) {
+                if (SwiftyGlider.room.isHost()) {
+                    outLevelMessage.messageType = SwiftyGlider.MESSAGE_TYPE_LEVEL;
+                    outLevelMessage.level = level;
+
+                    for (int i = 0; i < opponentGliders.size; i++) {
+                        Glider glider = opponentGliders.get(i);
+                        SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                glider.getParticipantId(),
+                                SwiftyGlider.json.toJson(outLevelMessage),
+                                true
+                        );
+                    }
+                }
+            }
         }
     }
 
     private void updateScore(int level){
+
         scoreText = new WhiteButton(
                 bitmapFont,
                 "" + level,
@@ -418,10 +451,8 @@ public class PlayState extends State {
             if(deathTimer > DEATH_TIME){
                 ((BackgroundState)gsm.getBackground()).setWind(0);
 
-
-                if (roomExists() && SwiftyGlider.room.isHost()) {
+                if (isMultiplayerMode && roomExists() && SwiftyGlider.room.isHost()) {
                     //if everyone is dead except one person, tell everyone to stop the game
-
 
                     isEveryoneElseDead = true;
                     for (int i = 0; i < opponentGliders.size; i++) {
@@ -465,7 +496,7 @@ public class PlayState extends State {
     private void updatePlayers(float dt){
         glider.update(dt);
 
-        if (roomExists() && SwiftyGlider.room.isConnected()) {
+        if (isMultiplayerMode && roomExists() && SwiftyGlider.room.isConnected()) {
             //update the opponent player animations
             for (int i = 0; i < opponentGliders.size; i++) {
                 Glider glider = opponentGliders.get(i);
@@ -510,8 +541,10 @@ public class PlayState extends State {
             }
         }
 
-        if (roomExists() && SwiftyGlider.room.isHost()) {
-            checkNextWallReady();
+        if (isMultiplayerMode) {
+            if (roomExists() && SwiftyGlider.room.isHost()) {
+                checkNextWallReady();
+            }
         }else{
             checkNextWallReady();
         }
@@ -521,39 +554,42 @@ public class PlayState extends State {
      * Checks if we are ready to display the next wall
      */
     private void checkNextWallReady() {
-        if (roomExists() && SwiftyGlider.room.isConnected() && SwiftyGlider.room.isHost()) {
-            /** Check if it is time to put a new wall on the screen */
-            if (wallTimer >= wallAppearanceFrequency) {
-                Gdx.app.log(TAG, "checkNextWallReady() WallTimer in Multiplayer!");
-                /** if yes, fetch a wall from the waitQueue and reset it*/
-                Wall wall = getANonActiveWall();
-                wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
 
-                //pass it to other players first
-                outWallMessage.gapLength = wall.getGapLength();
-                outWallMessage.gapPosition = wall.getGapPosition();
-                outWallMessage.lifeTime = Wall.getMaxWallLifetime();
-                outWallMessage.messageType = SwiftyGlider.MESSAGE_TYPE_WALL;
+        if (isMultiplayerMode) {
+            if (roomExists() && SwiftyGlider.room.isConnected() && SwiftyGlider.room.isHost()) {
+                /** Check if it is time to put a new wall on the screen */
+                if (wallTimer >= wallAppearanceFrequency) {
+                    Gdx.app.log(TAG, "checkNextWallReady() WallTimer in Multiplayer!");
+                    /** if yes, fetch a wall from the waitQueue and reset it*/
+                    Wall wall = getANonActiveWall();
+                    wall.RecycleWall(SwiftyGlider.WIDTH, gapLength);
 
-                Gdx.app.log(TAG, "checkNextWallReady() SENT WALL");
+                    //pass it to other players first
+                    outWallMessage.gapLength = wall.getGapLength();
+                    outWallMessage.gapPosition = wall.getGapPosition();
+                    outWallMessage.lifeTime = Wall.getMaxWallLifetime();
+                    outWallMessage.messageType = SwiftyGlider.MESSAGE_TYPE_WALL;
 
-                if (SwiftyGlider.room.isConnected()) {
-                    for (int i = 0; i < opponentGliders.size; i++) {
-                        Glider glider = opponentGliders.get(i);
-                        SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                                glider.getParticipantId(),
-                                SwiftyGlider.json.toJson(outWallMessage),
-                                true
-                        );
+                    Gdx.app.log(TAG, "checkNextWallReady() SENT WALL");
+
+                    if (SwiftyGlider.room.isConnected()) {
+                        for (int i = 0; i < opponentGliders.size; i++) {
+                            Glider glider = opponentGliders.get(i);
+                            SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                    glider.getParticipantId(),
+                                    SwiftyGlider.json.toJson(outWallMessage),
+                                    true
+                            );
+                        }
                     }
+
+                    /**if we havent crashed yet */
+                    wallQueueActive.add(wall);
+                    wallTimer = 0;
+                    /** Update Wall frequency ()*/
                 }
 
-                /**if we havent crashed yet */
-                wallQueueActive.add(wall);
-                wallTimer = 0;
-                /** Update Wall frequency ()*/
             }
-
         } else {
             if (wallTimer >= wallAppearanceFrequency) {
                 Gdx.app.log(TAG, "checkNextWallReady() WallTimer in Single player!");
@@ -664,8 +700,6 @@ public class PlayState extends State {
                         }
                         collidingLatch = true;
 
-
-
                         //let everyone else know we crashed if needed
                         tellEveryoneElseIdied();
                     }
@@ -750,6 +784,14 @@ public class PlayState extends State {
                 SwiftyGlider.stopKeepingScreenOn();
             }
         }
+
+        if (message.contains(SwiftyGlider.MESSAGE_TYPE_LEVEL)) {
+
+            inLevelMessage = SwiftyGlider.json.fromJson(LevelSyncMessage.class, message);
+            Gdx.app.log(TAG,"receiveMessage() LEVEL + " + inLevelMessage.level);
+            level = inLevelMessage.level;
+        }
+
     }
 
     /**
@@ -825,7 +867,7 @@ public class PlayState extends State {
     }
 
     private void tellEveryoneElseIdied(){
-        if (roomExists()) {
+        if (isMultiplayerMode && roomExists()) {
             if (SwiftyGlider.room.isConnected()) {
                 outCollisionMessage.messageType = SwiftyGlider.MESSAGE_TYPE_COLLIDE;
                 for (int i = 0; i < opponentGliders.size; i++) {

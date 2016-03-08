@@ -193,12 +193,7 @@ public class MultiplayerMenuState extends State {
                         SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
                         SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
 
-                        //turn off the add
-                        SwiftyGlider.setAddVisibiliyFalse();
-
-                        /** start the round */
-                        gsm.set(new PlayState(gsm, 0, SwiftyGlider.room));
-
+                        //tell others to start the room
                         if (SwiftyGlider.room.isConnected()) {
                             for (GameParticipant participant : SwiftyGlider.room.getParticipants()) {
                                 if (participant.getParticipantId().equals(SwiftyGlider.room.getClientId())) continue;
@@ -209,6 +204,14 @@ public class MultiplayerMenuState extends State {
                                 );
                             }
                         }
+
+                        //turn off the add
+                        SwiftyGlider.setAddVisibiliyFalse();
+
+                        // start the round
+                        gsm.set(new PlayState(gsm, 0, SwiftyGlider.room,true));
+
+
                     }
                 }
             }

@@ -89,11 +89,10 @@ public class DifficultyState extends State{
                 gsm.set(new MenuState(gsm));
             }
 
-
             for(int i = 0; i <buttons.size; i++){
                 if(buttons.get(i).contains(mouse.x, mouse.y)){
 //                    gsm.set(new PlayState(gsm, 200));
-                    gsm.set(new PlayState(gsm, getLevel(i), null));
+                    gsm.set(new PlayState(gsm, getLevel(i), null, false));
 
                     if( SwiftyGlider.adController != null){
                         SwiftyGlider.adController.newRequest();

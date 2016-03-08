@@ -52,7 +52,8 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public final static String MESSAGE_TYPE_POSITION = "POS_MESSAGE";
 	public final static String MESSAGE_TYPE_WALL     = "WALL_MESSAGE"; //new wall incoming
 	public final static String MESSAGE_TYPE_ENV      = "ENV_MESSAGE";
-	public final static String MESSAGE_TYPE_COLLIDE = "COLLIDE_MESSAGE"; //so that all clients know that they are collided
+	public final static String MESSAGE_TYPE_COLLIDE  = "COLLIDE_MESSAGE"; //so that all clients know that they are collided
+	public final static String MESSAGE_TYPE_LEVEL    = "LEVEL_MESSAGE"; //so that all clients know that they are collided
 	public static int TYPE_GAME_START= 0;
 	public static int TYPE_GAME_STOP = 1;
 	public static int TYPE_START_ACK = 2;
@@ -185,7 +186,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			GameParticipant participant = new GameParticipant();
 			participant.setParticipantName("Guillermo");
 			room.getParticipants().add(participant);
-			gsm.push(new PlayState(gsm, 0, room));
+			gsm.push(new PlayState(gsm, 0, room,false));
 		}
 	}
 
@@ -217,7 +218,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 				inStateMessage = json.fromJson(GameStateMessage.class, data);
 				if (inStateMessage.actionType == TYPE_GAME_START){
 					setAddVisibiliyFalse();
-					gsm.set(new PlayState(gsm,0,room));
+					gsm.set(new PlayState(gsm,0,room,true));
 				}
 			}
 		}
