@@ -229,6 +229,8 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		Gdx.app.log(TAG,"onRoomConfigurationChanged() Size:" + inRoom.getParticipants().size);
 		State state = gsm.peek();
 
+		Gdx.app.log(TAG,"onRoomConfigurationChanged() I AM: " + (inRoom.isHost() ? "HOST":"GUEST"));
+
 //before room changes
 		if (state instanceof PlayState) {
 			((PlayState) state).updateRoom(inRoom);
