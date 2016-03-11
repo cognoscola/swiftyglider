@@ -21,7 +21,9 @@ public class Glider extends Box {
 
     public final static float SCALE_GLIDER = 0.14634f;
 
-    private TextureRegion body;
+    private TextureRegion opponentBody;
+    private TextureRegion multiplayerBody;
+    private TextureRegion singleplayerBody;
     private TextureRegion explosion;
     private TextureRegion tail_left;
     private TextureRegion tail_right;
@@ -66,24 +68,24 @@ public class Glider extends Box {
     public void setParticipantId(String participantId) {
         this.participantId = participantId;
     }
-    private String participantId;
-
+    private String participantId = "";
     public void setIsOpponent(boolean isOpponent) {
         this.isOpponent = isOpponent;
     }
-
     private boolean isOpponent = false;
 
     /**name of person **/
-    public String getDispayName() {
-        return dispayName;
+    public String getDisplayName() {
+        return displayName;
     }
-    public void setDispayName(String dispayName) {
-        this.dispayName = dispayName;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
-    public String dispayName;
+    public String displayName;
     public static BitmapFont bitmapFont;
 
+    private static float NETWORK_WATCH_DOG_TIMER_RESET_VALUE = 7.0f;
+    private float networkWatchDogTimer;
 
 
     public Glider(float x, float y) {
@@ -102,10 +104,12 @@ public class Glider extends Box {
 
         atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
 
-        body = atlas.findRegion("glider");
+        singleplayerBody = atlas.findRegion("glider");
         explosion = atlas.findRegion("explosion");
         tail_left = atlas.findRegion("tail_left");
         tail_right = atlas.findRegion("tail_right");
+        opponentBody = atlas.findRegion("opponent_glider");
+        multiplayerBody = atlas.findRegion("me_glider");
 
         filter = new LinkedList<Float>();
 
@@ -133,7 +137,10 @@ public class Glider extends Box {
         }
     }
 
+
+
     public void update(float dt) {
+
         if (death_latch) {
             deathTimer += dt;
         }
@@ -194,8 +201,8 @@ public class Glider extends Box {
 
         if(!atlas.isBlurrable()){
             System.out.println("Blurring from Lighs");
-            body.getTexture().getTextureData().prepare();
-            atlas.PrepareBlur(body.getTexture().getTextureData().consumePixmap());
+            singleplayerBody.getTexture().getTextureData().prepare();
+            atlas.PrepareBlur(singleplayerBody.getTexture().getTextureData().consumePixmap());
         }
         atlas.bind();
 
@@ -219,25 +226,52 @@ public class Glider extends Box {
                         false);
 
 //                sb.draw(explosion, x - width / 2, y - height / 2, width, height);
-            }else{
+            }else {
 
-                //Draw the body
-                sb.draw(atlas.tex,
-                        x - width / 2,
-                        y - height / 2,
-                        width / 2,
-                        height / 2,
-                        (width - width * Math.abs(velocity_X)/1200 ) ,
-                        height ,
-                        1,
-                        1,
-                        0,// scale
-                        collidingWind ?  explosion.getRegionX():body.getRegionX(),
-                        collidingWind ?  explosion.getRegionY():body.getRegionY(),
-                        collidingWind ?  explosion.getRegionWidth():body.getRegionWidth(),
-                        collidingWind ?  explosion.getRegionHeight():body.getRegionHeight(),
-                        false,
-                        false);
+                //Draw the singleplayerBody
+                if (participantId.isEmpty()) {
+
+                    sb.draw(atlas.tex,
+                            x - width / 2,
+                            y - height / 2,
+                            width / 2,
+                            height / 2,
+                            (width - width * Math.abs(velocity_X) / 1200),
+                            height,
+                            1,
+                            1,
+                            0,// scale
+                            collidingWind ? explosion.getRegionX() :  singleplayerBody.getRegionX(),
+                            collidingWind ? explosion.getRegionY() :  singleplayerBody.getRegionY(),
+                            collidingWind ? explosion.getRegionWidth() : singleplayerBody.getRegionWidth(),
+                            collidingWind ? explosion.getRegionHeight() : singleplayerBody.getRegionHeight(),
+                            false,
+                            false);
+
+                }else{
+
+                    sb.draw(atlas.tex,
+                            x - width / 2,
+                            y - height / 2,
+                            width / 2,
+                            height / 2,
+                            (width - width * Math.abs(velocity_X) / 1200),
+                            height,
+                            1,
+                            1,
+                            0,// scale
+                            collidingWind ? explosion.getRegionX() : isOpponent ? opponentBody.getRegionX() : multiplayerBody.getRegionX(),
+                            collidingWind ? explosion.getRegionY() : isOpponent ? opponentBody.getRegionY() : multiplayerBody.getRegionY(),
+                            collidingWind ? explosion.getRegionWidth() : isOpponent ? opponentBody.getRegionWidth() : multiplayerBody.getRegionWidth(),
+                            collidingWind ? explosion.getRegionHeight() : isOpponent ? opponentBody.getRegionHeight() : multiplayerBody.getRegionHeight(),
+                            false,
+                            false);
+
+
+                }
+
+
+
 
                 //draw the tail
                 sb.draw(atlas.tex,
@@ -245,21 +279,21 @@ public class Glider extends Box {
                         y - height - height / 2,
                         width / 2,
                         height / 2,
-                        (width - width * Math.abs(velocity_X)/1200 ) ,
-                        height ,
+                        (width - width * Math.abs(velocity_X) / 1200),
+                        height,
                         1,
                         1,
                         0,// scale
-                        tailFlapping ?  tail_left.getRegionX():tail_right.getRegionX(),
-                        tailFlapping ?  tail_left.getRegionY():tail_right.getRegionY(),
-                        tailFlapping ?  tail_left.getRegionWidth():tail_right.getRegionWidth(),
-                        tailFlapping ?  tail_left.getRegionHeight():tail_right.getRegionHeight(),
+                        tailFlapping ? tail_left.getRegionX() : tail_right.getRegionX(),
+                        tailFlapping ? tail_left.getRegionY() : tail_right.getRegionY(),
+                        tailFlapping ? tail_left.getRegionWidth() : tail_right.getRegionWidth(),
+                        tailFlapping ? tail_left.getRegionHeight() : tail_right.getRegionHeight(),
                         false,
                         false);
-                if (getDispayName() != null) {
-                    if (!getDispayName().isEmpty()) {
-                        bitmapFont.setColor(1.0f,1.0f,1.0f,  1 - (SwiftyGlider.blurAmount) );
-                        bitmapFont.draw(sb, getDispayName(), x - width /3, y + 10 );
+                if (getDisplayName() != null) {
+                    if (!getDisplayName().isEmpty()) {
+                        bitmapFont.setColor(1.0f, 1.0f, 1.0f, 1 - (SwiftyGlider.blurAmount));
+                        bitmapFont.draw(sb, getDisplayName(), x - width / 3, y + 10);
                     }
                 }
             }

@@ -59,16 +59,37 @@ explosion
   orig: 128, 128
   offset: 0, 0
   index: -1
-leaf1
+opponent_glider
   rotate: false
   xy: 733, 395
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
-glider
+me_glider
+  rotate: false
+  xy: 863, 525
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+leaf1
   rotate: false
   xy: 733, 265
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+glider
+  rotate: false
+  xy: 863, 395
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+leaf3
+  rotate: false
+  xy: 863, 265
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
@@ -80,7 +101,7 @@ start
   orig: 128, 64
   offset: 0, 0
   index: -1
-leaf3
+back_icon
   rotate: false
   xy: 733, 135
   size: 128, 128
@@ -89,15 +110,8 @@ leaf3
   index: -1
 button
   rotate: false
-  xy: 515, 45
+  xy: 863, 203
   size: 128, 60
   orig: 128, 60
-  offset: 0, 0
-  index: -1
-back_icon
-  rotate: false
-  xy: 645, 5
-  size: 128, 128
-  orig: 128, 128
   offset: 0, 0
   index: -1

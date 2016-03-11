@@ -110,6 +110,7 @@ public class PlayState extends State {
     private static LevelSyncMessage inLevelMessage;
     private static LevelSyncMessage outLevelMessage;
 
+
     public PlayState(GSM gsm, int level, GameRoom room, boolean multiPlayer) {
 
         super(gsm);
@@ -152,7 +153,7 @@ public class PlayState extends State {
                     //if this is us
                     if (participant.getParticipantId() == room.getClientId()) {
                         glider.setParticipantId(participant.getParticipantId());
-                        glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
+                        glider.setDisplayName(participant.getParticipantName().substring(0, 2) + ".");
                         glider.setIsOpponent(false);
                         continue;
                     }
@@ -161,7 +162,7 @@ public class PlayState extends State {
                     if (participant.getPlayerStatus() != GameParticipant.STATUS_BUSY) {
                         Glider glider = new Glider(SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 4);
                         glider.setParticipantId(participant.getParticipantId());
-                        glider.setDispayName(participant.getParticipantName().substring(0, 2) + ".");
+                        glider.setDisplayName(participant.getParticipantName().substring(0, 2) + ".");
                         glider.setIsOpponent(true);
                         opponentGliders.add(glider);
                     }
@@ -835,13 +836,13 @@ public class PlayState extends State {
                     foundMatch = false;
 
                     if (d_updateRoom)
-                        Gdx.app.log(TAG, "updateRoom() Checking if " + glider.getDispayName() + " left");
+                        Gdx.app.log(TAG, "updateRoom() Checking if " + glider.getDisplayName() + " left");
 
                     for (int j = 0; j < incomingGameRoom.getParticipants().size; j++) {
 
                         GameParticipant participant = incomingGameRoom.getParticipants().get(j);
                         if (participant.getParticipantId().equals(glider.getParticipantId())) {
-                            Gdx.app.log(TAG, "updateRoom() "+glider.getDispayName() + " is still here");
+                            Gdx.app.log(TAG, "updateRoom() "+glider.getDisplayName() + " is still here");
                             foundMatch = true;
                             break;
                         }
@@ -850,7 +851,7 @@ public class PlayState extends State {
                     // Check if we found this person in the new room configuration
                     if (!foundMatch) {
                         if (d_updateRoom)
-                            Gdx.app.log(TAG, "updateRoom() Setting " + glider.getDispayName() + " dead");
+                            Gdx.app.log(TAG, "updateRoom() Setting " + glider.getDisplayName() + " dead");
                         //mark this glider as DEAD
                         glider.setColliding(true);
                         break;
