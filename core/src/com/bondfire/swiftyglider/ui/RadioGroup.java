@@ -25,7 +25,7 @@ public class RadioGroup{
      * @param y the coordinate of the user's touch in the Y axis (up and down)
      * @return  the currently selected item
      */
-    public int justTouched(float x, float y) {
+    public void justTouched(float x, float y) {
 
         boolean shouldChange = false;
 
@@ -44,10 +44,6 @@ public class RadioGroup{
         if (!shouldChange) {
             //no, so return no new item touched
             views.get(selectedItemIndex).hasBackground(true);
-            return -1;
-        }else{
-            //return new item touched index
-            return selectedItemIndex;
         }
     }
 
@@ -84,5 +80,9 @@ public class RadioGroup{
                 button.hasBackground(false);
             }
         }
+    }
+
+    public int getSelecteIndex(){
+        return selectedItemIndex;
     }
 }

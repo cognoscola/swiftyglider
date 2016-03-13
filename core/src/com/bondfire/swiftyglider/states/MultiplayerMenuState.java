@@ -43,14 +43,13 @@ public class MultiplayerMenuState extends State {
     private static DifficultySelectMessage inMessage;
     private static DifficultySelectMessage outMessage;
 
-    private static int radioGroupTouch;
-
     private boolean requestSent;
     private boolean disconnectLatch = false; //When we disconnect with the room while being in this state, we need logic that will
                                              //'reset' the conditions that will allow us to reconnect if the client decides to reconnect
                                              //to a new room. This variable is a "latch" that helps us send to ConnectionReady message
                                              //only once every time we reconnect
     private static int count;                //holds the total number of players participating in this game
+
 
     public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
         super(gsm);
@@ -83,7 +82,6 @@ public class MultiplayerMenuState extends State {
             }
             modeButtons.add(button);
             radioGroup.add(button);
-
         }
 
         joinRoom = new WhiteButton(bitmapFont, "Join a Party!",
@@ -105,11 +103,9 @@ public class MultiplayerMenuState extends State {
             if (SwiftyGlider.room.isHost()) {
                 hostInstruction = new WhiteButton(bitmapFont,"Select Mode",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270);
                 hostInstruction.hasBackground(false);
-
             }else{
                 hostInstruction = new WhiteButton(bitmapFont,"Mode",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270);
                 hostInstruction.hasBackground(false);
-
             }
             updateRoom();
         }else{
@@ -188,7 +184,6 @@ public class MultiplayerMenuState extends State {
                 }
                 hostInstruction.render(sb);
                 if (SwiftyGlider.room.isHost()) {
-
                     begin.render(sb);
                 } else {
                     guestInstruction.render(sb);
@@ -197,7 +192,6 @@ public class MultiplayerMenuState extends State {
                 joinRoom.render(sb);
                 disconnectedinstruction.render(sb);
             }
-
         } else {
             joinRoom.render(sb);
             disconnectedinstruction.render(sb);
@@ -237,14 +231,14 @@ public class MultiplayerMenuState extends State {
 
             if (roomExists()) {
                 if (SwiftyGlider.room.isHost()) {
-                    radioGroupTouch = radioGroup.justTouched(mouse.x,mouse.y);
-                    if (radioGroupTouch != -1) {
+                    radioGroup.justTouched(mouse.x,mouse.y);
+                    if (radioGroup.getSelecteIndex() != -1) {
 
-                        //send out difficulty change message
-                        outMessage.difficulty = radioGroupTouch;
+                        //send out mode change message
+                        outMessage.mode = radioGroup.getSelecteIndex();
                         outMessage.messageType = SwiftyGlider.MESSAGE_TYPE_DIFFICULTY_SELECT;
 
-                        //tell others of the difficulty change
+                        //tell others of the mode change
                         if (SwiftyGlider.room.isConnected()) {
                             for (GameParticipant participant : SwiftyGlider.room.getParticipants()) {
                                 if (participant.getParticipantId().equals(SwiftyGlider.room.getClientId())) continue;
@@ -282,7 +276,7 @@ public class MultiplayerMenuState extends State {
                         SwiftyGlider.setAddVisibiliyFalse();
 
                         // start the round
-                        gsm.set(new PlayState(gsm, 0, SwiftyGlider.room,true));
+                        gsm.set(new PlayState(gsm, radioGroup.getSelecteIndex(), SwiftyGlider.room,true));
                     }
                 }
             }
@@ -297,6 +291,7 @@ public class MultiplayerMenuState extends State {
         return SwiftyGlider.room != null;
     }
 
+
     /**
      * Receive game messages sent by other clients
      * @param message game message
@@ -307,7 +302,7 @@ public class MultiplayerMenuState extends State {
 
             //double check that the message is coming from host
             inMessage = SwiftyGlider.json.fromJson( DifficultySelectMessage.class,message);
-            radioGroup.setSelectedItem(inMessage.difficulty);
+            radioGroup.setSelectedItem(inMessage.mode);
         }
     }
 }

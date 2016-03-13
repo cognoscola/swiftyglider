@@ -29,6 +29,11 @@ public class PlayState extends State {
     /** set the max number of fingers */
     private final int MAX_FINGERS = 0;
 
+    private final static int MULTIPLAYER_MODE_NORMAL = 0;
+    private final static int MULTIPLAYER_MODE_SPEEDY = 1;
+    private final static int MULTIPLAYER_MODE_WINDY = 2;
+    private final static int MULTIPLAYER_MODE_NERVE_WRACKING = 3;
+
     /** save points */
     public final static int LV_BEGINNING   = 0;
     public final static int LV_FIRSTWIND   = 73;
@@ -110,12 +115,13 @@ public class PlayState extends State {
     private static LevelSyncMessage inLevelMessage;
     private static LevelSyncMessage outLevelMessage;
 
+    private static int gameMode;
 
     public PlayState(GSM gsm, int level, GameRoom room, boolean multiPlayer) {
-
         super(gsm);
 
         this.isMultiplayerMode = multiPlayer;
+
 
         SwiftyGlider.keepScreenOn();
 
@@ -131,6 +137,9 @@ public class PlayState extends State {
         reset();
 
         if (isMultiplayerMode) {
+
+            gameMode = level;
+
             if (roomExists() && SwiftyGlider.room.isConnected() && SwiftyGlider.room.getParticipants() != null) {
 
                 outPositionMessage = new PositionMessage();
@@ -146,7 +155,6 @@ public class PlayState extends State {
                 outLevelMessage = new LevelSyncMessage();
 
                 //this is online mode
-
 
                 for (GameParticipant participant : room.getParticipants()) {
 
@@ -196,42 +204,81 @@ public class PlayState extends State {
         this.level = level;
 
         /** Update the environment when we start the game or reach a save point*/
-        if(level >= LV_EYEOFNEEDLE){
-            gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
-            wallTimer =  (WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION) * 0.5f;
-        }else if(level >=LV_WINDSLOW ) {
-            Wall.setWallLifeTime(10f);
-            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
-            gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
-        }else  if(level >= LV_SUPERSLOW) {
-            gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_25;
-            Wall.setWallLifeTime(10f);
-            /** because this level is super slow, the walls already part way down */
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
+        if (isMultiplayerMode) {
 
-        } else if(level >= LV_WINDFAST) {
-            Wall.setWallLifeTime(2f);
-            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_65;
-            gapLength = SwiftyGlider.WIDTH * SCALE_GAPLENGTH_230;
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
-        }else if(level >= LV_GOINGFAST) {
-            Wall.setWallLifeTime(2f);
-            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
-            gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
-        }else if(level >=LV_FIRSTWIND ) {
-            Wall.setWallLifeTime(5f);
-            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
-            gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
-        } else {
-            Wall.setWallLifeTime(5f);
-            windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
-            gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
-            wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+            //get the game mode
+            switch (level) {
+                //normal
+                case MULTIPLAYER_MODE_NORMAL:
+                    Wall.setWallLifeTime(5f);
+                    windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
+                    gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
+                    break;
+
+                //speedy
+                case MULTIPLAYER_MODE_SPEEDY:
+
+                    Wall.setWallLifeTime(2f);
+                    windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
+                    gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+                    wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+                    break;
+                //windy
+                case MULTIPLAYER_MODE_WINDY:
+                    Wall.setWallLifeTime(5f);
+                    windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
+                    gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+                    wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+
+                    break;
+
+                //nerve wracking
+                case MULTIPLAYER_MODE_NERVE_WRACKING:
+                    Wall.setWallLifeTime(10f);
+                    windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
+                    gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
+                    break;
+            }
+
+        }else{
+            if(level >= LV_EYEOFNEEDLE){
+                gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
+                wallTimer =  (WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION) * 0.5f;
+            }else if(level >=LV_WINDSLOW ) {
+                Wall.setWallLifeTime(10f);
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
+                gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
+            }else  if(level >= LV_SUPERSLOW) {
+
+                gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_25;
+                Wall.setWallLifeTime(10f);
+                /** because this level is super slow, the walls already part way down */
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
+
+            } else if(level >= LV_WINDFAST) {
+                Wall.setWallLifeTime(2f);
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_65;
+                gapLength = SwiftyGlider.WIDTH * SCALE_GAPLENGTH_230;
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+            }else if(level >= LV_GOINGFAST) {
+                Wall.setWallLifeTime(2f);
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
+                gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+            }else if(level >=LV_FIRSTWIND ) {
+                Wall.setWallLifeTime(5f);
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
+                gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+            } else {
+                Wall.setWallLifeTime(5f);
+                windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
+                gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;
+                wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
+            }
         }
 
         // send out results if there
@@ -294,8 +341,14 @@ public class PlayState extends State {
             checkDeath(dt);
             updateWallState();
             checkCollision();
+
+            if (SwiftyGlider.room.isHost()) {
+                calculateWeather(dt);
+            }
+
             updatePlayers(dt);
             updateWallPositions(dt);
+
             if (SwiftyGlider.room.isHost()) {
                 checkIndicatorRate();
             }
@@ -321,35 +374,60 @@ public class PlayState extends State {
         }
     }
 
-
     private void calculateWeather(float dt){
-        if(level > 399){
-            /** at this point user knows and has competency of all level types
-             * Now things get really difficult */
-        }else{
-            /** this first part is design to take the user through the different types of walls*/
-            if (level > 349) {
-                makeWind(2,dt);
-                WIND_CHANCE = 5;
-            } else if (level > 274) {
 
-            } else if (level > 255) { /** anoying fast wind */
-                makeWind(2,dt);
-                WIND_CHANCE = 10;
+        if (isMultiplayerMode) {
+            switch (gameMode) {
+                case MULTIPLAYER_MODE_NORMAL:
+                    return;
+                case MULTIPLAYER_MODE_SPEEDY:
+                    return;
+                case MULTIPLAYER_MODE_WINDY:
+                    makeWind(1,dt);
 
-            } else if (level > 149) {
-                /** make walls go fucking fast */
-
-            } else if (level > 74) {
-                /**slowly increase the likelyhood of wind change of changing */
-                makeWind(1,dt);
-
-                if (level > 140) {
-                    WIND_CHANCE = 10;
-                } else if (level > 120) {
+                    if (level > 65) {
+                        WIND_CHANCE = 10;
+                    } else if (level > 45) {
+                        WIND_CHANCE = 5;
+                    } else {
+                        WIND_CHANCE = 1;
+                    }
+                case MULTIPLAYER_MODE_NERVE_WRACKING:
+                    makeWind(2,dt);
                     WIND_CHANCE = 5;
-                } else {
-                    WIND_CHANCE = 1;
+                    return;
+            }
+
+        }else{
+
+            if(level > 399){
+                /** at this point user knows and has competency of all level types
+                 * Now things get really difficult */
+            }else{
+                /** this first part is design to take the user through the different types of walls*/
+                if (level > 349) {
+                    makeWind(2,dt);
+                    WIND_CHANCE = 5;
+                } else if (level > 274) {
+
+                } else if (level > 255) { /** anoying fast wind */
+                    makeWind(2,dt);
+                    WIND_CHANCE = 10;
+
+                } else if (level > 149) {
+                    /** make walls go fucking fast */
+
+                } else if (level > 74) {
+                    /**slowly increase the likelyhood of wind change of changing */
+                    makeWind(1,dt);
+
+                    if (level > 140) {
+                        WIND_CHANCE = 10;
+                    } else if (level > 120) {
+                        WIND_CHANCE = 5;
+                    } else {
+                        WIND_CHANCE = 1;
+                    }
                 }
             }
         }
@@ -367,10 +445,31 @@ public class PlayState extends State {
          * must happen in between walls.*/
         windSafetyTimer = WIND_MAX_TIMER;
         if(MathUtils.random(100) < WIND_CHANCE && !windDistanceSafetyLatch){
+
             int wind = MathUtils.random(strength*2) - strength;
+            Gdx.app.log(TAG,"makeWind() WIND STRENGTH: " + wind);
             glider.setWind(wind);
             ((BackgroundState)gsm.getBackground()).setWind(-wind);
             windSafetyTimer = 0;
+
+            if (roomExists()) {
+                if (SwiftyGlider.room.isHost()) {
+
+                    //tell everyone else to set wind levels
+                    outEnvMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ENV;
+                    outEnvMessage.windHeightOffset = windHeightOffset;
+                    outEnvMessage.wind = wind;
+
+                    for (int i = 0; i < opponentGliders.size; i++) {
+                        Glider glider = opponentGliders.get(i);
+                        SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                glider.getParticipantId(),
+                                SwiftyGlider.json.toJson(outEnvMessage),
+                                true
+                        );
+                    }
+                }
+            }
         }
     }
 
@@ -629,52 +728,71 @@ public class PlayState extends State {
         return wall;
     }
 
-
     private void updateWallFrequency() {
+
         System.out.println(TAG + " updateFrequency() Level:" + level);
-        if (level > LV_EYEOFNEEDLE) {
-            isOnSaveLevels = false;
-            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION;
-            Wall.setWallLifeTime(1.5f);
-        } else if (level > LV_EYEOFNEEDLE - 1) {
-            isOnSaveLevels = true;
-            setLevel(level);
-            Wall.setWallLifeTime(2);
-        } else if (level > LV_WINDSLOW) {
-            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210) * LEVEL_AMPLIFICATION;
-            isOnSaveLevels = false;
-        } else if (level > LV_WINDSLOW - 1) {
-            isOnSaveLevels = true;
-            setLevel(level);
-        } else if (level >= LV_SUPERSLOW) {
-            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 110) * LEVEL_AMPLIFICATION;
-            isOnSaveLevels = false;
-        } else if (level > LV_SUPERSLOW - 1) {
-            isOnSaveLevels = true;
-            setLevel(level);
-        } else if (level > LV_WINDFAST) {
-            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_WINDFAST + 40) * LEVEL_AMPLIFICATION;
-            isOnSaveLevels = false;
-        } else if (level > LV_WINDFAST - 1) {
-            isOnSaveLevels = true;
-            setLevel(level);
-        } else if (level > LV_GOINGFAST) {
-            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40) * LEVEL_AMPLIFICATION;
-            isOnSaveLevels = false;
-        } else if (level > LV_GOINGFAST - 1) { //148
-            setLevel(level);
-        } else if (level > LV_GOINGFAST - 3) {
-            isOnSaveLevels = true;
-        } else if (level >= LV_FIRSTWIND) {
-            isOnSaveLevels = false;
-            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND) * LEVEL_AMPLIFICATION;
-        } else if (level >= LV_FIRSTWIND - 1) {
-            setLevel(level + 1);
-        } else if (level >= LV_FIRSTWIND - 2) {
-            isOnSaveLevels = true;
-        } else {
-            isOnSaveLevels = false;
-            wallAppearanceFrequency = WALL_RATE_DEFAULT - (level )* LEVEL_AMPLIFICATION;
+
+        if (isMultiplayerMode) {
+            switch (gameMode) {
+                case MULTIPLAYER_MODE_NORMAL:
+                    wallAppearanceFrequency = WALL_RATE_DEFAULT - (level)* LEVEL_AMPLIFICATION;
+                    break;
+                case MULTIPLAYER_MODE_SPEEDY:
+                    wallAppearanceFrequency = WALL_RATE_DEFAULT - (level  + 40) * LEVEL_AMPLIFICATION;
+                    break;
+                case MULTIPLAYER_MODE_WINDY:
+                    wallAppearanceFrequency = WALL_RATE_DEFAULT - (level) * LEVEL_AMPLIFICATION;
+                    break;
+                case MULTIPLAYER_MODE_NERVE_WRACKING:
+                    wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - 210) * LEVEL_AMPLIFICATION;
+                    break;
+            }
+
+        }else{
+            if (level > LV_EYEOFNEEDLE) {
+                isOnSaveLevels = false;
+                wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION;
+                Wall.setWallLifeTime(1.5f);
+            } else if (level > LV_EYEOFNEEDLE - 1) {
+                isOnSaveLevels = true;
+                setLevel(level);
+                Wall.setWallLifeTime(2);
+            } else if (level > LV_WINDSLOW) {
+                wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 210) * LEVEL_AMPLIFICATION;
+                isOnSaveLevels = false;
+            } else if (level > LV_WINDSLOW - 1) {
+                isOnSaveLevels = true;
+                setLevel(level);
+            } else if (level >= LV_SUPERSLOW) {
+                wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 110) * LEVEL_AMPLIFICATION;
+                isOnSaveLevels = false;
+            } else if (level > LV_SUPERSLOW - 1) {
+                isOnSaveLevels = true;
+                setLevel(level);
+            } else if (level > LV_WINDFAST) {
+                wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_WINDFAST + 40) * LEVEL_AMPLIFICATION;
+                isOnSaveLevels = false;
+            } else if (level > LV_WINDFAST - 1) {
+                isOnSaveLevels = true;
+                setLevel(level);
+            } else if (level > LV_GOINGFAST) {
+                wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_GOINGFAST + 40) * LEVEL_AMPLIFICATION;
+                isOnSaveLevels = false;
+            } else if (level > LV_GOINGFAST - 1) { //148
+                setLevel(level);
+            } else if (level > LV_GOINGFAST - 3) {
+                isOnSaveLevels = true;
+            } else if (level >= LV_FIRSTWIND) {
+                isOnSaveLevels = false;
+                wallAppearanceFrequency = WALL_RATE_DEFAULT - (level - LV_FIRSTWIND) * LEVEL_AMPLIFICATION;
+            } else if (level >= LV_FIRSTWIND - 1) {
+                setLevel(level + 1);
+            } else if (level >= LV_FIRSTWIND - 2) {
+                isOnSaveLevels = true;
+            } else {
+                isOnSaveLevels = false;
+                wallAppearanceFrequency = WALL_RATE_DEFAULT - (level )* LEVEL_AMPLIFICATION;
+            }
         }
     }
 
@@ -765,6 +883,7 @@ public class PlayState extends State {
             if(!collidingLatch) {
                 this.windHeightOffset = inEnvMessage.windHeightOffset;
                 this.glider.setWind(inEnvMessage.wind);
+                ((BackgroundState)gsm.getBackground()).setWind(-inEnvMessage.wind);
             }
         }
 

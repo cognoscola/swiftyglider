@@ -11,7 +11,7 @@ import com.bondfire.swiftyglider.ui.Box;
  * This class defines the Walls (logs) that start from the top and come down. If our glider
  * collides with these walls the game ends. There are always two sides of a wall with a gap
  * in the middle. Whenever the wall reaches the bottom, it will "Reset" and the gap position
- * , width will change depending on the game difficulty
+ * , width will change depending on the game mode
  */
 public class Wall extends Box {
 

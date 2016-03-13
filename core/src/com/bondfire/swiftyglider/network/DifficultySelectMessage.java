@@ -6,5 +6,5 @@ package com.bondfire.swiftyglider.network;
 public class DifficultySelectMessage {
 
     public String messageType;
-    public int difficulty;
+    public int mode;
 }
