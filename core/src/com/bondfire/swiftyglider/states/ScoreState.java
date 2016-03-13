@@ -37,7 +37,6 @@ public class ScoreState extends State {
         super(gsm);
 
         atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
-
         bestLevel = SwiftyGlider.preferences.getInteger(KEY_BEST,0);
 
         if(level > bestLevel){
@@ -83,6 +82,9 @@ public class ScoreState extends State {
                 SwiftyGlider.WIDTH /2 ,
                 SwiftyGlider.HEIGHT /4 - 50 + 20
         );
+
+        scoreText.hasBackground(false);
+        hiScoreText.hasBackground(false);
 
         this.lastSavePoint = lastSavePoint;
 //        scoreRegion = SwiftyGlider.res.getAtlas("sprites").findRegion("button");

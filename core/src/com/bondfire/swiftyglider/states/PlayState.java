@@ -451,12 +451,6 @@ public class PlayState extends State {
             deathTimer += dt;
             if(deathTimer > DEATH_TIME){
                 ((BackgroundState)gsm.getBackground()).setWind(0);
-
-                Gdx.app.log(TAG, "checkDeath() isMultiplayer:" + isMultiplayerMode);
-                Gdx.app.log(TAG, "checkDeath() roomExists: " + isMultiplayerMode);
-                Gdx.app.log(TAG, "checkDeath() roomExists: " + SwiftyGlider.room.isHost());
-
-
                 if (isMultiplayerMode && roomExists()) {
                     //if everyone is dead except one person, tell everyone to stop the game
 

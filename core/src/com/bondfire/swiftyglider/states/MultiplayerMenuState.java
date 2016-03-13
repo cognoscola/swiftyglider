@@ -4,11 +4,14 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Array;
 import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.network.DifficultySelectMessage;
 import com.bondfire.swiftyglider.ui.Graphic;
+import com.bondfire.swiftyglider.ui.RadioGroup;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
 /**
@@ -21,22 +24,39 @@ public class MultiplayerMenuState extends State {
 
     private Graphic back;
     BlurrableTextureAtlas atlas;
+
     private static WhiteButton disconnectedinstruction;
     private static WhiteButton guestInstruction;
+    private static WhiteButton hostInstruction;
+
+    private Array<WhiteButton> modeButtons;
+    //Increase frequency, increase descent speed, Windy, Tight
+    private static String[] levelNames = {"Easy","Speedy","Windy","Nerve Wracking"};
     private static WhiteButton joinRoom;
 //    private static WhiteButton survival;
 //    private static WhiteButton second;
     private static BitmapFont bitmapFont;
-//    private static RadioGroup group;
+    private static RadioGroup radioGroup;
     private static WhiteButton readyStatement;
     private static WhiteButton begin;
 
+    private static DifficultySelectMessage inMessage;
+    private static DifficultySelectMessage outMessage;
+
+    private static int radioGroupTouch;
+
     private boolean requestSent;
-    private boolean disconnectLatch = false;
-    private static int count;
+    private boolean disconnectLatch = false; //When we disconnect with the room while being in this state, we need logic that will
+                                             //'reset' the conditions that will allow us to reconnect if the client decides to reconnect
+                                             //to a new room. This variable is a "latch" that helps us send to ConnectionReady message
+                                             //only once every time we reconnect
+    private static int count;                //holds the total number of players participating in this game
 
     public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
         super(gsm);
+
+        inMessage = new DifficultySelectMessage();
+        outMessage = new DifficultySelectMessage();
 
         bitmapFont = SwiftyGlider.res.getBmpFont();
         atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
@@ -48,21 +68,23 @@ public class MultiplayerMenuState extends State {
                 60,
                 60);
 
-        /*group = new RadioGroup();
-        survival = new WhiteButton(bitmapFont, "Survival",
-                SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 + 170);
-        survival.setListener(new WhiteButton.OnItemSelectedListener() {
-            @Override
-            public void OnItemSelected() {
-                Gdx.app.log(TAG, "OnItemSelected() Clicked Survial mode");
-            }
-        });
-        group.add(survival);
+        modeButtons = new Array<WhiteButton>();
+        radioGroup = new RadioGroup();
 
-        second = new WhiteButton(bitmapFont, "Second Mode",
-                SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 + 120);
-        second.hasBackground(false);
-        group.add(second);*/
+        for(int i = 0; i <levelNames.length ; i++){
+            WhiteButton button =new WhiteButton(
+                    bitmapFont,
+                    levelNames[i],
+                    SwiftyGlider.WIDTH/2,
+                    SwiftyGlider.HEIGHT/2 + 200 - 50 * i
+            );
+            if (i != 0) {
+                button.hasBackground(false);
+            }
+            modeButtons.add(button);
+            radioGroup.add(button);
+
+        }
 
         joinRoom = new WhiteButton(bitmapFont, "Join a Party!",
                 SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 2 -100);
@@ -74,13 +96,21 @@ public class MultiplayerMenuState extends State {
         disconnectedinstruction.setWidth(300f);
 
         guestInstruction = new WhiteButton(bitmapFont,"Waiting for host to start",
-                SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -100);
+                SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -200);
         guestInstruction.hasBackground(false);
-        begin = new WhiteButton(bitmapFont, "START ROUND", SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 - 100);
+        begin = new WhiteButton(bitmapFont, "START ROUND", SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 - 200);
 
         if (roomExists()) {
+            readyStatement =new WhiteButton(bitmapFont,room.getParticipants().size + " Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -150);
+            if (SwiftyGlider.room.isHost()) {
+                hostInstruction = new WhiteButton(bitmapFont,"Select Mode",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270);
+                hostInstruction.hasBackground(false);
 
-            readyStatement =new WhiteButton(bitmapFont,room.getParticipants().size + " Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2);
+            }else{
+                hostInstruction = new WhiteButton(bitmapFont,"Mode",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 + 270);
+                hostInstruction.hasBackground(false);
+
+            }
             updateRoom();
         }else{
             readyStatement =new WhiteButton(bitmapFont,"0 Players Ready",SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2);
@@ -122,6 +152,16 @@ public class MultiplayerMenuState extends State {
                 }
             }
             updatePlayerCount(count);
+            updateInstruction();
+        }
+    }
+
+    private void updateInstruction(){
+
+        if (SwiftyGlider.room.isHost()) {
+            hostInstruction.setText("Select Mode");
+        }else{
+            hostInstruction.setText("Mode");
         }
     }
 
@@ -143,7 +183,12 @@ public class MultiplayerMenuState extends State {
 //            survival.render(sb);
 //            second.render(sb);
                 readyStatement.render(sb);
+                for(int i = 0; i < modeButtons.size; i++){
+                    modeButtons.get(i).render(sb);
+                }
+                hostInstruction.render(sb);
                 if (SwiftyGlider.room.isHost()) {
+
                     begin.render(sb);
                 } else {
                     guestInstruction.render(sb);
@@ -189,7 +234,30 @@ public class MultiplayerMenuState extends State {
                     }
                 }
             }
-//            group.justTouched(mouse.x,mouse.y);
+
+            if (roomExists()) {
+                if (SwiftyGlider.room.isHost()) {
+                    radioGroupTouch = radioGroup.justTouched(mouse.x,mouse.y);
+                    if (radioGroupTouch != -1) {
+
+                        //send out difficulty change message
+                        outMessage.difficulty = radioGroupTouch;
+                        outMessage.messageType = SwiftyGlider.MESSAGE_TYPE_DIFFICULTY_SELECT;
+
+                        //tell others of the difficulty change
+                        if (SwiftyGlider.room.isConnected()) {
+                            for (GameParticipant participant : SwiftyGlider.room.getParticipants()) {
+                                if (participant.getParticipantId().equals(SwiftyGlider.room.getClientId())) continue;
+                                SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                        participant.getParticipantId(),
+                                        SwiftyGlider.json.toJson(outMessage),
+                                        true
+                                );
+                            }
+                        }
+                    }
+                }
+            }
 
             if (begin.contains(mouse.x, mouse.y)) {
                 if (roomExists()) {
@@ -215,12 +283,9 @@ public class MultiplayerMenuState extends State {
 
                         // start the round
                         gsm.set(new PlayState(gsm, 0, SwiftyGlider.room,true));
-
-
                     }
                 }
             }
-
 
             if (readyStatement.contains(mouse.x, mouse.y)) {
                 SwiftyGlider.paltformController.ShowMatches();
@@ -232,5 +297,17 @@ public class MultiplayerMenuState extends State {
         return SwiftyGlider.room != null;
     }
 
+    /**
+     * Receive game messages sent by other clients
+     * @param message game message
+     * @param senderId the sender participant ID
+     */
+    public void receiveMessage(String message, String senderId) {
+        if (message.contains(SwiftyGlider.MESSAGE_TYPE_DIFFICULTY_SELECT)) {
 
+            //double check that the message is coming from host
+            inMessage = SwiftyGlider.json.fromJson( DifficultySelectMessage.class,message);
+            radioGroup.setSelectedItem(inMessage.difficulty);
+        }
+    }
 }

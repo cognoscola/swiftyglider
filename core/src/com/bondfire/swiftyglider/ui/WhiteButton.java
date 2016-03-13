@@ -94,6 +94,9 @@ public class WhiteButton extends Box {
     public void setText(String text) {
         this.text =text;
         layout.setText(bitmapFont,this.text);
+
+        backWidth = this.width = layout.width;
+        backWidth = this.height = layout.height;
     }
 
     public void setWrap(boolean isWrap) {

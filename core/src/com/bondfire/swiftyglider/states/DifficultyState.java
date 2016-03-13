@@ -103,7 +103,7 @@ public class DifficultyState extends State{
         }
     }
 
-    public int getLevel(int i){
+    public static int getLevel(int i){
         switch(i){
             case 0: return PlayState.LV_BEGINNING;
             case 1: return PlayState.LV_FIRSTWIND;
@@ -116,7 +116,7 @@ public class DifficultyState extends State{
         }
     }
 
-    public String[] getNames(int level) {
+    public static String[] getNames(int level) {
 
         if (level >= PlayState.LV_EYEOFNEEDLE) {
             return new String[]  {
