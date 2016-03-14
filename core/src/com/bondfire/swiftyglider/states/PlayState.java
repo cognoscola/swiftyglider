@@ -604,6 +604,7 @@ public class PlayState extends State {
             );
         }
 
+        SwiftyGlider.adController.setAdVisibility(true);
         gsm.set(new MultiplayerWinState(gsm,SwiftyGlider.room.getClientId().equals(winnerId)));
         SwiftyGlider.stopKeepingScreenOn();
     }

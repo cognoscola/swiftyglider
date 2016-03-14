@@ -50,6 +50,8 @@ public class MultiplayerMenuState extends State {
                                              //only once every time we reconnect
     private static int count;                //holds the total number of players participating in this game
 
+    private boolean invitationSpamBlocker = false; // in place to prevent player from spamming this button
+
     public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
         super(gsm);
 
@@ -113,6 +115,8 @@ public class MultiplayerMenuState extends State {
 
         readyStatement.hasBackground(false);
         requestSent = skipNetworkRequest;
+
+        invitationSpamBlocker = false;
     }
 
     @Override
@@ -127,7 +131,7 @@ public class MultiplayerMenuState extends State {
                 disconnectLatch = false;
                 if (!requestSent) {
                     requestSent = true;
-                    SwiftyGlider.realTimeService.getSender().CreateGameInvitations();
+                    invitationSpamBlocker =false;
                     SwiftyGlider.realTimeService.getSender().setGameConnectionReady();
                 }
             }else if (!disconnectLatch ) {
@@ -163,6 +167,14 @@ public class MultiplayerMenuState extends State {
     private void updatePlayerCount(int count){
         Gdx.app.log(TAG, "updatePlayerCount() " + count);
         readyStatement.setText(count + " Players Ready");
+
+        if (count == 1) {
+            begin.setText("INVITE PLAYERS");
+
+        } else if (count > 1) {
+            begin.setText("START ROUND");
+        }
+
     }
 
     @Override
@@ -183,7 +195,12 @@ public class MultiplayerMenuState extends State {
                 }
                 hostInstruction.render(sb);
                 if (SwiftyGlider.room.isHost()) {
+
+
                     begin.render(sb);
+
+
+
                 } else {
                     guestInstruction.render(sb);
                 }
@@ -253,31 +270,46 @@ public class MultiplayerMenuState extends State {
             }
 
             if (begin.contains(mouse.x, mouse.y)) {
-                if (roomExists()) {
-                    if (SwiftyGlider.room.isHost() && SwiftyGlider.room.isConnected()) {
 
-                        SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
-                        SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
+                if (count > 1) {
 
-                        //tell others to start the room
+                    if (roomExists()) {
+                        if (SwiftyGlider.room.isHost() && SwiftyGlider.room.isConnected()) {
+
+                            SwiftyGlider.outStateMessage.actionType = SwiftyGlider.TYPE_GAME_START;
+                            SwiftyGlider.outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
+
+                            //tell others to start the room
+                            if (SwiftyGlider.room.isConnected()) {
+                                for (GameParticipant participant : SwiftyGlider.room.getParticipants()) {
+                                    if (participant.getParticipantId().equals(SwiftyGlider.room.getClientId())) continue;
+                                    SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                                            participant.getParticipantId(),
+                                            SwiftyGlider.json.toJson(SwiftyGlider.outStateMessage),
+                                            true
+                                    );
+                                }
+                            }
+
+                            //turn off the add
+                            SwiftyGlider.setAddVisibiliyFalse();
+
+                            //note the mode selected
+                            SwiftyGlider.multiplayerMode = radioGroup.getSelecteIndex();
+                            // start the round
+                            gsm.set(new PlayState(gsm, radioGroup.getSelecteIndex(), SwiftyGlider.room,true));
+                        }
+                    }
+                }else{
+                    //Invite Players
+                    if (roomExists()) {
                         if (SwiftyGlider.room.isConnected()) {
-                            for (GameParticipant participant : SwiftyGlider.room.getParticipants()) {
-                                if (participant.getParticipantId().equals(SwiftyGlider.room.getClientId())) continue;
-                                SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                                        participant.getParticipantId(),
-                                        SwiftyGlider.json.toJson(SwiftyGlider.outStateMessage),
-                                        true
-                                );
+                            if (!invitationSpamBlocker) {
+                                SwiftyGlider.realTimeService.getSender().CreateGameInvitations();
+                                SwiftyGlider.paltformController.SendToast("Invitations Sent");
+                                invitationSpamBlocker = true;
                             }
                         }
-
-                        //turn off the add
-                        SwiftyGlider.setAddVisibiliyFalse();
-
-                        //note the mode selected
-                        SwiftyGlider.multiplayerMode = radioGroup.getSelecteIndex();
-                        // start the round
-                        gsm.set(new PlayState(gsm, radioGroup.getSelecteIndex(), SwiftyGlider.room,true));
                     }
                 }
             }

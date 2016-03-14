@@ -1,6 +1,5 @@
 package com.bondfire.swiftyglider.states;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -40,13 +39,21 @@ public class MultiplayerWinState  extends State {
         restart = new WhiteButton(bitmapFont, "RESTART", SwiftyGlider.WIDTH / 2, +SwiftyGlider.HEIGHT / 2 - 200);
         guestInstruction = new WhiteButton(bitmapFont,"Waiting for host to start",
                 SwiftyGlider.WIDTH/2, +  SwiftyGlider.HEIGHT/2 -200);
+        guestInstruction.hasBackground(false);
 
         if (isWinner) {
             winTitle = new WhiteButton(bitmapFont, "You win! :)", SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 2 + 40);
+
         }else{
             winTitle = new WhiteButton(bitmapFont, "You Lost! :(", SwiftyGlider.WIDTH / 2, SwiftyGlider.HEIGHT / 2 + 40);
         }
+        winTitle.hasBackground(false);
 
+        if (isWinner) {
+            if (roomExists() && SwiftyGlider.room.isConnected()) {
+                SwiftyGlider.realTimeService.getSender().BroadcastWonRound();
+            }
+        }
     }
 
     @Override
