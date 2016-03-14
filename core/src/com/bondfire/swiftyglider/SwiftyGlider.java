@@ -26,6 +26,7 @@ import com.bondfire.swiftyglider.states.BackgroundState;
 import com.bondfire.swiftyglider.states.GSM;
 import com.bondfire.swiftyglider.states.MenuState;
 import com.bondfire.swiftyglider.states.MultiplayerMenuState;
+import com.bondfire.swiftyglider.states.MultiplayerWinState;
 import com.bondfire.swiftyglider.states.PlayState;
 import com.bondfire.swiftyglider.states.State;
 
@@ -58,6 +59,8 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static int TYPE_GAME_START= 0;
 	public static int TYPE_GAME_STOP = 1;
 	public static int TYPE_START_ACK = 2;
+
+	public static int multiplayerMode = 0;
 
 	/** our assets */
     public static Content res;
@@ -191,7 +194,8 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			room.setGameHostId("host");
 			room.setClientId("host");
 			SwiftyGlider.room = room;
-			gsm.push(new MultiplayerMenuState(gsm,room,true));
+//			gsm.push(new MultiplayerMenuState(gsm,room,true));
+			gsm.push(new MultiplayerWinState(gsm,true));
 		}
 	}
 
@@ -219,7 +223,6 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		if (gsm.peek() instanceof MultiplayerMenuState) {
 			if (data.contains(MESSAGE_TYPE_ACTION)) {
 				Gdx.app.log(TAG, "onGameMessageReceived() RECEIVED  GameStateMessage");
-
 				inStateMessage = json.fromJson(GameStateMessage.class, data);
 				if (inStateMessage.actionType == TYPE_GAME_START){
 					setAddVisibiliyFalse();
@@ -227,6 +230,16 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 				}
 			}else{
 				((MultiplayerMenuState) gsm.peek()).receiveMessage(data, senderId);
+			}
+		}
+
+		if (gsm.peek() instanceof MultiplayerWinState) {
+			if (data.contains(MESSAGE_TYPE_ACTION)) {
+				inStateMessage = json.fromJson(GameStateMessage.class, data);
+				if (inStateMessage.actionType == TYPE_GAME_START){
+					setAddVisibiliyFalse();
+					gsm.set(new PlayState(gsm,0,room,true));
+				}
 			}
 		}
 	}
@@ -249,6 +262,11 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		if (state instanceof MultiplayerMenuState) {
 			((MultiplayerMenuState) state).updateRoom();
 		}
+
+		if (state instanceof MultiplayerWinState) {
+			((MultiplayerWinState) state).updateRoom();
+		}
+
 	}
 
 	@Override

@@ -7,4 +7,5 @@ public class GameStateMessage {
 
     public String messageType;
     public int actionType;
+    public boolean isWinner;
 }

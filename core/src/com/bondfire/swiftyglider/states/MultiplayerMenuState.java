@@ -50,7 +50,6 @@ public class MultiplayerMenuState extends State {
                                              //only once every time we reconnect
     private static int count;                //holds the total number of players participating in this game
 
-
     public MultiplayerMenuState(GSM gsm, GameRoom room, boolean skipNetworkRequest) {
         super(gsm);
 
@@ -275,6 +274,8 @@ public class MultiplayerMenuState extends State {
                         //turn off the add
                         SwiftyGlider.setAddVisibiliyFalse();
 
+                        //note the mode selected
+                        SwiftyGlider.multiplayerMode = radioGroup.getSelecteIndex();
                         // start the round
                         gsm.set(new PlayState(gsm, radioGroup.getSelecteIndex(), SwiftyGlider.room,true));
                     }

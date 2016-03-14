@@ -96,7 +96,7 @@ public class PlayState extends State {
 
     /** ONLINE STUFF */
     private Array<Glider> opponentGliders;
-    private static boolean isEveryoneElseDead = false;
+    private static int OpponentGlidersAliveCount = 0;
     private float positionUpdateTimer = 0.0f;
     private static float MAX_POSITION_UPDATE_TIMER = 0.03f;  //50 messages per second
 
@@ -175,6 +175,9 @@ public class PlayState extends State {
                         opponentGliders.add(glider);
                     }
                 }
+
+                OpponentGlidersAliveCount = opponentGliders.size;
+
                 if (room.isHost()) {
                     setLevel(level);
                 }
@@ -488,7 +491,6 @@ public class PlayState extends State {
                 Glider glider = opponentGliders.get(i);
                 glider.render(sb);
             }
-
             glider.render(sb);
 
         }else{
@@ -545,54 +547,65 @@ public class PlayState extends State {
         );
     }
 
-    private void checkDeath(float dt){
-        if(collidingLatch){
-            deathTimer += dt;
-            if(deathTimer > DEATH_TIME){
-                ((BackgroundState)gsm.getBackground()).setWind(0);
-                if (isMultiplayerMode && roomExists()) {
-                    //if everyone is dead except one person, tell everyone to stop the game
+    private void checkDeath(float dt) {
 
-                    if (SwiftyGlider.room.isHost()) {
-                        isEveryoneElseDead = true;
-                        for (int i = 0; i < opponentGliders.size; i++) {
-                            //while someone is still alive
-                            if (!(opponentGliders.get(i).isDead())) {
-                                isEveryoneElseDead = false;
-                                break;
+        if (isMultiplayerMode && roomExists()) {
+            //if everyone is dead except one person, tell everyone to stop the game
+            if (SwiftyGlider.room.isHost()) {
+                if (OpponentGlidersAliveCount == 0) {
+                    //send out stop message
+                    quitRoundForEveryone(SwiftyGlider.room.getClientId());
+                } else {
+                    //you are dead, but only 1 person other amongst opponents are dead
+                    if (collidingLatch && OpponentGlidersAliveCount == 1) {
+
+                        for (Glider glider : opponentGliders) {
+                            if (!glider.isDead()) {
+                                quitRoundForEveryone(glider.getParticipantId());
                             }
-                        }
+                            break;
 
-                        //if everyone is dead
-                        if (isEveryoneElseDead && collidingLatch) {
-                            //send out stop message
-
-                            outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
-                            outStateMessage.actionType = SwiftyGlider.TYPE_GAME_STOP;
-
-                            for (int i = 0; i < opponentGliders.size; i++) {
-                                Glider glider = opponentGliders.get(i);
-                                SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
-                                        glider.getParticipantId(),
-                                        SwiftyGlider.json.toJson(outStateMessage),
-                                        true
-                                );
-                            }
-                            gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room, true));
-                            SwiftyGlider.stopKeepingScreenOn();
                         }
                     }
-
-                } else{
-                    gsm.set(new ScoreState(gsm,lastSavePoint, level - 1));
-                    SwiftyGlider.stopKeepingScreenOn();
                 }
+            }
+        } else {
+            if (collidingLatch) {
+                deathTimer += dt;
+                if (deathTimer > DEATH_TIME) {
+                    ((BackgroundState) gsm.getBackground()).setWind(0);
+                    gsm.set(new ScoreState(gsm, lastSavePoint, level - 1));
+                    SwiftyGlider.stopKeepingScreenOn();
 
-                if( SwiftyGlider.adController != null){
-                    SwiftyGlider.adController.setAdVisibility(true);
+                    if (SwiftyGlider.adController != null) {
+                        SwiftyGlider.adController.setAdVisibility(true);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     *Finishes the round and tells everyone else to switch out as well
+     * @param winnerId the participantId of the winner!
+     */
+    private void quitRoundForEveryone(String winnerId){
+
+        outStateMessage.messageType = SwiftyGlider.MESSAGE_TYPE_ACTION;
+        outStateMessage.actionType = SwiftyGlider.TYPE_GAME_STOP;
+
+        for (int i = 0; i < opponentGliders.size; i++) {
+            Glider glider = opponentGliders.get(i);
+            outStateMessage.isWinner = glider.getParticipantId().equals(winnerId);
+            SwiftyGlider.realTimeService.getSender().OnRealTimeMessageSend(
+                    glider.getParticipantId(),
+                    SwiftyGlider.json.toJson(outStateMessage),
+                    true
+            );
+        }
+
+        gsm.set(new MultiplayerWinState(gsm,SwiftyGlider.room.getClientId().equals(winnerId)));
+        SwiftyGlider.stopKeepingScreenOn();
     }
 
     private void updatePlayers(float dt){
@@ -870,7 +883,7 @@ public class PlayState extends State {
         //WALL INCOMING FROM A HOST
         if (message.contains(SwiftyGlider.MESSAGE_TYPE_WALL)) {
             inWallMessage = SwiftyGlider.json.fromJson(WallMessage.class, message);
-            /**if we havent crashed yet */
+            /**if we haven't crashed yet */
 
             Wall wall = getANonActiveWall();
             wall.RecycleWall(SwiftyGlider.WIDTH, inWallMessage.gapLength, inWallMessage.gapPosition);
@@ -893,6 +906,8 @@ public class PlayState extends State {
                 Glider glider = opponentGliders.get(i);
                 if (glider.getParticipantId().equals(senderId)) {
                     glider.setColliding(true);
+                    OpponentGlidersAliveCount--;
+                    break;
                 }
             }
         }
@@ -902,7 +917,8 @@ public class PlayState extends State {
 
             inStateMessage = SwiftyGlider.json.fromJson(GameStateMessage.class, message);
             if (inStateMessage.actionType == SwiftyGlider.TYPE_GAME_STOP) {
-                gsm.set(new MultiplayerMenuState(gsm, SwiftyGlider.room,true));
+                gsm.set(new MultiplayerWinState(gsm,inStateMessage.isWinner));
+                SwiftyGlider.adController.setAdVisibility(true);
                 SwiftyGlider.stopKeepingScreenOn();
             }
         }
@@ -913,7 +929,6 @@ public class PlayState extends State {
             Gdx.app.log(TAG,"receiveMessage() LEVEL + " + inLevelMessage.level);
             level = inLevelMessage.level;
         }
-
     }
 
     /**
@@ -967,6 +982,7 @@ public class PlayState extends State {
                             Gdx.app.log(TAG, "updateRoom() Setting " + glider.getDisplayName() + " dead");
                         //mark this glider as DEAD
                         glider.setColliding(true);
+                        OpponentGlidersAliveCount--;
                         break;
                     }
                 }
@@ -982,6 +998,7 @@ public class PlayState extends State {
                 for (int j = 0; j < opponentGliders.size; j++) {
                     Glider glider = opponentGliders.get(j);
                     glider.setColliding(true);
+                    OpponentGlidersAliveCount--;
                     break;
                 }
             }
