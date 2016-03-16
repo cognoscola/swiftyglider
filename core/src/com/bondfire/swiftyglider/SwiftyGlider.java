@@ -266,7 +266,11 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		if (state instanceof MultiplayerWinState) {
 			((MultiplayerWinState) state).updateRoom();
 		}
+	}
 
+	@Override
+	public void onGoToMultiplayerModeCommandReceived() {
+		gsm.set(new MultiplayerMenuState(gsm,room,false));
 	}
 
 	@Override

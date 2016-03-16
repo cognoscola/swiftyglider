@@ -94,7 +94,6 @@ public class MultiplayerWinState  extends State {
             }
 
             if (restart.contains(mouse.x, mouse.y)) {
-
                 if (roomExists()) {
                     if (SwiftyGlider.room.isHost() && SwiftyGlider.room.isConnected()) {
 

@@ -562,9 +562,8 @@ public class PlayState extends State {
                         for (Glider glider : opponentGliders) {
                             if (!glider.isDead()) {
                                 quitRoundForEveryone(glider.getParticipantId());
+                                break;
                             }
-                            break;
-
                         }
                     }
                 }

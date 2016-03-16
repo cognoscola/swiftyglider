@@ -48,6 +48,7 @@ public class MultiplayerMenuState extends State {
                                              //'reset' the conditions that will allow us to reconnect if the client decides to reconnect
                                              //to a new room. This variable is a "latch" that helps us send to ConnectionReady message
                                              //only once every time we reconnect
+
     private static int count;                //holds the total number of players participating in this game
 
     private boolean invitationSpamBlocker = false; // in place to prevent player from spamming this button
