@@ -122,7 +122,6 @@ public class PlayState extends State {
 
         this.isMultiplayerMode = multiPlayer;
 
-
         SwiftyGlider.keepScreenOn();
 
         /** load our sprites */
@@ -177,7 +176,6 @@ public class PlayState extends State {
                 }
 
                 OpponentGlidersAliveCount = opponentGliders.size;
-
                 if (room.isHost()) {
                     setLevel(level);
                 }
@@ -220,7 +218,6 @@ public class PlayState extends State {
 
                 //speedy
                 case MULTIPLAYER_MODE_SPEEDY:
-
                     Wall.setWallLifeTime(2f);
                     windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
                     gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
@@ -245,38 +242,43 @@ public class PlayState extends State {
 
         }else{
             if(level >= LV_EYEOFNEEDLE){
+                SwiftyGlider.sessionRounds_single_7++;
                 gapLength = SwiftyGlider.WIDTH*Glider.SCALE_GLIDER +SwiftyGlider.WIDTH*SCALE_GAPLENGTH_C_50;
                 wallTimer =  (WALL_RATE_DEFAULT - (level - LV_SUPERSLOW - 200) * LEVEL_AMPLIFICATION) * 0.5f;
             }else if(level >=LV_WINDSLOW ) {
+                SwiftyGlider.sessionRounds_single_6++;
                 Wall.setWallLifeTime(10f);
                 windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
                 gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_30;
                 wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
                 wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
             }else  if(level >= LV_SUPERSLOW) {
-
+                SwiftyGlider.sessionRounds_single_5++;
                 gapLength = SwiftyGlider.WIDTH * Glider.SCALE_GLIDER + SwiftyGlider.WIDTH * SCALE_GAPLENGTH_C_25;
                 Wall.setWallLifeTime(10f);
                 /** because this level is super slow, the walls already part way down */
                 wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.25f));
                 wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.01f));
-
             } else if(level >= LV_WINDFAST) {
+                SwiftyGlider.sessionRounds_single_4++;
                 Wall.setWallLifeTime(2f);
                 windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_65;
                 gapLength = SwiftyGlider.WIDTH * SCALE_GAPLENGTH_230;
                 wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
             }else if(level >= LV_GOINGFAST) {
+                SwiftyGlider.sessionRounds_single_3++;
                 Wall.setWallLifeTime(2f);
                 windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
                 gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
                 wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
             }else if(level >=LV_FIRSTWIND ) {
+                SwiftyGlider.sessionRounds_single_2++;
                 Wall.setWallLifeTime(5f);
                 windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_50;
                 gapLength =  SwiftyGlider.WIDTH*SCALE_GAPLENGTH_220;
                 wallQueueActive.add(new Wall(SwiftyGlider.WIDTH, gapLength,0.0f));
             } else {
+                SwiftyGlider.sessionRounds_single_1++;
                 Wall.setWallLifeTime(5f);
                 windHeightOffset = SwiftyGlider.HEIGHT * SCALE_WIND_OFFESET_10;
                 gapLength = SwiftyGlider.WIDTH*SCALE_GAPLENGTH_150;

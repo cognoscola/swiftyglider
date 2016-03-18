@@ -14,7 +14,7 @@ public class DifficultyState extends State{
     private final static String LV1_TEXT = "Very Beginning";
     private final static String LV2_TEXT = "First Wind";
     private final static String LV3_TEXT = "Feeling Courageous";
-    private final static String LV4_TEXT =  "Soaring Winds";
+    private final static String LV4_TEXT = "Soaring Winds";
     private final static String LV5_TEXT = "Thick Brushes";
     private final static String LV6_TEXT = "Tricky Wind";
     private final static String LV7_TEXT = "Threading the Needle";

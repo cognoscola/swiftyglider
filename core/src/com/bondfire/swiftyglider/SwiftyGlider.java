@@ -49,6 +49,18 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static final int ACHIEVE_MASTER_GLIDER       = 3;
 	public static final int ACHIEVE_GRAND_MASTER_GLIDER = 4;
 
+	public static final int EVENT_MULTIPLAYER_SPEEDY= 0;
+	public static final int EVENT_MULTIPLAYER_WINDY= 1;
+	public static final int EVENT_MULTIPLAYER_NERVE_WRACKING= 2;
+	public static final int EVENT_MULTIPLAYER_NORMAL= 3;
+	public static final int EVENT_SINGLE_LV_1 = 4;
+	public static final int EVENT_SINGLE_LV_2 = 5;
+	public static final int EVENT_SINGLE_LV_3 = 6;
+	public static final int EVENT_SINGLE_LV_4 = 7;
+	public static final int EVENT_SINGLE_LV_5 = 8;
+	public static final int EVENT_SINGLE_LV_6 = 9;
+	public static final int EVENT_SINGLE_LV_7 = 10;
+
 	public final static String MESSAGE_TYPE_ACTION   = "STATE_MESSAGE";
 	public final static String MESSAGE_TYPE_POSITION = "POS_MESSAGE";
 	public final static String MESSAGE_TYPE_WALL     = "WALL_MESSAGE"; //new wall incoming
@@ -99,21 +111,34 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static GameStateMessage outStateMessage;
 	public static GameStateMessage inStateMessage;
 
+	/** keep track of the session rounds */
+	public static int sessionRounds_multiplayer_normal = 0;
+	public static int sessionRounds_multiplayer_windy = 0;
+	public static int sessionRounds_multiplayer_speedy = 0;
+	public static int sessionRounds_multiplayer_wrecking = 0;
+	public static int sessionRounds_single_1 = 0;
+	public static int sessionRounds_single_2 = 0;
+	public static int sessionRounds_single_3 = 0;
+	public static int sessionRounds_single_4 = 0;
+	public static int sessionRounds_single_5 = 0;
+	public static int sessionRounds_single_6 = 0;
+	public static int sessionRounds_single_7 = 0;
+
 	public SwiftyGlider(int time){
 		timeInSeconds = time;
 	}
 
-	public void injectAchievementGroup(PlayServicesObject group){
+	public void setPlayServicesResources(PlayServicesObject group){
 		playServices = group;
 	}
 
-	public void injectAdController(AdController controller){
+	public void setAdController(AdController controller){
 		adController = controller;
 	}
 
-	public void injectConsoleController(PlatformInterfaceController controller){paltformController = controller;}
+	public void setPlatformController(PlatformInterfaceController controller){paltformController = controller;}
 
-	public void injectRealTimeServices(RealTimeMultiplayerService rtService){
+	public void setRealTimeServices(RealTimeMultiplayerService rtService){
 		realTimeService = rtService;
 		try {
 			realTimeService.setReceiver(this);
@@ -128,7 +153,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 				gsm.push(new MenuState(gsm));
 			}
 		} catch (NullPointerException e) {
-			Gdx.app.log(TAG,"injectRealTimeServices() ",e);
+			Gdx.app.log(TAG,"setRealTimeServices() ",e);
 		}
 	}
 
@@ -197,6 +222,18 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 //			gsm.push(new MultiplayerMenuState(gsm,room,true));
 			gsm.push(new MultiplayerWinState(gsm,true));
 		}
+
+		sessionRounds_multiplayer_normal   = 0;
+		sessionRounds_multiplayer_windy    = 0;
+		sessionRounds_multiplayer_speedy   = 0;
+		sessionRounds_multiplayer_wrecking = 0;
+		sessionRounds_single_1 = 0;
+		sessionRounds_single_2 = 0;
+		sessionRounds_single_3 = 0;
+		sessionRounds_single_4 = 0;
+		sessionRounds_single_5 = 0;
+		sessionRounds_single_6 = 0;
+		sessionRounds_single_7 = 0;
 	}
 
 	/** Game loop libgdx uses 60hz */
@@ -222,10 +259,19 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 		if (gsm.peek() instanceof MultiplayerMenuState) {
 			if (data.contains(MESSAGE_TYPE_ACTION)) {
-				Gdx.app.log(TAG, "onGameMessageReceived() RECEIVED  GameStateMessage");
+				Gdx.app.log(TAG, "onGameMessageReceived() RECEIVED:" + data);
 				inStateMessage = json.fromJson(GameStateMessage.class, data);
+
 				if (inStateMessage.actionType == TYPE_GAME_START){
 					setAddVisibiliyFalse();
+
+					switch (inStateMessage.difficulty ) {
+						case 0: sessionRounds_multiplayer_normal++;break;
+						case 1: sessionRounds_multiplayer_speedy++;break;
+						case 2: sessionRounds_multiplayer_windy++;break;
+						case 3: sessionRounds_multiplayer_wrecking++;break;
+						default: sessionRounds_multiplayer_normal++;break;
+					}
 					gsm.set(new PlayState(gsm,0,room,true));
 				}
 			}else{
@@ -235,9 +281,19 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 		if (gsm.peek() instanceof MultiplayerWinState) {
 			if (data.contains(MESSAGE_TYPE_ACTION)) {
+				Gdx.app.log(TAG, "onGameMessageReceived() RECEIVED:" + data);
 				inStateMessage = json.fromJson(GameStateMessage.class, data);
 				if (inStateMessage.actionType == TYPE_GAME_START){
 					setAddVisibiliyFalse();
+
+					switch (inStateMessage.difficulty -1) {
+						case 0: sessionRounds_multiplayer_normal++;break;
+						case 1: sessionRounds_multiplayer_speedy++;break;
+						case 2: sessionRounds_multiplayer_windy++;break;
+						case 3: sessionRounds_multiplayer_wrecking++;break;
+						default: sessionRounds_multiplayer_normal++;break;
+					}
+
 					gsm.set(new PlayState(gsm,0,room,true));
 				}
 			}
@@ -275,12 +331,51 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	@Override
 	public void dispose() {
+
+		//event capture
+		if (sessionRounds_single_1 > 0) {
+			playServices.submitEvent(EVENT_SINGLE_LV_1, sessionRounds_single_1);
+		}
+		if (sessionRounds_single_2 > 0) {
+			playServices.submitEvent(EVENT_SINGLE_LV_2, sessionRounds_single_2);
+		}
+		if (sessionRounds_single_3 > 0) {
+			playServices.submitEvent(EVENT_SINGLE_LV_3, sessionRounds_single_3);
+		}
+		if (sessionRounds_single_4 > 0) {
+			playServices.submitEvent(EVENT_SINGLE_LV_4, sessionRounds_single_4);
+		}
+		if (sessionRounds_single_5 > 0) {
+			playServices.submitEvent(EVENT_SINGLE_LV_5, sessionRounds_single_5);
+		}
+		if (sessionRounds_single_6 > 0) {
+			playServices.submitEvent(EVENT_SINGLE_LV_6, sessionRounds_single_6);
+		}
+		if (sessionRounds_single_7 > 0) {
+			playServices.submitEvent(EVENT_SINGLE_LV_7, sessionRounds_single_7);
+		}
+		if (sessionRounds_multiplayer_speedy > 0) {
+			playServices.submitEvent(EVENT_MULTIPLAYER_SPEEDY, sessionRounds_multiplayer_speedy);
+		}
+		if (sessionRounds_multiplayer_windy > 0) {
+			playServices.submitEvent(EVENT_MULTIPLAYER_WINDY, sessionRounds_multiplayer_windy);
+		}
+
+		if (sessionRounds_multiplayer_wrecking > 0) {
+			playServices.submitEvent(EVENT_MULTIPLAYER_NERVE_WRACKING, sessionRounds_multiplayer_wrecking);
+		}
+		if (sessionRounds_multiplayer_normal > 0) {
+			playServices.submitEvent(EVENT_MULTIPLAYER_NORMAL, sessionRounds_multiplayer_normal);
+		}
+
 		super.dispose();
+
 		if (appType == Application.ApplicationType.Android) {
 			SwiftyGlider.realTimeService.getSender().DestroyGameConnection();
 		}
 		playServices = null;
 	}
+
 
 	public static void setAddVisibiliyFalse() {
 
