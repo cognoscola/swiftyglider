@@ -3,7 +3,8 @@ package com.bondfire.swiftyglider.sprites;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+import com.bondfire.swiftyglider.handler.Assets;
+import com.bondfire.swiftyglider.ui.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
 
@@ -62,8 +63,6 @@ public class Wall extends Box {
     private float rightWallRotate;
     private boolean swap;
 
-    BlurrableTextureAtlas atlas;
-
 
     public Wall( float canvasWidth, float gapLength) {
         this.gapLength = gapLength;
@@ -71,9 +70,9 @@ public class Wall extends Box {
 
         this.y = SwiftyGlider.HEIGHT;
 
-        atlas =(BlurrableTextureAtlas) SwiftyGlider.res.getAtlas("sprites");
-        leftWall =atlas.findRegion("wall_left");
-        rightWall = atlas.findRegion("wall_right");
+
+        leftWall = Assets.atlas.findRegion("wall_left");
+        rightWall = Assets.atlas.findRegion("wall_right");
 
         rightWallWidth = SwiftyGlider.WIDTH;
 //        rightWallHeight = rightWall.getRegionHeight();
@@ -93,9 +92,9 @@ public class Wall extends Box {
 
         this.timer = MAX_WALL_LIFETIME * startingHeight;
 
-        atlas =(BlurrableTextureAtlas) SwiftyGlider.res.getAtlas("sprites");
-        leftWall =atlas.findRegion("wall_left");
-        rightWall = atlas.findRegion("wall_right");
+
+        leftWall =Assets.atlas.findRegion("wall_left");
+        rightWall = Assets.atlas.findRegion("wall_right");
 
         rightWallWidth = SwiftyGlider.WIDTH;
 //        rightWallHeight = rightWall.getRegionHeight();
@@ -121,14 +120,10 @@ public class Wall extends Box {
 
     public void render(SpriteBatch sb){
 
-        if(!atlas.isBlurrable()){
-            System.out.println("Blurring from Lighs");
-            leftWall.getTexture().getTextureData().prepare();
-            atlas.PrepareBlur(leftWall.getTexture().getTextureData().consumePixmap());
-        }
-        atlas.bind();
 
-        sb.draw(atlas.tex,
+        Assets.atlas.bind();
+
+        sb.draw(Assets.atlas.tex,
                 leftWallPosition_X - leftWallWidth/2,
                 y - leftWallHeight / 2,
                 leftWallWidth/2,
@@ -145,7 +140,7 @@ public class Wall extends Box {
                 false,
                 false);
 
-        sb.draw(atlas.tex,
+        sb.draw(Assets.atlas.tex,
                 rightWallPosition_X - rightWallWidth/2,
                 y - rightWallHeight / 2,
                 rightWallWidth/2,

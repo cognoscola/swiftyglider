@@ -4,10 +4,11 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.handler.Assets;
+
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
@@ -27,12 +28,12 @@ public class MenuState extends State {
     public MenuState(GSM gsm){
         super(gsm);
 
-        BlurrableTextureAtlas atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+
         BitmapFont bitmapFont = SwiftyGlider.res.getBmpFont();
 
         instruction = new Graphic(
-                atlas,
-                atlas.findRegion("instructions"),
+                Assets.atlas,
+                Assets.atlas.findRegion("instructions"),
                 SwiftyGlider.WIDTH/2,
                 SwiftyGlider.HEIGHT*3/4,
                 INSTRUCTION_WIDTH_R * SwiftyGlider.WIDTH,
@@ -55,9 +56,6 @@ public class MenuState extends State {
     public void render(SpriteBatch sb) {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
-
-//        SwiftyGlider.shader.setUniformf(SwiftyGlider.biasLocation, SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
-//        SwiftyGlider.shader.setUniformf("bias", SwiftyGlider.MAX_BLUR*SwiftyGlider.blurAmount);
         instruction.render(sb);
         singleplayer.render(sb);
         multiplayer.render(sb);

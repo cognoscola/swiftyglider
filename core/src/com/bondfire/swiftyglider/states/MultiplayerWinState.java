@@ -3,9 +3,11 @@ package com.bondfire.swiftyglider.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+
 import com.bondfire.app.services.GameParticipant;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.handler.Assets;
+import com.bondfire.swiftyglider.ui.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
@@ -16,7 +18,7 @@ import com.bondfire.swiftyglider.ui.WhiteButton;
 public class MultiplayerWinState  extends State {
 
     private Graphic back;
-    BlurrableTextureAtlas atlas;
+
     private static BitmapFont bitmapFont;
 
     private static WhiteButton winTitle;
@@ -27,10 +29,10 @@ public class MultiplayerWinState  extends State {
         super(gsm);
 
         bitmapFont = SwiftyGlider.res.getBmpFont();
-        atlas = (BlurrableTextureAtlas) SwiftyGlider.res.getAtlas("sprites");
 
-        back = new Graphic(atlas,
-                atlas.findRegion("back_icon"),
+
+        back = new Graphic(Assets.atlas,
+                Assets.atlas.findRegion("back_icon"),
                 50,
                 SwiftyGlider.HEIGHT - 100,
                 60,

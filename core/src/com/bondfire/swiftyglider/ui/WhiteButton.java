@@ -5,8 +5,8 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Align;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.handler.Assets;
 
 public class WhiteButton extends Box {
 
@@ -22,8 +22,6 @@ public class WhiteButton extends Box {
     private float backHeight;
     private float textAlpha;
 
-    BlurrableTextureAtlas atlas;
-
     public WhiteButton(BitmapFont bitmapFont, String text, float x, float y){
 
         this.text = text;
@@ -37,9 +35,7 @@ public class WhiteButton extends Box {
         this.width = layout.width;
         this.height = layout.height;
 
-        atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
-
-        background = atlas.findRegion("button");
+        background = Assets.atlas.findRegion("button");
         backWidth = width;
         backHeight = height;
     }
@@ -49,7 +45,7 @@ public class WhiteButton extends Box {
         textAlpha = SwiftyGlider.blurAmount;
 
         if(whiteBackground){
-            sb.draw(atlas.tex,
+            sb.draw(Assets.atlas.tex,
                     x - width / 2,
                     y - height / 2 ,
                     width / 2,

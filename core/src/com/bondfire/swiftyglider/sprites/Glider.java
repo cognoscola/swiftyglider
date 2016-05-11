@@ -5,8 +5,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.handler.Assets;
+import com.bondfire.swiftyglider.ui.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.ui.Box;
 
 import java.util.LinkedList;
@@ -58,7 +60,7 @@ public class Glider extends Box {
     private float   tailFlappingRate    = 0.1f;
 
     private float wind;
-    BlurrableTextureAtlas atlas;
+
 
     /*** MULTIPLAYER STUFF ***/
     /** ID OF THE GLIDER (when we're in multiplayer mode */
@@ -102,14 +104,13 @@ public class Glider extends Box {
         this.width = SCALE_GLIDER * SwiftyGlider.WIDTH;
         this.height = SCALE_GLIDER * SwiftyGlider.WIDTH;
 
-        atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
 
-        singleplayerBody = atlas.findRegion("glider");
-        explosion = atlas.findRegion("explosion");
-        tail_left = atlas.findRegion("tail_left");
-        tail_right = atlas.findRegion("tail_right");
-        opponentBody = atlas.findRegion("opponent_glider");
-        multiplayerBody = atlas.findRegion("me_glider");
+        singleplayerBody = Assets.atlas.findRegion("glider");
+        explosion = Assets.atlas.findRegion("explosion");
+        tail_left = Assets.atlas.findRegion("tail_left");
+        tail_right = Assets.atlas.findRegion("tail_right");
+        opponentBody = Assets.atlas.findRegion("opponent_glider");
+        multiplayerBody = Assets.atlas.findRegion("me_glider");
 
         filter = new LinkedList<Float>();
 
@@ -199,16 +200,12 @@ public class Glider extends Box {
 
     public void render(SpriteBatch sb){
 
-        if(!atlas.isBlurrable()){
-            System.out.println("Blurring from Lighs");
-            singleplayerBody.getTexture().getTextureData().prepare();
-            atlas.PrepareBlur(singleplayerBody.getTexture().getTextureData().consumePixmap());
-        }
-        atlas.bind();
+
+        Assets.atlas.bind();
 
         if(deathTimer < TIME_DEATH){
             if(death_latch){
-                sb.draw(atlas.tex,
+                sb.draw(Assets.atlas.tex,
                         x - width / 2,
                         y - height / 2,
                         width / 2,
@@ -231,7 +228,7 @@ public class Glider extends Box {
                 //Draw the singleplayerBody
                 if (participantId.isEmpty()) {
 
-                    sb.draw(atlas.tex,
+                    sb.draw(Assets.atlas.tex,
                             x - width / 2,
                             y - height / 2,
                             width / 2,
@@ -250,7 +247,7 @@ public class Glider extends Box {
 
                 }else{
 
-                    sb.draw(atlas.tex,
+                    sb.draw(Assets.atlas.tex,
                             x - width / 2,
                             y - height / 2,
                             width / 2,
@@ -274,7 +271,7 @@ public class Glider extends Box {
 
 
                 //draw the tail
-                sb.draw(atlas.tex,
+                sb.draw(Assets.atlas.tex,
                         x - width / 2,
                         y - height - height / 2,
                         width / 2,

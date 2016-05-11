@@ -4,8 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.handler.Assets;
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
@@ -25,14 +26,14 @@ public class DifficultyState extends State{
     private WhiteButton instruction;
     private Array<WhiteButton> buttons;
     private BitmapFont bitmapFont;
-    BlurrableTextureAtlas atlas;
+
 
     public DifficultyState(GSM gsm){
         super(gsm);
 
-        atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
-        back = new Graphic(atlas,
-                atlas.findRegion("back_icon"),
+
+        back = new Graphic(Assets.atlas,
+                Assets.atlas.findRegion("back_icon"),
                 50,
                 SwiftyGlider.HEIGHT - 100,
                 60,

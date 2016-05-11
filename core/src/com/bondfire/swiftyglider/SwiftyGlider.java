@@ -4,14 +4,17 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.maps.tiled.AtlasTmxMapLoader;
 import com.badlogic.gdx.utils.Json;
 import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.callbacks.PlatformInterfaceController;
-import com.bondfire.app.handler.Content;
+
 import com.bondfire.app.services.AdController;
 import com.bondfire.app.services.GameParticipant;
 import com.bondfire.app.services.GameRoom;
@@ -21,6 +24,7 @@ import com.bondfire.app.services.RealTimeMultiplayerMessageReceiver;
 import com.bondfire.app.services.RealTimeMultiplayerService;
 
 import com.bondfire.app.services.ServiceUtils;
+import com.bondfire.swiftyglider.handler.Assets;
 import com.bondfire.swiftyglider.network.GameStateMessage;
 import com.bondfire.swiftyglider.states.BackgroundState;
 import com.bondfire.swiftyglider.states.GSM;
@@ -29,6 +33,7 @@ import com.bondfire.swiftyglider.states.MultiplayerMenuState;
 import com.bondfire.swiftyglider.states.MultiplayerWinState;
 import com.bondfire.swiftyglider.states.PlayState;
 import com.bondfire.swiftyglider.states.State;
+import com.bondfire.swiftyglider.ui.Content;
 
 /** This covers LibGdx basics, expect lots of notes  */
 public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultiplayerMessageReceiver{
@@ -37,7 +42,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 	public static Json json;
 
-	public final static float MAX_BLUR = 4f;
+	public final static float MAX_BLUR = 3.0f;
 	/** actual game dimensions (not the screen size )*/
 	public static final String TITLE= "Swifty Glider";
 	public static final int WIDTH  = 480;
@@ -124,6 +129,8 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public static int sessionRounds_single_6 = 0;
 	public static int sessionRounds_single_7 = 0;
 
+	private boolean isLoading = true;
+
 	public SwiftyGlider(int time){
 		timeInSeconds = time;
 	}
@@ -131,6 +138,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public void setPlayServicesResources(PlayServicesObject group){
 		playServices = group;
 	}
+
 
 	public void setAdController(AdController controller){
 		adController = controller;
@@ -146,6 +154,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 
 			//After we bind the game's services, find out if we should go to multiplayer room
 			if(realTimeService.getSender().shouldGoToMultiplayerMenu()){
+				/** push the multiplayer menu state **/
 				/** push the multiplayer menu state **/
 				gsm.push(new MultiplayerMenuState(gsm, room,false));
 			}else{
@@ -169,16 +178,18 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public void create () {
 		/** first check the application actionType */
 		appType = Gdx.app.getType();
-
-		/** set the clear color (color that shows when everything on the screen is cleared  */
 		Gdx.gl.glClearColor(0.2f,0.2f,0.2f,1);
 
-		preferences = Gdx.app.getPreferences(TITLE);
+		/** set the clear color (color that shows when everything on the screen is cleared  */
 
+		preferences = Gdx.app.getPreferences(TITLE);
 		res = new Content();
-		res.LoadAtlas("graphics/swifty.pack", "sprites"); //our path to the file and the key
+		//res.LoadAtlas("graphics/swifty.pack", "sprites"); //our path to the file and the key
 		res.LoadFont("open_sans.ttf");
 		res.LoadShaders("shaders/blurVertex.glsl","shaders/blurFragment.glsl","blurShader");
+
+		Assets.loadBefore();
+		Assets.loadFull();
 
 		/** load the blur shader */
 		FileHandle[] blurfiles = res.getShaders("blurShader");
@@ -193,35 +204,9 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		shader.begin();
 		biasLocation = shader.getUniformLocation("u_bias");
 		shader.setUniformf(biasLocation,0f);
-//		shader.setUniformf("bias", 0f);
 		shader.end();
 
 		gsm = new GSM();
-
-		/** push our background */
-		gsm.push(new BackgroundState(gsm, timeInSeconds));
-
-		if (Gdx.app.getType() == Application.ApplicationType.Android) {
-			json = new Json();
-			outStateMessage = new GameStateMessage();
-			paltformController.getService(ServiceUtils.REAL_TIME_SERVICE);
-			paltformController.setInformation("Swifty Glider", "Guide your character through the " +
-					"obstacles by tilting your phone in various ways.", false);
-		}
-		//Temporarily create fake stuff
-		if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
-
-			GameRoom room = new GameRoom();
-			GameParticipant participant = new GameParticipant();
-			participant.setParticipantName("Guillermo");
-			room.getParticipants().add(participant);
-			room.setConnected(true);
-			room.setGameHostId("host");
-			room.setClientId("host");
-			SwiftyGlider.room = room;
-//			gsm.push(new MultiplayerMenuState(gsm,room,true));
-			gsm.push(new MultiplayerWinState(gsm,true));
-		}
 
 		sessionRounds_multiplayer_normal   = 0;
 		sessionRounds_multiplayer_windy    = 0;
@@ -237,12 +222,47 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	}
 
 	/** Game loop libgdx uses 60hz */
+
+	private void LoadGameObjects(){
+		/** push our background */
+		gsm.push(new BackgroundState(gsm, timeInSeconds));
+
+		if (Gdx.app.getType() == Application.ApplicationType.Android) {
+			json = new Json();
+			outStateMessage = new GameStateMessage();
+			paltformController.getService(ServiceUtils.REAL_TIME_SERVICE);
+			paltformController.setInformation("Swifty Glider", "Guide your character through the " +
+					"obstacles by tilting your phone in various ways.", false);
+		}
+
+		//Temporarily create fake stuff
+		if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
+
+			GameRoom room = new GameRoom();
+			GameParticipant participant = new GameParticipant();
+			participant.setParticipantName("Guillermo");
+			room.getParticipants().add(participant);
+			room.setConnected(true);
+			room.setGameHostId("host");
+			room.setClientId("host");
+			SwiftyGlider.room = room;
+			gsm.push(new MenuState(gsm));
+		}
+	}
+
+
 	@Override
 	public void render () {
 		if(appType == Application.ApplicationType.Desktop){
 			float bias = (Gdx.input.getX() / (float)Gdx.graphics.getWidth());
 			setBlur(bias);
 		}
+
+		if(isLoading)
+			if (Assets.getProgress() == 1 ){
+				isLoading = false;
+				LoadGameObjects();
+			}
 
 		/** CLear the screen */
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -332,40 +352,47 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	@Override
 	public void dispose() {
 
-		//event capture
-		if (sessionRounds_single_1 > 0) {
-			playServices.submitEvent(EVENT_SINGLE_LV_1, sessionRounds_single_1);
-		}
-		if (sessionRounds_single_2 > 0) {
-			playServices.submitEvent(EVENT_SINGLE_LV_2, sessionRounds_single_2);
-		}
-		if (sessionRounds_single_3 > 0) {
-			playServices.submitEvent(EVENT_SINGLE_LV_3, sessionRounds_single_3);
-		}
-		if (sessionRounds_single_4 > 0) {
-			playServices.submitEvent(EVENT_SINGLE_LV_4, sessionRounds_single_4);
-		}
-		if (sessionRounds_single_5 > 0) {
-			playServices.submitEvent(EVENT_SINGLE_LV_5, sessionRounds_single_5);
-		}
-		if (sessionRounds_single_6 > 0) {
-			playServices.submitEvent(EVENT_SINGLE_LV_6, sessionRounds_single_6);
-		}
-		if (sessionRounds_single_7 > 0) {
-			playServices.submitEvent(EVENT_SINGLE_LV_7, sessionRounds_single_7);
-		}
-		if (sessionRounds_multiplayer_speedy > 0) {
-			playServices.submitEvent(EVENT_MULTIPLAYER_SPEEDY, sessionRounds_multiplayer_speedy);
-		}
-		if (sessionRounds_multiplayer_windy > 0) {
-			playServices.submitEvent(EVENT_MULTIPLAYER_WINDY, sessionRounds_multiplayer_windy);
-		}
+		Assets.dispose();
 
-		if (sessionRounds_multiplayer_wrecking > 0) {
-			playServices.submitEvent(EVENT_MULTIPLAYER_NERVE_WRACKING, sessionRounds_multiplayer_wrecking);
-		}
-		if (sessionRounds_multiplayer_normal > 0) {
-			playServices.submitEvent(EVENT_MULTIPLAYER_NORMAL, sessionRounds_multiplayer_normal);
+		//event capture
+		try {
+
+			if (sessionRounds_single_1 > 0) {
+				playServices.submitEvent(EVENT_SINGLE_LV_1, sessionRounds_single_1);
+			}
+			if (sessionRounds_single_2 > 0) {
+				playServices.submitEvent(EVENT_SINGLE_LV_2, sessionRounds_single_2);
+			}
+			if (sessionRounds_single_3 > 0) {
+				playServices.submitEvent(EVENT_SINGLE_LV_3, sessionRounds_single_3);
+			}
+			if (sessionRounds_single_4 > 0) {
+				playServices.submitEvent(EVENT_SINGLE_LV_4, sessionRounds_single_4);
+			}
+			if (sessionRounds_single_5 > 0) {
+				playServices.submitEvent(EVENT_SINGLE_LV_5, sessionRounds_single_5);
+			}
+			if (sessionRounds_single_6 > 0) {
+				playServices.submitEvent(EVENT_SINGLE_LV_6, sessionRounds_single_6);
+			}
+			if (sessionRounds_single_7 > 0) {
+				playServices.submitEvent(EVENT_SINGLE_LV_7, sessionRounds_single_7);
+			}
+			if (sessionRounds_multiplayer_speedy > 0) {
+				playServices.submitEvent(EVENT_MULTIPLAYER_SPEEDY, sessionRounds_multiplayer_speedy);
+			}
+			if (sessionRounds_multiplayer_windy > 0) {
+				playServices.submitEvent(EVENT_MULTIPLAYER_WINDY, sessionRounds_multiplayer_windy);
+			}
+
+			if (sessionRounds_multiplayer_wrecking > 0) {
+				playServices.submitEvent(EVENT_MULTIPLAYER_NERVE_WRACKING, sessionRounds_multiplayer_wrecking);
+			}
+			if (sessionRounds_multiplayer_normal > 0) {
+				playServices.submitEvent(EVENT_MULTIPLAYER_NORMAL, sessionRounds_multiplayer_normal);
+			}
+		} catch (NullPointerException e) {
+			Gdx.app.log(TAG,"dispose() Play Services was null!");
 		}
 
 		super.dispose();
@@ -400,10 +427,13 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	@Override
 	public void pause() {
 
+
+/*
 		State state = gsm.peek();
 		if (state instanceof PlayState) {
 			((PlayState)state).killSelf();
 		}
+*/
 
 		super.pause();
 	}

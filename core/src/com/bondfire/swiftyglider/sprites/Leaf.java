@@ -1,11 +1,13 @@
 package com.bondfire.swiftyglider.sprites;
 
-import com.badlogic.gdx.Gdx;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.handler.Assets;
+import com.bondfire.swiftyglider.ui.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.ui.Box;
 
 public class Leaf extends Box {
@@ -22,19 +24,18 @@ public class Leaf extends Box {
     private float wind;
     private float rotation;
 
-    BlurrableTextureAtlas atlas;
 
     public Leaf() {
 
         /** assign a random location */
         this.x = MathUtils.random(SwiftyGlider.WIDTH);
         timer = MathUtils.random(MAX_TIME);
-        atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+
 
         /** get our leafy assets */
-        leafs[0] = atlas.findRegion("leaf1");
-        leafs[1] = atlas.findRegion("leaf2");
-        leafs[2] = atlas.findRegion("leaf3");
+        leafs[0] = Assets.atlas.findRegion("leaf1");
+        leafs[1] = Assets.atlas.findRegion("leaf2");
+        leafs[2] = Assets.atlas.findRegion("leaf3");
 
         /** assign a random leaf to use */
         currentLeaf =  leafs[MathUtils.random(2)];
@@ -77,14 +78,7 @@ public class Leaf extends Box {
 
     public void render(SpriteBatch sb){
 
-        if(!atlas.isBlurrable()){
-            System.out.println("Blurring from Lighs");
-            currentLeaf.getTexture().getTextureData().prepare();
-            atlas.PrepareBlur(currentLeaf.getTexture().getTextureData().consumePixmap());
-        }
-        atlas.bind();
-
-        sb.draw(atlas.tex,
+        sb.draw(Assets.atlas.tex,
                 x - width / 2,
                 y - height / 2,
                 width / 2,

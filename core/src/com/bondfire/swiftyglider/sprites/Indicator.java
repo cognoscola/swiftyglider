@@ -3,7 +3,8 @@ package com.bondfire.swiftyglider.sprites;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Logger;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+import com.bondfire.swiftyglider.handler.Assets;
+
 import com.bondfire.swiftyglider.SwiftyGlider;
 import com.bondfire.swiftyglider.ui.Box;
 
@@ -20,8 +21,6 @@ public class Indicator extends Box {
 
     private boolean cannotReset = false;
 
-    BlurrableTextureAtlas atlas;
-
     public Indicator(float x, float y, float width, float height) {
 
         this.x = x;
@@ -30,8 +29,8 @@ public class Indicator extends Box {
         this.width = width;
         this.height = height;
 
-        atlas =(BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
-        line = atlas.findRegion("indicator_line");
+
+        line = Assets.atlas.findRegion("indicator_line");
     }
 
     public void update(float dt){
@@ -46,14 +45,10 @@ public class Indicator extends Box {
     }
 
     public void render(SpriteBatch sb){
-        if(!atlas.isBlurrable()){
-            System.out.println("Blurring from Lighs");
-            line.getTexture().getTextureData().prepare();
-            atlas.PrepareBlur(line.getTexture().getTextureData().consumePixmap());
-        }
-        atlas.bind();
 
-        sb.draw(atlas.tex,
+        Assets.atlas.bind();
+
+        sb.draw(Assets.atlas.tex,
                 x - width / 2,
                 y - height / 2,
                 width / 2,

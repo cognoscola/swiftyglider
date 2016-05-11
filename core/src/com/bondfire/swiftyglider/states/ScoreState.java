@@ -3,8 +3,9 @@ package com.bondfire.swiftyglider.states;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
+
 import com.bondfire.swiftyglider.SwiftyGlider;
+import com.bondfire.swiftyglider.handler.Assets;
 import com.bondfire.swiftyglider.ui.Graphic;
 import com.bondfire.swiftyglider.ui.WhiteButton;
 
@@ -31,12 +32,12 @@ public class ScoreState extends State {
     private int level;
     private int bestLevel = 20;
 
-    BlurrableTextureAtlas atlas;
+
 
     public ScoreState(GSM gsm, int lastSavePoint, int level) {
         super(gsm);
 
-        atlas = (BlurrableTextureAtlas)SwiftyGlider.res.getAtlas("sprites");
+
         bestLevel = SwiftyGlider.preferences.getInteger(KEY_BEST,0);
 
         if(level > bestLevel){
@@ -47,23 +48,23 @@ public class ScoreState extends State {
         this.level = level;
         bitmapFont = SwiftyGlider.res.getBmpFont();
 
-        back = new Graphic(atlas,
-                atlas.findRegion("back_icon"),
+        back = new Graphic(Assets.atlas,
+                Assets.atlas.findRegion("back_icon"),
                  50,
                 SwiftyGlider.HEIGHT - 100,
                 60,
                 60);
 
         instruction = new Graphic(
-                atlas,
-                atlas.findRegion("instructions"),
+                Assets.atlas,
+                Assets.atlas.findRegion("instructions"),
                 SwiftyGlider.WIDTH / 2,
                 SwiftyGlider.HEIGHT * 3 / 4,
                 INSTRUCTION_WIDTH_R * SwiftyGlider.WIDTH,
                 INSTRUCTION_HEIGHT_R * SwiftyGlider.HEIGHT);
         start = new Graphic(
-                atlas,
-                atlas.findRegion("start"),
+                Assets.atlas,
+                Assets.atlas.findRegion("start"),
                 SwiftyGlider.WIDTH / 2,
                 SwiftyGlider.HEIGHT / 2,
                 START_WIDTH_R * SwiftyGlider.WIDTH,

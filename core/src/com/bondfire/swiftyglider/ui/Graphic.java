@@ -2,7 +2,6 @@ package com.bondfire.swiftyglider.ui;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.bondfire.app.bfUtils.BlurrableTextureAtlas;
 
 public class Graphic extends Box{
 
