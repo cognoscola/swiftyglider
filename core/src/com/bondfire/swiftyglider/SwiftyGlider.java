@@ -4,13 +4,13 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.assets.AssetManager;
+
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.maps.tiled.AtlasTmxMapLoader;
+
 import com.badlogic.gdx.utils.Json;
 import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.callbacks.PlatformInterfaceController;
@@ -236,6 +236,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 		}
 
 		//Temporarily create fake stuff
+/*
 		if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
 
 			GameRoom room = new GameRoom();
@@ -248,6 +249,7 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			SwiftyGlider.room = room;
 			gsm.push(new MenuState(gsm));
 		}
+*/
 	}
 
 
@@ -258,11 +260,15 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 			setBlur(bias);
 		}
 
-		if(isLoading)
+		if(isLoading){
 			if (Assets.getProgress() == 1 ){
 				isLoading = false;
 				LoadGameObjects();
 			}
+		}
+
+
+
 
 		/** CLear the screen */
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -428,12 +434,12 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public void pause() {
 
 
-/*
+
 		State state = gsm.peek();
 		if (state instanceof PlayState) {
 			((PlayState)state).killSelf();
 		}
-*/
+
 
 		super.pause();
 	}

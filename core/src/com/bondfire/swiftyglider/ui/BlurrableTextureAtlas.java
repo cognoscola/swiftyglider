@@ -1,6 +1,5 @@
 package com.bondfire.swiftyglider.ui;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,7 +18,6 @@ public class BlurrableTextureAtlas extends TextureAtlas {
     private boolean isBound = false;
 
     public BlurrableTextureAtlas() {
-
     }
 
     public BlurrableTextureAtlas(FileHandle packFile) {
@@ -66,6 +64,7 @@ public class BlurrableTextureAtlas extends TextureAtlas {
     @Override
     public AtlasRegion findRegion(String name) {
         AtlasRegion region = super.findRegion(name);
+
         if (isBlurrable) {
 //            region.setTexture(tex);
         }

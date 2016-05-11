@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.bondfire.swiftyglider.ui.BlurrableTextureAtlas;
 
 
@@ -34,7 +33,6 @@ public class Assets {
                 new BlurrableTextureAtlasLoader(resolve));
 
         assetManager.load("graphics/swifty.pack",BlurrableTextureAtlas.class);
-
     }
 
     public static float getProgress(){
