@@ -58,7 +58,7 @@ public class Leaf extends Box {
             timer = 0;
             this.y = SwiftyGlider.HEIGHT + height;
             this.x = MathUtils.random(SwiftyGlider.WIDTH);
-            currentLeaf =  leafs[MathUtils.random(2)];
+            currentLeaf =  leafs[MathUtils.random(0)];
             rotation = MathUtils.random(360f);
         }
 
@@ -79,7 +79,7 @@ public class Leaf extends Box {
 
     public void render(SpriteBatch sb){
 
-        sb.draw(Assets.atlas.tex,
+/*        sb.draw(Assets.atlas.tex,
                 x - width / 2,
                 y - height / 2,
                 width / 2,
@@ -94,7 +94,7 @@ public class Leaf extends Box {
                 currentLeaf.getRegionWidth(),
                 currentLeaf.getRegionHeight(),
                 false,
-                false);
+                false)*/;
 
         sb.draw(currentLeaf,
                 x - width/2,

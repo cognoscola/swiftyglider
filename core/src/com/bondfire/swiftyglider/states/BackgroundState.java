@@ -13,7 +13,7 @@ import com.bondfire.swiftyglider.sprites.Leaf;
 public class BackgroundState extends State  {
     private static final String TAG = BackgroundState.class.getName();
 
-    private final static int numofLeafs = 1;
+    private final static int numofLeafs = 8;
 
     private Leaf[] leafs = new Leaf[numofLeafs];
     private GradientBoard backWall;
@@ -62,10 +62,6 @@ public class BackgroundState extends State  {
         sb.begin();
 
         SwiftyGlider.shader.setUniformf(SwiftyGlider.biasLocation, SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
-
-//        sb.draw(normal,0,0,400,300);
-//        sb.draw(Assets.atlas.tex,0,400,400,300);
-//        sb.draw(normalRegion,0,300,400,300);
 
         for(int i = 0; i < numofLeafs; i++) {
             leafs[i].render(sb);

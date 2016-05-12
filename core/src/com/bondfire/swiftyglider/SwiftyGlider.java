@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
 import com.badlogic.gdx.utils.Json;
-import com.bondfire.app.bfUtils.BlurrableSpriteBatch;
 import com.bondfire.app.callbacks.PlatformInterfaceController;
 
 import com.bondfire.app.services.AdController;
@@ -33,6 +32,7 @@ import com.bondfire.swiftyglider.states.MultiplayerMenuState;
 import com.bondfire.swiftyglider.states.MultiplayerWinState;
 import com.bondfire.swiftyglider.states.PlayState;
 import com.bondfire.swiftyglider.states.State;
+import com.bondfire.swiftyglider.ui.BlurrableSpriteBatch;
 import com.bondfire.swiftyglider.ui.Content;
 
 /** This covers LibGdx basics, expect lots of notes  */
@@ -138,7 +138,6 @@ public class SwiftyGlider extends ApplicationAdapter implements RealTimeMultipla
 	public void setPlayServicesResources(PlayServicesObject group){
 		playServices = group;
 	}
-
 
 	public void setAdController(AdController controller){
 		adController = controller;
