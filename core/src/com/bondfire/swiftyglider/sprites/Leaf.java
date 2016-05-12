@@ -1,6 +1,7 @@
 package com.bondfire.swiftyglider.sprites;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -11,6 +12,7 @@ import com.bondfire.swiftyglider.ui.BlurrableTextureAtlas;
 import com.bondfire.swiftyglider.ui.Box;
 
 public class Leaf extends Box {
+
 
     private final static float LEAF_R = 0.2f;
 
@@ -31,14 +33,13 @@ public class Leaf extends Box {
         this.x = MathUtils.random(SwiftyGlider.WIDTH);
         timer = MathUtils.random(MAX_TIME);
 
-
         /** get our leafy assets */
         leafs[0] = Assets.atlas.findRegion("leaf1");
-        leafs[1] = Assets.atlas.findRegion("leaf2");
-        leafs[2] = Assets.atlas.findRegion("leaf3");
+//        leafs[1] = Assets.atlas.findRegion("leaf2");
+//        leafs[2] = Assets.atlas.findRegion("leaf3");
 
         /** assign a random leaf to use */
-        currentLeaf =  leafs[MathUtils.random(2)];
+        currentLeaf =  leafs[MathUtils.random(0)];
 
         this.width = LEAF_R * SwiftyGlider.WIDTH;
         this.height =LEAF_R * SwiftyGlider.WIDTH;
@@ -83,8 +84,8 @@ public class Leaf extends Box {
                 y - height / 2,
                 width / 2,
                 height / 2,
-                width ,
-                height ,
+                width,
+                height,
                 1,
                 1,
                 rotation,// scale
@@ -95,7 +96,7 @@ public class Leaf extends Box {
                 false,
                 false);
 
-      /*  sb.draw(currentLeaf,
+        sb.draw(currentLeaf,
                 x - width/2,
                 y - height/ 2,
                 width/2,
@@ -104,7 +105,7 @@ public class Leaf extends Box {
                 height,
                 1,
                 1,
-                rotation);*/
+                rotation);
     }
 
     public void setWind(int wind){

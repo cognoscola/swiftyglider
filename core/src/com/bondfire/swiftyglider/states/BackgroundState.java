@@ -11,8 +11,9 @@ import com.bondfire.swiftyglider.handler.Assets;
 import com.bondfire.swiftyglider.sprites.Leaf;
 
 public class BackgroundState extends State  {
+    private static final String TAG = BackgroundState.class.getName();
 
-    private final static int numofLeafs = 8;
+    private final static int numofLeafs = 1;
 
     private Leaf[] leafs = new Leaf[numofLeafs];
     private GradientBoard backWall;
@@ -40,6 +41,10 @@ public class BackgroundState extends State  {
                 normal.getWidth(),
                 normal.getHeight()
         );
+
+
+        Gdx.app.log(TAG,"BackgroundState() Normal WIDTH:" + normal.getWidth() + " HEIGHT:" + normal.getHeight());
+        Gdx.app.log(TAG,"BackgroundState() Blurre WIDTH:" + Assets.atlas.tex.getWidth() + " HEIGHT:" + Assets.atlas.tex.getHeight());
     }
 
     @Override
@@ -58,13 +63,13 @@ public class BackgroundState extends State  {
 
         SwiftyGlider.shader.setUniformf(SwiftyGlider.biasLocation, SwiftyGlider.MAX_BLUR * SwiftyGlider.blurAmount);
 
-        sb.draw(normal,0,0,400,300);
-        sb.draw(Assets.atlas.tex,0,400,400,300);
-        sb.draw(normalRegion,0,0,400,400);
+//        sb.draw(normal,0,0,400,300);
+//        sb.draw(Assets.atlas.tex,0,400,400,300);
+//        sb.draw(normalRegion,0,300,400,300);
 
-       /* for(int i = 0; i < numofLeafs; i++){
+        for(int i = 0; i < numofLeafs; i++) {
             leafs[i].render(sb);
-        */
+        }
         sb.end();
     }
 
